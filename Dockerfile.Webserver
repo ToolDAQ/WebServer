@@ -1,0 +1,21 @@
+### Created by Dr. Benjamin Richards (b.richards@qmul.ac.uk) 
+
+### Download base image from cern repo on docker hub
+FROM cern/cc7-base:latest
+
+### Run the following commands as super user (root):
+USER root
+
+RUN yum install -y httpd \
+    gcc-c++ \
+    make \
+    && yum clean all \
+    && rm -rf /var/cache/yum
+
+ADD setup.tar.gz /
+
+    
+
+### Open terminal
+CMD ["/bin/bash"]
+ 
