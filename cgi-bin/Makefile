@@ -13,6 +13,10 @@ all:
 	chmod a+x sendcommand.cgi
 	g++ sendcommand2.cpp -o sendcommand2.cgi -L /setup/ToolDAQFramework/lib -lStore -lServiceDiscovery -L /setup/cgicc/lib -lcgicc  -I /usr/local/include -I /setup/ToolDAQFramework/include -I /setup/boost_1_66_0/install/include/  -I /setup/zeromq-4.0.7/include -L /setup/boost_1_66_0/install/lib  -lboost_date_time -lboost_serialization  -lboost_iostreams  -L /setup/zeromq-4.0.7/lib -lzmq -I /setup/cgicc/include
 	chmod a+x sendcommand2.cgi
+	g++ sendcommand2nopadding.cpp -o sendcommand2nopadding.cgi -L /setup/ToolDAQFramework/lib -lStore -lServiceDiscovery -L /setup/cgicc/lib -lcgicc  -I /usr/local/include -I /setup/ToolDAQFramework/include -I /setup/boost_1_66_0/install/include/  -I /setup/zeromq-4.0.7/include -L /setup/boost_1_66_0/install/lib  -lboost_date_time -lboost_serialization  -lboost_iostreams  -L /setup/zeromq-4.0.7/lib -lzmq -I /setup/cgicc/include
+	chmod a+x sendcommand2nopadding.cgi
+
+
 #	g++ logbook.cpp -o logbook.cgi -L /usr/local/lib  -lcgicc  -I /usr/local/include
 #	chmod a+x logbook.cgi
 #	g++ logs.cpp -o logs.cgi

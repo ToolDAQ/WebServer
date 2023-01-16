@@ -74,7 +74,9 @@ function updatedropdown(){
 	    
 	}
 	tmp.innerHTML = "";
+	select.dispatchEvent(new Event("change"));
     });	    
+
     
 }
 		   
