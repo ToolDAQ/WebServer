@@ -1,0 +1,65 @@
+<html>
+  <head>
+    <title>ToolDAQ Webpage</title>
+    
+  </head>
+  
+  <body>
+    
+    
+    <!--#include file="header.html" -->
+    
+    
+    
+    <h1 align="center">Remote Control ToolChain</h1>
+    
+    <div>
+      <table border="1" align="center" id="table-container">
+	<tr>
+          <th>Service ID</th>
+	  <th>Service IP</th>
+	  <th style="display:none">Port</th>
+	  <th>Service Name</th>
+	  <th>Service Status</th>
+	</tr>
+      </table>
+      <div/>
+      
+      <br>
+      
+      <p align="center">      
+	<button align="center" id="refresh">Refresh</button>
+      </p>      
+
+      <br>
+
+      <table border="0" align="center">
+
+	<tr>
+	  <td><div align='center'>Select Service</td>
+	  <td>Type Command</td>
+	  <td></td> 
+	</tr> 
+	
+	<tr>
+	  <td><div align="center"><select id="ip"></select></td>	  
+	  <td><input type="text" id="command"></td>
+	  <td><button value="Send Command" id="Send Command"/>Send Command</td>
+	</tr>
+	
+      </table>
+      
+      <p>
+	
+	<table  border="1" align="center" >
+	  <td id="output"> Command output  </td>  
+	</table>
+	
+      <p> Use command "?" to display available commands for a service </p> <p>      
+	
+	<!--#include file="footer.html" -->
+	
+  </body>
+</html>
+
+<script src="./control3.js?v=38"></script>
