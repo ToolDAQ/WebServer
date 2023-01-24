@@ -32,7 +32,7 @@ class ExampleSlowControl: public Tool {
   zmq::socket_t* sock;  ///< zmq socket pointer for socket to advertise
   int m_port;  ///< Port to advertise
 
-  zmq::pollitem_t *item;
+  zmq::pollitem_t items[1];
 
 };
 

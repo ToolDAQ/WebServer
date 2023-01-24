@@ -33,7 +33,8 @@ eval $POST
 # | sed s:'%20':' ':g`  
 #echo "<br> 3) $command <br>"
 #echo psql  -U$user -d$db -H -c"$command" 
-echo `psql  -U$user -d$db -H -c"$command" 2>&1 | sed '0,/table/s/table/table id=table/' `
+#echo `psql  -U$user -d$db -H -c"$command" 2>&1 | sed '0,/table/s/table/table id=table/' `
+echo `psql  -U$user -d$db -H -Tid=table -c"$command" 2>&1 `
 
 #2>&1
 echo -e "</html></body>"
