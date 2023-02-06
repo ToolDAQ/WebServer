@@ -30,6 +30,52 @@ bool ExampleSlowControl::Initialise(std::string configfile, DataModel &data){
   items[0].events=ZMQ_POLLIN;
   items[0].revents=0;
 
+  //  if(str == "?") reply ="?, [var1:0:20:1:1], [var2:0:20:1:1], [LED1;on;off;off], [LED2;on;off;off], [mode select;high;mid;low;mid] command <command text>, button 1, button2";
+
+  SlowControlElement* var1= new SlowControlElement("var1",SlowControlElementType(VARIABLE));
+  var1->SetMin(0);
+  var1->SetMax(20);
+  var1->SetStep(1);
+  var1->SetValue(1);
+  m_data->SC_vars.push_back(var1);
+
+  SlowControlElement* var2= new SlowControlElement("var2",SlowControlElementType(VARIABLE));
+  var2->SetMin(0);
+  var2->SetMax(200);
+  var2->SetStep(0.01);
+  var2->SetValue(5.82);
+  m_data->SC_vars.push_back(var2);
+
+  SlowControlElement* LED1= new SlowControlElement("LED1",SlowControlElementType(OPTIONS));
+  LED1->AddOption("on");
+  LED1->AddOption("off");
+  LED1->SetValue("off");
+  m_data->SC_vars.push_back(LED1);
+
+  SlowControlElement* LED2= new SlowControlElement("LED2",SlowControlElementType(OPTIONS));
+  LED2->AddOption("on");
+  LED2->AddOption("off");
+  LED2->SetValue("off");
+  m_data->SC_vars.push_back(LED2);
+
+
+  SlowControlElement* modeselect= new SlowControlElement("mode Select",SlowControlElementType(OPTIONS));
+  modeselect->AddOption("high");
+  modeselect->AddOption("mid");
+  modeselect->AddOption("low");
+  modeselect->SetValue("mid");
+  m_data->SC_vars.push_back(modeselect);
+
+
+  SlowControlElement* command= new SlowControlElement("command",SlowControlElementType(COMMAND));
+  command->AddCommand("command_text");
+  m_data->SC_vars.push_back(command);
+
+  SlowControlElement* button1= new SlowControlElement("button1",SlowControlElementType(BUTTON));
+  m_data->SC_vars.push_back(button1);
+
+  SlowControlElement* button2= new SlowControlElement("button2",SlowControlElementType(BUTTON));
+  m_data->SC_vars.push_back(button2);
   
   return true;
 }
@@ -63,10 +109,16 @@ bool ExampleSlowControl::Execute(){
     std::cout<<"msg before processing = "<<str<<std::endl;
     std::string reply="error";
 
-    if(str == "?") reply ="?, [variables:0:20:1:1]";
-
+    if(str == "?"){
+      reply ="?";
+      for(int i=0; i<m_data->SC_vars.size(); i++){
+	reply += ", " + m_data->SC_vars.at(i)->Print();
+      } 
+      
+    }
+    
     else{
-
+      
       Store in;
       str="{"+str+"}";
       in.JsonParser(str);
