@@ -1,12 +1,11 @@
 #include "Factory.h"
 
-Tool* Factory(std::string tool){
+Tool* Factory(std::string tool) {
 Tool* ret=0;
 
 // if (tool=="Type") tool=new Type;
 if (tool=="DummyTool") ret=new DummyTool;
-
-  if (tool=="ExampleSlowControl") ret=new ExampleSlowControl;
+if (tool=="ExampleSlowControl") ret=new ExampleSlowControl;
+if (tool=="ExampleMonitoring") ret=new ExampleMonitoring;
 return ret;
 }
-

@@ -1,3 +1,4 @@
 #test1 DummyTool configfiles/Example/DummyToolConfig
 #test2 DummyTool configfiles/Example/DummyToolConfig
 ExampleSlowControl ExampleSlowControl Null
+ExampleMonitoring ExampleMonitoring Null
