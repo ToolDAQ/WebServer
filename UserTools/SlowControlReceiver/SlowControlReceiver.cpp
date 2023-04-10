@@ -61,16 +61,10 @@ bool SlowControlReceiver::Execute(){
 
     std::string reply="error";
 
-    if(str == "?"){
-      reply ="?";
-      for(std::map<std::string, SlowControlElement*>::iterator it=m_data->SC_vars.begin(); it!=m_data->SC_vars.end(); it++){
-	reply += ", " + it->second->Print();
-      } 
+    if(str == "?") reply=m_data->SC_vars.Print();
+    
+    else if(m_data->SC_vars[str]){
       
-    }
-    
-    else if(m_data->SC_vars.count(str)){
-    
       reply=*tmp["msg_value"];
       std::stringstream input;
       input<<*tmp["msg_value"];
@@ -110,12 +104,7 @@ bool SlowControlReceiver::Finalise(){
   delete sock;
   sock=0;
 
-  for(std::map<std::string, SlowControlElement*>::iterator it=m_data->SC_vars.begin(); it!=m_data->SC_vars.end(); it++){
-     delete it->second;
-     it->second=0;
-  }
-
-  m_data->SC_vars.clear();
+  m_data->SC_vars.Clear();
 
   if(!ret) return false;
 
