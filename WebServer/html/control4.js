@@ -167,7 +167,8 @@ function sendcommand2(){
     
     command(ip.value.split(":")[0], ip.value.split(":")[1], commands.value).then(function(result){
 	
-	cell.innerHTML = result;
+	cell.innerHTML = "Sending Command {" + commands.value + "} to [" + ip.value + "] <br>";
+	cell.innerHTML += "[" + ip.value + "] Reply: " + result;
 	
 	commands.value="";
 	ip.disabled=false;
@@ -213,7 +214,8 @@ function sendcommand3(...incommands){
     
     command(ip.value.split(":")[0], ip.value.split(":")[1], incommand).then(function(result){
 	
-	cell.innerHTML = result;
+	cell.innerHTML = "Sending Command {" + incommand + "} to [" + ip.value + "] <br>";
+	cell.innerHTML += "[" + ip.value + "] Reply: " + result;
 	
 	commands.value="";
 	ip.disabled=false;
@@ -303,6 +305,7 @@ function getcommands(){
     
     command(ip.value.split(":")[0], ip.value.split(":")[1], commands).then(function(result){
 
+	result=result.replace('Available commands: ', '');
 	div.innerHTML = "<form id=\"input\">";
 	//result="Start <service>, Stop <service>, KILL, hello <name> <fish>, [voltage1:0.0:100.0:0.1:50.0], [voltage2:0:100:1:50], [state;a;b;c;a], [LED1;on;off;on], ? ";	
 	var commands = result.split(",");

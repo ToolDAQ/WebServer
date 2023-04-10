@@ -1,4 +1,5 @@
 #test1 DummyTool configfiles/Example/DummyToolConfig
 #test2 DummyTool configfiles/Example/DummyToolConfig
+SlowControlReceiver SlowControlReceiver Null
 ExampleSlowControl ExampleSlowControl Null
 ExampleMonitoring ExampleMonitoring Null
