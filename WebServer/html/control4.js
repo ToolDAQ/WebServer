@@ -1,4 +1,10 @@
 // Define the function that updates the table
+//var ip_filter="";
+//var name_filter="";
+//var status_filter="";
+
+
+
 function updateTable() {
 
 //    var btn = document.getElementById('refresh');
@@ -39,8 +45,9 @@ function updateTable() {
 		var cells = row.split(",");
 		
 		if(cells.length == 5){
-		
-		var newrow = table.insertRow(table.rows.length);
+		//if(cells.length == 5 && cells[1].includes(ip_filter) && cells[3].includes(name_filter) && cells[4].includes(status_filter)){
+		    
+		    var newrow = table.insertRow(table.rows.length);
 		    var colour = "#00FFFF";
 		    if( cells[4] == "Online" ) colour = "#FF00FF"
 		    else if( cells[4] == "Waiting to Initialise ToolChain" ) colour="#FFFF00"
@@ -307,7 +314,7 @@ function getcommands(){
 		type=type.replace("]","");
 		var fields=type.split(":");
 		fields=fields.map(function(item){return item.trim();});
-		div.innerHTML +=  "<p>" +fields[0] + "  <input type=\"range\" min=\"" + fields[1] + "\" max=\"" + fields[2] + "\"  step=\"" + fields[3] + "\" value=\"" + fields[4] + "\" id=\"" + fields[0] + "slider\" onchange=\"document.getElementById('"+ fields[0] + "').value=this.value\">  <input type=\"number\" id=\"" + fields[0] + "\" min=\""+ fields[1] + "\" max=\"" + fields[2] + "\" step=\"" + fields[3] + "\" value=\"" + fields[4] + "\" onchange=\"document.getElementById('"+ fields[0] + "slider').value=this.value\">  <button type=\"button\" onclick=\"sendcommand3(\'" + fields[0] + "', '"+ fields[0] + "slider')\">Update</button></p>"
+		div.innerHTML +=  "<p>" +fields[0] + "  <input type=\"range\" min=\"" + fields[1] + "\" max=\"" + fields[2] + "\"  step=\"" + fields[3] + "\" value=\"" + fields[4] + "\" id=\"" + fields[0] + "slider\" onchange=\"document.getElementById('"+ fields[0] + "').value=this.value\">  <input type=\"number\" id=\"" + fields[0] + "\" min=\""+ fields[1] + "\" max=\"" + fields[2] + "\" step=\"" + fields[3] + "\" value=\"" + fields[4] + "\" onchange=\"document.getElementById('"+ fields[0] + "slider').value=this.value\">  <button type=\"button\" onclick=\"sendcommand3(\'" + fields[0] + "', '" + fields[0] + "slider' )\">Update</button></p>"
 	    }
 
 	    else if(type.includes("[") && type.includes(";")){
@@ -451,5 +458,63 @@ controls.addEventListener('mouseover', function() {
 
 controls.addEventListener('mouseout', function() {
     update = setInterval(updateTable, 60000)
+});
+
+var ip_box = document.getElementById('ip_filter');
+var name_box = document.getElementById('name_filter');
+var status_box = document.getElementById('status_filter');
+
+ip_box.addEventListener('change', function() {
+    var ip_filter = "";
+    if(ip_box.value == "<filter>")  ip_filter = "";
+    else if(ip_box.value == "")  ip_box.value = "<filter>";
+    else ip_filter = ip_box.value;
+    var style="";
+    var table = document.getElementById("table-container");
+    for(var i=1; i<table.rows.length; i++){
+        if (table.rows[i].cells[1].innerText.includes(ip_filter)){ style=""}
+        else { style="display:none"}
+
+        for(var j=0; j<table.rows[i].cells.length; j++){
+            if(j != 2) table.rows[i].cells[j].style=style;
+        }
+	
+    }
+});
+
+name_box.addEventListener('change', function() {
+    var name_filter = "";
+    if(name_box.value == "<filter>")  name_filter = "";   
+    else if(name_box.value == "") name_box.value = "<filter>";
+    else name_filter = name_box.value;
+    var style="";
+    var table = document.getElementById("table-container");
+    for(var i=1; i<table.rows.length; i++){
+        if (table.rows[i].cells[3].innerText.includes(name_filter)){ style=""}
+        else { style="display:none"}
+
+        for(var j=0; j<table.rows[i].cells.length; j++){
+            if(j != 2) table.rows[i].cells[j].style=style;
+        }
+
+    }
+});
+
+status_box.addEventListener('change', function() {
+    var status_filter = "";
+    if(status_box.value == "<filter>") status_filter = "";
+    else if(status_box.value == "") status_box.value = "<filter>";
+    else status_filter = status_box.value;
+    var style="";
+    var table = document.getElementById("table-container");
+    for(var i=1; i<table.rows.length; i++){
+	if (table.rows[i].cells[4].innerText.includes(status_filter)){ style=""}
+	else { style="display:none"}
+	
+	for(var j=0; j<table.rows[i].cells.length; j++){
+	    if(j != 2) table.rows[i].cells[j].style=style;
+	}
+	
+    }    
 });
 

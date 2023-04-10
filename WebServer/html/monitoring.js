@@ -1,54 +1,16 @@
 var tabbar=document.getElementById("tabbar");
 tabbar.classList.add("mdl-layout__tab-bar"); 
 tabbar.classList.add("mdl-js-ripple-effect");
-var elements=[];
-tabbar.classList.add("mdl-layout__tab");
-tabbar.classList.add("mdl-layout__tab");
-elements = document.getElementsByClassName("mdl-layout__tab");
-elements[elements.length-1].innerText="hello";
-tabbar.classList.add("mdl-layout__tab");
-elements = document.getElementsByClassName("mdl-layout__tab");
-elements[elements.length-1].innerText="hello";
-tabbar.classList.add("mdl-layout__tab");
-elements = document.getElementsByClassName("mdl-layout__tab");
-elements[elements.length-1].innerText="hello";
-tabbar.classList.add("mdl-layout__tab");
-elements = document.getElementsByClassName("mdl-layout__tab");
-elements[elements.length-1].innerText="hello";
-tabbar.classList.add("mdl-layout__tab");
-elements = document.getElementsByClassName("mdl-layout__tab");
-elements[elements.length-1].innerText="hello";
-tabbar.classList.add("mdl-layout__tab");
-elements = document.getElementsByClassName("mdl-layout__tab");
-elements[elements.length-1].innerText="hello";
-tabbar.classList.add("mdl-layout__tab");
-elements = document.getElementsByClassName("mdl-layout__tab");
-elements[elements.length-1].innerText="hello";
-tabbar.classList.add("mdl-layout__tab");
-elements = document.getElementsByClassName("mdl-layout__tab");
-elements[elements.length-1].innerText="hello";
-tabbar.classList.add("mdl-layout__tab");
-elements = document.getElementsByClassName("mdl-layout__tab");
-elements[elements.length-1].innerText="hello";
-tabbar.classList.add("mdl-layout__tab");
-elements = document.getElementsByClassName("mdl-layout__tab");
-elements[elements.length-1].innerText="hello";
-tabbar.classList.add("mdl-layout__tab");
-elements = document.getElementsByClassName("mdl-layout__tab");
-elements[elements.length-1].innerText="hello";
-tabbar.classList.add("mdl-layout__tab");
-elements = document.getElementsByClassName("mdl-layout__tab");
-elements[elements.length-1].innerText="hello";
-tabbar.classList.add("mdl-layout__tab");
-elements = document.getElementsByClassName("mdl-layout__tab");
-elements[elements.length-1].innerText="hello";
-tabbar.classList.add("mdl-layout__tab");
-elements = document.getElementsByClassName("mdl-layout__tab");
-elements[elements.length-1].innerText="hello";
-tabbar.classList.add("mdl-layout__tab");
-elements = document.getElementsByClassName("mdl-layout__tab");
-elements[elements.length-1].innerText="hello";
 
+ var tab = document.createElement("div");
+  tab.classList.add("mdl-layout__tab");
+  tab.innerText = "hello1";
+  tabbar.appendChild(tab);
+
+ var tab2 = document.createElement("div");
+  tab2.classList.add("mdl-layout__tab");
+  tab2.innerText = "hello2";
+  tabbar.appendChild(tab2);
 
 
 var selectorOptions = {
@@ -229,7 +191,8 @@ select.addEventListener('change', function() {
 		
 		for (let key in jsondata) {
 		    
-		    if( i == 1 ){
+//		    if( i == 1 ){
+		    if(!xdata.has(key)){
 			xdata.set(key,[table.rows[i].cells[0].innerText]);
 			ydata.set(key,[jsondata[key]]);
 		    }

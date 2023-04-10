@@ -54,6 +54,9 @@ bool ExampleMonitoring::Execute(){
       
       data.Set("temp1", (rand() % 100 +400)/10.0);
       data.Set("voltage1", (rand() % 1000 +5000)/1000.0);
+      float temp2=0.0;
+      m_data->SC_vars["var2"]->GetValue(temp2);
+      data.Set("temp2", temp2);
       
       std::string datastring="";
       
