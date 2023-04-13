@@ -25,11 +25,11 @@ bool SlowControlElement::IsName(std::string name){
 std::string SlowControlElement::Print(){
 
   std::string out="";
-
+  mtx.lock();
   if(m_type==SlowControlElementType(VARIABLE) || m_type==SlowControlElementType(OPTIONS)) out+="[";
-
+  
   out+=m_name;
-
+  
   if(m_type==SlowControlElementType(VARIABLE)){
     std::string min=*options["min"];
     std::string max=*options["max"];
@@ -67,6 +67,6 @@ std::string SlowControlElement::Print(){
 
 
   }
-
+  mtx.unlock();
   return out;
 }

@@ -2,14 +2,15 @@
 
 SlowControlCollection::SlowControlCollection(){
 
-
 }
 
 SlowControlCollection::~SlowControlCollection(){
 
+
   Clear();
 
 }
+
 
 void SlowControlCollection::Clear(){
   

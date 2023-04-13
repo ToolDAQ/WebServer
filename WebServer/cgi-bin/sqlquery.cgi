@@ -26,7 +26,7 @@ eval $POST
 # for query string ## command=`echo "$command" | sed s:*:*:g |sed s:'%20':' ':g | sed s:%27:\':g `
  command=`echo "$command" | sed s:*:*:g |sed s:'%20':' ':g | sed s:%27:\':g | sed s:\":\':g`
 
-
+#echo $command
 #command=`echo "select%20*%20from%20monitoring;" | sed s:*:*:g |sed s:'%20':' ':g`
 #echo "<br> 2)  $command <br>"
 #command="select * from monitoring"

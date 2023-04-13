@@ -4,6 +4,7 @@
 #include <string>
 #include <store.h>
 #include <sstream>
+#include <mutex>
 
 enum SlowControlElementType { BUTTON, VARIABLE, OPTIONS, COMMAND };
 
@@ -18,7 +19,9 @@ class SlowControlElement{
   
   template<typename T> bool SetMin(T value){ 
     if(m_type == SlowControlElementType(VARIABLE)){
+      mtx.lock();
       options.Set("min",value);
+      mtx.unlock();
       return true;
     }
     else return false;
@@ -26,7 +29,9 @@ class SlowControlElement{
   
   template<typename T> bool SetMax(T value){ 
     if(m_type == SlowControlElementType(VARIABLE)){
+      mtx.lock();     
       options.Set("max",value);
+      mtx.unlock();
       return true;
     }
     else return false;
@@ -34,18 +39,22 @@ class SlowControlElement{
   
   template<typename T> bool SetStep(T value){ 
     if(m_type == SlowControlElementType(VARIABLE)){
+      mtx.lock();      
       options.Set("step",value);
-      return true;
+      mtx.unlock(); 
+     return true;
     }
     else return false;
   }
   
-    template<typename T> bool AddOption(T value){
-  if(m_type == SlowControlElementType(OPTIONS)){
+  template<typename T> bool AddOption(T value){
+    if(m_type == SlowControlElementType(OPTIONS)){
+      mtx.lock();
       num_options++;
       std::stringstream tmp;
       tmp<<num_options;
       options.Set(tmp.str(), value);
+      mtx.unlock();
       return true;
     }
     else return false;
@@ -53,22 +62,28 @@ class SlowControlElement{
 
   bool AddCommand(std::string value){
     if(m_type == SlowControlElementType(COMMAND)){
+      mtx.lock();
       num_options++;
       std::stringstream tmp;
       tmp<<num_options;
       options.Set(tmp.str(), value);
+      mtx.unlock();
       return true;
     }
     else return false;
   }
 
   template<typename T> bool SetValue(T value){
+    mtx.lock();
     options.Set("value", value);
+    mtx.unlock();
     return true;
   }
   
   template<typename T> bool GetValue(T &value){
+    mtx.lock();
     options.Get("value", value);
+    mtx.unlock();
     return true;
   }
   
@@ -78,6 +93,8 @@ class SlowControlElement{
   SlowControlElementType m_type;
   Store options;
   unsigned int num_options;
+
+  std::mutex mtx;
  
 };
 

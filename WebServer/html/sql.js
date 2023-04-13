@@ -110,8 +110,10 @@ var command= document.getElementById("command");
 var sqloutput= document.getElementById("sqloutput");
 submit.addEventListener('click', function(){
     submit.disabled=true;
-    var commandsend=command.value.replace(/\*/g, "'*'");
-    commandsend=commandsend.replace(/'/g, "\"");
+   // var commandsend=command.value.replace(/\*/g, "'*'");
+    //commandsend=commandsend.replace(/'/g, "\"");
+    var commandsend=command.value.replace(/'/g, "\"");
+    commandsend=commandsend.replace(/\*/g, "'*'");
     gettable(commandsend).then( function(result){
 	sqloutput.innerHTML=result;
 	submit.disabled=false;

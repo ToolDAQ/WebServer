@@ -1,17 +1,5 @@
-var tabbar=document.getElementById("tabbar");
-tabbar.classList.add("mdl-layout__tab-bar"); 
-tabbar.classList.add("mdl-js-ripple-effect");
-
- var tab = document.createElement("div");
-  tab.classList.add("mdl-layout__tab");
-  tab.innerText = "hello1";
-  tabbar.appendChild(tab);
-
- var tab2 = document.createElement("div");
-  tab2.classList.add("mdl-layout__tab");
-  tab2.innerText = "hello2";
-  tabbar.appendChild(tab2);
-
+var last=new Date();
+var updateinterval;
 
 var selectorOptions = {
     buttons: [ {
@@ -167,13 +155,17 @@ function updatedropdown(){
 updatedropdown();
 
 
-// Select the select box
+var data =[];
+
+function makeplot(){
+
+clearInterval(updateinterval);
+
 var select = document.querySelector('select');
 
-select.addEventListener('change', function() {
     // Get the selected option
-    if (this.options.length >0){
-	var selectedOption = this.options[this.selectedIndex];
+    if (select.options.length >0){
+	var selectedOption = select.options[select.selectedIndex];
 	var command = "select '*' from monitoring where name=\""+ selectedOption.value + "\"";
 	
 	var output= document.getElementById("output");
@@ -182,8 +174,8 @@ select.addEventListener('change', function() {
 	    output.innerHTML=result;
 	    var table = document.getElementById("table");
 	    table.style.display = "none";
-	    var xdata= new Map();
-	    var ydata= new Map();
+	   var xdata= new Map();
+	   var ydata= new Map();
 	    
 	    for( var i=1; i< table.rows.length; i++){
 		
@@ -203,7 +195,7 @@ select.addEventListener('change', function() {
 		    }
 		}
 	    }
-	    var data = [];
+	    data = [];
 	    for(let [key, value] of xdata){
 		
 		data.push({
@@ -236,8 +228,96 @@ select.addEventListener('change', function() {
 	// Perform an action with the selected option
 	//console.log('You selected: ' + selectedOption.value);
     }
-});
+};
 			
+
+function updateplot(){
+
+
+var select = document.querySelector('select');
+
+    // Get the selected option
+    if (select.options.length >0){
+	var selectedOption = select.options[select.selectedIndex];
+
+	var command = "select '*' from monitoring where name=\""+ selectedOption.value + "\" and time>to_timestamp(" + ((last.valueOf())/1000.0) + ");  ";
+	
+	var output= document.getElementById("output");
+	gettable(command).then(function(result){
+
+	    last=new Date();
+	    
+	    output.innerHTML=result;
+	    var table = document.getElementById("table");
+	    table.style.display = "none";
+	   var xdata= new Map();
+	   var ydata= new Map();
+	    
+	    for( var i=1; i< table.rows.length; i++){
+		
+		var jsondata = JSON.parse(table.rows[i].cells[2].innerText);
+		
+		for (let key in jsondata) {
+		    
+//		    if( i == 1 ){
+		    if(!xdata.has(key)){
+			xdata.set(key,[table.rows[i].cells[0].innerText]);
+			ydata.set(key,[jsondata[key]]);
+		    }
+		    else{
+			xdata.get(key).push(table.rows[i].cells[0].innerText);
+			ydata.get(key).push(jsondata[key]);
+			
+		    }
+		}
+	    }
+	    for(let [key, value] of xdata){
+		
+		for( var i=0; i< data.length; i++){
+		    if(data[i].name == selectedOption.value + ":" +key){ 
+			 data[i].x=data[i].x.concat(value);
+			data[i].y=data[i].y.concat(ydata.get(key));
+		    }
+		}
+		
+	    }
+	    
+	    var layout = {
+		title: 'Monitor Time series with range slider and selectors',          
+		xaxis: {
+		    rangeselector: selectorOptions,
+		    rangeslider: {}
+		}
+	    };
+	    
+	    
+	    var graphDiv = document.getElementById("graph"); 
+//	    while(!document.getElementById("same").checked && graphDiv.data != undefined && graphDiv.data.length >0)
+//	    {
+//		Plotly.deleteTraces(graphDiv, 0);
+		//   Plotly.deleteTraces(graphDiv, [0]);
+//	    }    	
+		    Plotly.redraw(graphDiv,data, layout);	
+//	    Plotly.plot(graphDiv, data, layout);	    
+	    
+	});
+	// Perform an action with the selected option
+	//console.log('You selected: ' + selectedOption.value);
+    }
+
+
+};
+
 
   
 
+// Select the select box
+var select = document.querySelector('select');
+
+select.addEventListener('change', function(){
+
+    makeplot();
+    last= new Date();
+    updateinterval=setInterval(updateplot, 2000);
+
+});
