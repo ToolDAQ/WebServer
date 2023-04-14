@@ -43,6 +43,12 @@ bool ExampleSlowControl::Initialise(std::string configfile, DataModel &data){
   m_data->SC_vars["mode_select"]->AddOption("mid");
   m_data->SC_vars["mode_select"]->AddOption("low");
   m_data->SC_vars["mode_select"]->SetValue("mid");
+
+  m_data->SC_vars.Add("voltage1", SlowControlElementType(VARIABLE));
+  m_data->SC_vars["voltage1"]->SetMin(0);
+  m_data->SC_vars["voltage1"]->SetMax(3000);
+  m_data->SC_vars["voltage1"]->SetStep(10);
+  m_data->SC_vars["voltage1"]->SetValue(0);
   
   m_data->SC_vars.Add("command",SlowControlElementType(COMMAND));
   m_data->SC_vars["command"]->AddCommand("command_text");
@@ -58,6 +64,12 @@ bool ExampleSlowControl::Initialise(std::string configfile, DataModel &data){
 bool ExampleSlowControl::Execute(){
 
   usleep(100);
+
+  float voltage1=0.0;
+
+  m_data->SC_vars["voltage1"]->GetValue(voltage1);
+
+  //std::cout<<"voltage1="<<voltage1<<std::endl;
 
   return true;
 }
