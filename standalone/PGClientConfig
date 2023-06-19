@@ -1,0 +1,18 @@
+verbosity 5
+ZMQ_IDENTITY newdaq01
+clt_pub_port 77778
+clt_dlr_port 77777
+clt_pub_socket_timeout 500
+clt_dlr_socket_timeout 500
+inpoll_timeout 50   # keep these short!
+outpoll_timeout 50  # keep these short!
+query_timeout 2000
+
+# for use with standalone tester
+#stopfile stop
+#service_discovery_config configfiles/DBTest/ServiceDiscoveryConfig
+
+# unused for now
+max_retries 3
+resend_period_ms 1000
+print_stats_period_ms 5000;

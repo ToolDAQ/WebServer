@@ -33,6 +33,8 @@ RUN sudo -u postgres /usr/bin/initdb /var/lib/pgsql/data/; \
     sudo -u postgres psql -c "create database daq with owner=root;"; \
     psql -ddaq -c "create table monitoring (time timestamp, name text , data JSON );";\
     psql -ddaq -c "create table logs (time timestamp, name text , log text );";\
+    psql -ddaq -c "create table Alarms (time timestamp, name text , alarm text );";
+    psql -ddaq -c "create table configurations (time timestamp, name text , version int, data JSON );";\
     psql -ddaq -c "create table runinfo (run int, subrun int, starttime timestamp, stoptime timestamp, number int , comments text);";\
     echo " sudo -u postgres /usr/bin/pg_ctl start -D /var/lib/pgsql/data -s -o \"-p 5432\" -w -t 300;" >> /etc/rc.local
 

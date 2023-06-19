@@ -27,14 +27,19 @@ class SlowControlCollection{
   SlowControlCollection();
   ~SlowControlCollection();
 
-  bool Init(zmq::context_t* context, int port=555);
+  bool Init(zmq::context_t* context, int port=555, bool new_service=true);
   bool ListenForData(int poll_length=0);
-  bool InitThreadedReceiver(zmq::context_t* context, int port=555, int poll_length=100);
+  bool InitThreadedReceiver(zmq::context_t* context, int port=555, int poll_length=100, bool new_service=true);
   SlowControlElement* operator[](std::string key);
   bool Add(std::string name, SlowControlElementType type);
   bool Remove(std::string name);
   void Clear();
   std::string Print();
+  template<typename T> T GetValue(std::string name){
+
+    return SC_vars[name]->GetValue<T>();    
+
+  }
 
  private:
 

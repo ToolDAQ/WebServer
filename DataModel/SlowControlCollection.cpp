@@ -39,7 +39,7 @@ SlowControlCollection::~SlowControlCollection(){
 
 }
 
-bool SlowControlCollection::Init(zmq::context_t* context, int port){
+bool SlowControlCollection::Init(zmq::context_t* context, int port, bool new_service){
   
   if(args) return false;
   
@@ -56,7 +56,8 @@ bool SlowControlCollection::Init(zmq::context_t* context, int port){
   
   args->sock->bind(tmp.str().c_str());
   
-  if(!m_util->AddService("SlowControlReceiver",port,false)){
+  std::cout<<"new_service="<<new_service<<std::endl;
+  if(new_service && !m_util->AddService("SlowControlReceiver",port,false)){
     
     delete args->sock;
     args->sock=0;
@@ -86,11 +87,12 @@ bool SlowControlCollection::ListenForData(int poll_length){
 
 }
 
-bool SlowControlCollection::InitThreadedReceiver(zmq::context_t* context, int port, int poll_length){
+bool SlowControlCollection::InitThreadedReceiver(zmq::context_t* context, int port, int poll_length, bool new_service){
 
   if(args) return false;
  
-  Init(context, port);
+  std::cout<<"new_service="<<new_service<<std::endl;
+  Init(context, port, new_service);
   args->poll_length= poll_length;   
   m_util->CreateThread("receiver", &Thread, args);
   
@@ -126,7 +128,11 @@ void SlowControlCollection::Thread(Thread_args* arg){
     std::string reply="error: " + *tmp["msg_value"];
 
     if(str == "?") reply=args->SCC->Print();
-    
+    else if( str == "Status" && (*args->SCC)[str]){
+      std::string status="";
+      (*args->SCC)[str]->GetValue(status);     
+      reply=status;
+    }
     else if((*args->SCC)[str]){
       
       reply=*tmp["msg_value"];

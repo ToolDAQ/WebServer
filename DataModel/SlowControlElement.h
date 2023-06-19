@@ -6,7 +6,9 @@
 #include <sstream>
 #include <mutex>
 
-enum SlowControlElementType { BUTTON, VARIABLE, OPTIONS, COMMAND };
+enum SlowControlElementType { BUTTON, VARIABLE, OPTIONS, COMMAND, INFO };
+
+//need to add a new element type for info box that can be used for status
 
 class SlowControlElement{
 
@@ -78,6 +80,16 @@ class SlowControlElement{
     options.Set("value", value);
     mtx.unlock();
     return true;
+  }
+
+  template<typename T> T GetValue(){
+    
+    T tmp;
+    mtx.lock();
+    options.Get("value", tmp);
+    mtx.unlock();
+    return tmp;
+
   }
   
   template<typename T> bool GetValue(T &value){

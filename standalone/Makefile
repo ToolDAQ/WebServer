@@ -1,0 +1,2 @@
+all:
+	g++ main.cpp errnoname.c DAQInterface.cpp PGClient.cpp -I ./ -I ../include/  -L ../Dependencies/boost_1_66_0/install/lib -lboost_date_time -lboost_serialization -lboost_iostreams -I ../Dependencies/boost_1_66_0/install/include/ -I ../Dependencies/zeromq-4.0.7/include/ -L ../Dependencies/zeromq-4.0.7/lib/ -lzmq  -std=c++11 -L ../lib/ -lServiceDiscovery -lDataModel -lStore -I ../include/ -lLogging -lDAQLogging
