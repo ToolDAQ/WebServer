@@ -60,13 +60,13 @@ bool DAQInterface::SQLQuery(std::string dbname, std::string query_string, Store 
 }
 
 
-bool DAQInterface::SendLog(std::string message){
+bool DAQInterface::SendLog(std::string message, int severity){
 
 
   std::string err="";
   int timeout=300;
   Store result;
-  std::string query_string="insert into logs (time, name, log) values (now(), '" + m_name + "', '" + message + "');";
+  std::string query_string="insert into logging (time, source, severity, message) values (now(), '" + m_name + "', "+std::to_string(severity)+", '" + message + "');";
 
     if(!SQLQuery(m_dbname , query_string, result, timeout, err)){
 
