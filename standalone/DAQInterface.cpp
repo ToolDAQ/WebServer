@@ -64,13 +64,13 @@ bool DAQInterface::SendLog(std::string message){
 
 
   std::string err="";
-  int timeout=100;
+  int timeout=300;
   Store result;
   std::string query_string="insert into logs (time, name, log) values (now(), '" + m_name + "', '" + message + "');";
 
     if(!SQLQuery(m_dbname , query_string, result, timeout, err)){
 
-      std::cout<<"log error: "<<"err"<<std::endl;
+      std::cout<<"log error: "<<err<<std::endl;
 
       return false;
     }
@@ -81,8 +81,16 @@ bool DAQInterface::SendLog(std::string message){
 }
 
 bool DAQInterface::SendAlarm(std::string message){
-
-  //SQLQuery(std::string dbname, std::string query_string, Store &result, int &timeout, std::string e \
+  
+  std::string err="";
+  int timeout=300;
+  Store result;
+  std::string query_string="insert into Alarms (time, name, alarm) values (now(), '" + m_name + "', '" + message + "');";
+  
+  if(!SQLQuery(m_dbname , query_string, result, timeout, err)){
+      std::cerr<<"SendAlarm error: "<<err<<std::endl;
+      return false;
+  }
 
   return true;
 
@@ -90,6 +98,14 @@ bool DAQInterface::SendAlarm(std::string message){
 
 bool DAQInterface::SendMonitoringData(std::string data){
 
+  std::string err="";
+  int timeout=300;
+  Store result;
+  std::string query_string="insert into monitoring (time, name, data) values (now(), '" + m_name + "', '" + data + "');";
+  if(!SQLQuery(m_dbname , query_string, result, timeout, err)){
+      std::cerr<<"SendMonitoringData error: "<<err<<std::endl;
+      return false;
+  }
 
 
   return true;
