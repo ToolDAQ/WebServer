@@ -1,4 +1,4 @@
-verbosity 5
+verbosity 1
 ZMQ_IDENTITY newdaq01
 clt_pub_port 77778
 clt_dlr_port 77777
@@ -7,6 +7,7 @@ clt_dlr_socket_timeout 500
 inpoll_timeout 50   # keep these short!
 outpoll_timeout 50  # keep these short!
 query_timeout 2000
+advertise_endpoints 0
 
 # for use with standalone tester
 #stopfile stop

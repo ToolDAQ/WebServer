@@ -100,11 +100,17 @@ bool PGClient::Initialise(std::string configfile){
 	max_retries = 3;
 	m_variables.Get("verbosity",verbosity);
 	m_variables.Get("max_retries",max_retries);
-
+	int advertise_endpoints = 1;
+	m_variables.Get("advertise_endpoints",advertise_endpoints);
+	
 	get_ok = InitZMQ();
 	if(not get_ok) return false;
-	get_ok &= RegisterServices();
-	if(not get_ok) return false;
+	
+	// new HK version; don't advertise endpoints, middleman just assumes they exist
+	if(advertise_endpoints){
+		get_ok &= RegisterServices();
+		if(not get_ok) return false;
+	}
 	
 	/*                Time Tracking              */
 	/* ----------------------------------------- */
@@ -139,7 +145,9 @@ bool PGClient::Initialise(std::string configfile){
 	}
 
 	// initialise the message IDs based on the current time in unix seconds
-	msg_id = (int)time(NULL);
+	//msg_id = (int)time(NULL); -> not unique enough
+	uint64_t nanoseconds_since_epoch = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+	msg_id = static_cast<uint32_t>(nanoseconds_since_epoch);
 	std::cout<<"initialising message ID to "<<msg_id<<std::endl;
 	
 	// kick off a thread to do actual send and receive of messages
@@ -295,9 +303,14 @@ bool PGClient::SendQuery(std::string dbname, std::string query_string, std::vect
 	
 	// we need to send reads and writes to different sockets.
 	// we could ask the user to specify, or try to determine it ourselves
-	bool is_write_txn = (query_string.find("INSERT")!=std::string::npos) ||
-	                    (query_string.find("UPDATE")!=std::string::npos) ||
-	                    (query_string.find("DELETE")!=std::string::npos);
+	// it's easy enough to do the latter by identifying keywords
+	// but std::string.find is case-sensitive, so fix the case
+	std::string uppercasequery;
+	for(int i=0; i<query_string.length(); ++i) uppercasequery.append(1,std::toupper(query_string[i]));
+	
+	bool is_write_txn = (uppercasequery.find("INSERT")!=std::string::npos) ||
+	                    (uppercasequery.find("UPDATE")!=std::string::npos) ||
+	                    (uppercasequery.find("DELETE")!=std::string::npos);
 	char type = (is_write_txn) ? 'w' : 'r';
 	
 	// encapsulate the query in an object.
@@ -331,7 +344,7 @@ bool PGClient::SendQuery(std::string dbname, std::string query_string, std::vect
 	// wrap our attempt to get the future in a try-catch, in case of exception
 	try {
 		// wait_for will return either when the result is ready, or when it times out
-		if(verbosity>10) std::cout<<"PGClient::sendQuery waiting for response"<<std::endl;
+		if(verbosity>10) std::cout<<"PGClient::SendQuery waiting for response"<<std::endl;
 		if(response.wait_for(span)!=std::future_status::timeout){
 			// we got a response in time. retrieve and parse return value
 			if(verbosity>10) std::cout<<"PGClient::SendQuery fetching response"<<std::endl;
@@ -506,7 +519,7 @@ bool PGClient::GetNextResponse(){
 	}
 	
 	if(response.size()==0){
-		Log("PollAndReceive recieved empty response!",v_error,verbosity);
+		Log("PollAndReceive received empty response!",v_error,verbosity);
 		return false;
 	}
 	
@@ -634,14 +647,14 @@ bool PGClient::Finalise(){
 	background_thread.join();
 	
 	std::cout<<"Removing services"<<std::endl;
-	utilities->RemoveService("psql_write");
-	utilities->RemoveService("psql_read");
+	if(utilities) utilities->RemoveService("psql_write");
+	if(utilities) utilities->RemoveService("psql_read");
 	
 	std::cout<<"Deleting ServiceDiscovery"<<std::endl;
 	if(service_discovery!=nullptr) delete service_discovery; service_discovery=nullptr;
 	
 	std::cout<<"Deleting Utilities class"<<std::endl;
-	delete utilities; utilities=nullptr;
+	if(utilities) delete utilities; utilities=nullptr;
 	
 	// clear old connections
 	clt_pub_connections.clear();
@@ -661,39 +674,6 @@ bool PGClient::Finalise(){
 	
 	// can't use 'Log' since we may have deleted the Logging class
 	std::cout<<"PGClient finalise done"<<std::endl;
-	
-	return true;
-}
-
-// =====================================================================
-// function adapter from same in middleman ReceiveSQL
-bool PGClient::FindNewClients(){
-		
-	// update any connections
-	int new_conns=0;
-	int old_conns=clt_pub_connections.size();
-	utilities->UpdateConnections("psql_write", clt_pub_socket, clt_pub_connections);
-	new_conns += (clt_pub_connections.size()-old_conns);
-	old_conns=clt_dlr_connections.size();
-	utilities->UpdateConnections("psql_read", clt_dlr_socket, clt_dlr_connections);
-	new_conns += (clt_dlr_connections.size()-old_conns);
-	
-	
-	if(new_conns>0){
-		Log("Made "+std::to_string(new_conns)+" new connections!",v_warning,verbosity);
-	} else {
-		Log("No new clients found",v_debug,verbosity);
-	}
-	
-	/*  needs fixing to uncomment
-	std::cout<<"We have: "<<connections.size()<<" connected clients"<<std::endl;
-	std::cout<<"Connections are: "<<std::endl;
-	for(auto&& athing : connections){
-		std::string service;
-		athing.second->Get("msg_value",service);
-		std::cout<<service<<" connected on "<<athing.first<<std::endl;
-	}
-	*/
 	
 	return true;
 }

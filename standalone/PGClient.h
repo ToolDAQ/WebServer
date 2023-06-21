@@ -17,6 +17,7 @@
 #include <future>
 #include <mutex>
 #include <unistd.h>  // gethostname
+#include <locale>    // toupper
 
 #include "errnoname.h"
 

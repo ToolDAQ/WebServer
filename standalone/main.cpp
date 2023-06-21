@@ -57,6 +57,12 @@ int main(){
 
   while(true){
 
+    temp_1 = 30+(rand()%100)/100.;
+    temp_2 = 28+(rand()%100)/100.;
+    temp_3 = 18+(rand()%100)/100.;
+    current_1 = rand()%10/2.;
+    current_2 = rand()%10/2.;
+    current_3 = rand()%10/2.;
     monitoring_data.Set("temp_1", temp_1);
     monitoring_data.Set("temp_2", temp_2);
     monitoring_data.Set("temp_3", temp_3);

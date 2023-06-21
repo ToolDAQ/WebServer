@@ -2,7 +2,7 @@
 #define SLOW_CONTROL_ELEMENT
 
 #include <string>
-#include <store.h>
+#include <Store.h>
 #include <sstream>
 #include <mutex>
 
