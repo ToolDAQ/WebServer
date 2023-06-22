@@ -15,7 +15,7 @@ RUN yum install -y \
     && rm -rf /var/cache/yum
 
 RUN cd /opt; \
-    curl https://github.com/marc1uk/libpqxx/raw/master/libpqxx-6.4.5_fixed.tar.gz
+    wget https://github.com/marc1uk/libpqxx/raw/master/libpqxx-6.4.5_fixed.tar.gz; \
     tar zxvf libpqxx-6.4.5_fixed.tar.gz; \
     rm libpqxx-6.4.5_fixed.tar.gz; \
     cd libpqxx-6.4.5; \
@@ -30,11 +30,11 @@ RUN sudo -u postgres /usr/bin/initdb /var/lib/pgsql/data/; \
     sudo -u postgres /usr/bin/pg_ctl start -D /var/lib/pgsql/data -s -o "-p 5432" -w -t 300; \
     sudo -u postgres createuser -s root ;\
     sudo -u postgres psql -c "create database daq with owner=root;"; \
-    psql -ddaq -c "create table monitoring (time timestamp, name text , data JSON );";\
-    psql -ddaq -c "create table logging (time timestamp, source text , severity integer, message text );";\
-    psql -ddaq -c "create table Alarms (time timestamp, name text , alarm text, silenced integer DEFAULT 0 );";\
-    psql -ddaq -c "create table configurations (time timestamp, name text , version int, data JSON );";\
-    psql -ddaq -c "create table runinfo (run int, subrun int, starttime timestamp, stoptime timestamp, number int , comments text);";\
+    psql -ddaq -c "create table monitoring (time timestamp NOT NULL, name text NOT NULL, data JSON NOT NULL);";\
+    psql -ddaq -c "create table logging (time timestamp NOT NULL, source text NOT NULL, severity integer NOT NULL, message text NOT NULL);";\
+    psql -ddaq -c "create table Alarms (time timestamp NOT NULL, name text NOT NULL, alarm text NOT NULL, silenced integer DEFAULT 0 );";\
+    psql -ddaq -c "create table configurations (time timestamp NOT NULL, name text NOT NULL, version int NOT NULL, data JSON NOT NULL, UNIQUE (name, version) );";\
+    psql -ddaq -c "create table runinfo (run int NOT NULL, subrun int NOT NULL, starttime timestamp NOT NULL, stoptime timestamp, number int , comments text, UNIQUE (run, subrun));";\
     echo " sudo -u postgres /usr/bin/pg_ctl start -D /var/lib/pgsql/data -s -o \"-p 5432\" -w -t 300;" >> /etc/rc.local
 
 RUN echo "unalias cp" >>  /etc/rc.local ;\
@@ -42,15 +42,16 @@ RUN echo "unalias cp" >>  /etc/rc.local ;\
     echo "alias cp='cp -i'" >>  /etc/rc.local ;\
     echo "ln -s /opt /web/Dependencies" >>  /etc/rc.local ;\
     echo "export LD_LIBRARY_PATH=/opt/ToolDAQFramework/lib:/opt/boost_1_66_0/install/lib:/web/WebServer/setup/cgicc/lib:/opt/zeromq-4.0.7/lib:$LD_LIBRARY_PATH" >> /etc/rc.local ;\
-    echo "httpd -X" >> /etc/rc.local
+    echo "/opt/middleman/run_middleman.sh &> /dev/null &" >> /etc/rc.local ;\
+    echo 'disown $!' >> /etc/rc.local ;\
+    echo "httpd -X" >> /etc/rc.local ;
 
 RUN cd /opt; \
     git clone --depth 1 --single-branch -b hkexample https://github.com/marc1uk/middleman.git; \
     cd middleman; \
-    . Setup.sh; \
+    ./Setup.sh; \
     make; \
-    echo '/opt/middleman/run_middleman.sh &> /dev/null &' >> /etc/rc.local ;\
-    echo 'disown $!' >> /etc/rc.local
+    chmod a+x  run_middleman.sh; 
 
 RUN yum install -y \
     emacs \

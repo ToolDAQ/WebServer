@@ -18,7 +18,7 @@ DAQInterface::DAQInterface(std::string name){
 
     std::cout<<"error initialising pgclient"<<std::endl;
 
-    }
+  }
 
     // we should connecthere i guess
 
@@ -30,22 +30,17 @@ DAQInterface::DAQInterface(std::string name){
  
 DAQInterface::~DAQInterface(){
 
+  m_pgclient.Finalise();
+  SC_vars.Clear();
   delete mp_SD;
   mp_SD=0;
-
-  SC_vars.Clear();
-
-  m_pgclient.Finalise();
   
 }
 
-bool DAQInterface::SQLQuery(std::string dbname, std::string query_string, Store &result, int &timeout, std::string err){
-
-  std::string resultstring="";
-  
-  bool ok = m_pgclient.SendQuery(dbname, query_string, &resultstring, &timeout, &err);
-
-  if(!ok) return ok;
+bool DAQInterface::SQLQuery(std::string dbname, std::string query_string, std::string &result, int &timeout, std::string err){
+ 
+  return m_pgclient.SendQuery(dbname, query_string, &result, &timeout, &err);
+    
   // responses are returned as JSON maps, where each key represents a fieldname
   // and the corresponding value the field value. if multiple rows are returned,
   // this applies to each vector entry. Use a json parser to parse it into a BoostStore.
@@ -54,59 +49,97 @@ bool DAQInterface::SQLQuery(std::string dbname, std::string query_string, Store 
   // parser.Parse(result, store);
   
   //  store.set stuff;
-  
-  return ok;
 
 }
 
 
-bool DAQInterface::SendLog(std::string message, int severity){
+bool DAQInterface::SendLog(std::string message, int severity, std::string device){
 
-
+  if(device=="") device=m_name;
   std::string err="";
   int timeout=300;
-  Store result;
-  std::string query_string="insert into logging (time, source, severity, message) values (now(), '" + m_name + "', "+std::to_string(severity)+", '" + message + "');";
+  std::string result;
+  std::string query_string="insert into logging (time, source, severity, message) values (now(), '" + device + "', "+std::to_string(severity)+", '" + message + "');";
 
-    if(!SQLQuery(m_dbname , query_string, result, timeout, err)){
-
-      std::cout<<"log error: "<<err<<std::endl;
-
-      return false;
-    }
+  if(!SQLQuery(m_dbname , query_string, result, timeout, err)){
+    
+    std::cout<<"log error: "<<err<<std::endl;
+    
+    return false;
+  }
   
 
   return true;
 
 }
 
-bool DAQInterface::SendAlarm(std::string message){
+bool DAQInterface::SendAlarm(std::string message, std::string device){
   
+  if(device=="") device=m_name;
   std::string err="";
   int timeout=300;
-  Store result;
-  std::string query_string="insert into Alarms (time, name, alarm) values (now(), '" + m_name + "', '" + message + "');";
+  std::string result;
+  std::string query_string="insert into Alarms (time, name, alarm) values (now(), '" + device + "', '" + message + "');";
   
   if(!SQLQuery(m_dbname , query_string, result, timeout, err)){
-      std::cerr<<"SendAlarm error: "<<err<<std::endl;
-      return false;
+    std::cerr<<"SendAlarm error: "<<err<<std::endl;
+    return false;
+  }
+  
+  return true;
+
+}
+
+bool DAQInterface::SendMonitoringData(std::string json_data, std::string device){
+
+  if(device=="") device=m_name;
+  std::string err="";
+  int timeout=300;
+  std::string result;
+  std::string query_string="insert into monitoring (time, name, data) values (now(), '" + device + "', '" + json_data + "');";
+
+  if(!SQLQuery(m_dbname , query_string, result, timeout, err)){
+    std::cerr<<"SendMonitoringData error: "<<err<<std::endl;
+    return false;
+  }
+  
+  
+  return true;
+
+}
+
+
+bool DAQInterface::SendConfig(std::string json_data, std::string device){
+
+
+  if(device=="") device=m_name;
+
+  std::string result;
+  int timeout=300;
+  std::string err="";
+  std::string query= "insert into configurations (time, name, version, data) values (now(), '"+ device + "', '0', '"+ json_data + "');";
+  
+if(!SQLQuery(m_dbname, query, result, timeout, err)){
+    std::cerr<<"SendConfig error: "<<err<<std::endl;  
+    return false;
   }
 
   return true;
 
 }
 
-bool DAQInterface::SendMonitoringData(std::string data){
+bool DAQInterface::GetConfig(std::string& json_data, int version, std::string device){
 
-  std::string err="";
+  if(device=="") device=m_name;
+
   int timeout=300;
-  Store result;
-  std::string query_string="insert into monitoring (time, name, data) values (now(), '" + m_name + "', '" + data + "');";
-  if(!SQLQuery(m_dbname , query_string, result, timeout, err)){
-      std::cerr<<"SendMonitoringData error: "<<err<<std::endl;
-      return false;
+  std::string err="";
+  std::string query= "select data from configurations";// where name='"+ device + "' and version=" + std::to_string(version) +");";
+  
+if(!SQLQuery(m_dbname, query, json_data, timeout, err)){
+    std::cerr<<"GetConfig error: "<<err<<std::endl;
+    return false;
   }
-
 
   return true;
 

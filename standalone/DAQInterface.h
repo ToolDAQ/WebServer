@@ -18,23 +18,25 @@
 
 class DAQInterface{
 
+ private: 
+
+  zmq::context_t m_context;
+  ServiceDiscovery* mp_SD;
+  PGClient m_pgclient;
+  std::string m_dbname;
+  std::string m_name;
+
  public:
 
   DAQInterface(std::string name);
   ~DAQInterface();
-  bool SQLQuery(std::string dbname, std::string query_string, Store &result, int &timeout, std::string err);
-  bool SendLog(std::string message, int severity=2);
-  bool SendAlarm(std::string message);
-  bool SendMonitoringData(std::string data);
+  bool SQLQuery(std::string dbname, std::string query_string, std::string &result, int &timeout, std::string err);
+  bool SendLog(std::string message, int severity=2, std::string device="");
+  bool SendAlarm(std::string message, std::string device="");
+  bool SendMonitoringData(std::string json_data, std::string device="");
+  bool SendConfig(std::string json_data, std::string device="");
+  bool GetConfig(std::string &json_data, int version, std::string device="");
   SlowControlCollection SC_vars;
-
- private:
-  
-  ServiceDiscovery* mp_SD;
-  zmq::context_t m_context;
-  PGClient m_pgclient;
-  std::string m_dbname;
-  std::string m_name;
 
 };
 

@@ -93,7 +93,7 @@ select.addEventListener('change', function() {
     // Get the selected option
     var selectedOption = this.options[this.selectedIndex];
     var command = "select '*' from "+ selectedOption.value;
-    
+    if(selectedOption.value=="monitoring" || selectedOption.value=="logging" || selectedOption.value=="alarms" || selectedOption.value=="configurations") command +=" order by time desc";
     var output= document.getElementById("output");
     gettable(command).then(function(result){
 

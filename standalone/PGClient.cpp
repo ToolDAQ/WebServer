@@ -650,8 +650,8 @@ bool PGClient::Finalise(){
 	if(utilities) utilities->RemoveService("psql_write");
 	if(utilities) utilities->RemoveService("psql_read");
 	
-	std::cout<<"Deleting ServiceDiscovery"<<std::endl;
-	if(service_discovery!=nullptr) delete service_discovery; service_discovery=nullptr;
+	//	std::cout<<"Deleting ServiceDiscovery"<<std::endl;
+	//if(service_discovery!=nullptr) delete service_discovery; service_discovery=nullptr;
 	
 	std::cout<<"Deleting Utilities class"<<std::endl;
 	if(utilities) delete utilities; utilities=nullptr;

@@ -8,8 +8,32 @@ int main(){
   DAQInterface DAQ_inter("my_service");
 
 
+  Store configuration;
+
+  configuration.Set("a", 1);
+  configuration.Set("b", 2);
+
+  std::string config_json="";
+
+  configuration>>config_json;
+  
+  if(!DAQ_inter.SendConfig(config_json)){
+
+    configuration.Delete();
+    DAQ_inter.GetConfig(config_json, 0);
+
+    // std::cout<<"json="<<config_json<<std::endl;
+    config_json.replace(0,10,"");
+    config_json.replace(config_json.end()-2, config_json.end(),""); 
+   
+    configuration.JsonParser(config_json);
+
+    //configuration.Print();
+      
+  }
+
+
   DAQ_inter.SendLog("hello world 1");
-  //DAQ_inter.Log<<"hello world 2";
 
   DAQ_inter.SendAlarm("High current alarm");
 
@@ -29,6 +53,15 @@ int main(){
 
   DAQ_inter.SC_vars.Add("Status",SlowControlElementType(BUTTON));
   DAQ_inter.SC_vars["Status"]->SetValue("OK");
+
+  DAQ_inter.SC_vars.Add("Start",SlowControlElementType(BUTTON));
+  DAQ_inter.SC_vars["Start"]->SetValue(false);
+
+  DAQ_inter.SC_vars.Add("Stop",SlowControlElementType(BUTTON));
+  DAQ_inter.SC_vars["Stop"]->SetValue(false);
+
+  DAQ_inter.SC_vars.Add("Quit",SlowControlElementType(BUTTON));
+  DAQ_inter.SC_vars["Quit"]->SetValue(false);
 
   DAQ_inter.SC_vars.Add("Power_ON",SlowControlElementType(OPTIONS));
   DAQ_inter.SC_vars["Power_ON"]->AddOption("1");
@@ -55,49 +88,71 @@ int main(){
 
 
 
-  while(true){
+  bool running=true;
 
-    temp_1 = 30+(rand()%100)/100.;
-    temp_2 = 28+(rand()%100)/100.;
-    temp_3 = 18+(rand()%100)/100.;
-    current_1 = rand()%10/2.;
-    current_2 = rand()%10/2.;
-    current_3 = rand()%10/2.;
-    monitoring_data.Set("temp_1", temp_1);
-    monitoring_data.Set("temp_2", temp_2);
-    monitoring_data.Set("temp_3", temp_3);
-    monitoring_data.Set("current_1", current_1);
-    monitoring_data.Set("current_2", current_2);
-    monitoring_data.Set("current_3", current_3);
+  while(running){
 
-    std::string monitoring_json="";
-    monitoring_data>>monitoring_json;
-
-    monitoring_data.Delete();
-
-    DAQ_inter.SendMonitoringData(monitoring_json);
+    running=(!DAQ_inter.SC_vars["Quit"]->GetValue<bool>());
 
 
+    bool started=false;
 
-    DAQ_inter.SC_vars["Power_ON"]->GetValue(power_on);
-    DAQ_inter.SC_vars["voltage_1"]->GetValue(voltage_1);
-    DAQ_inter.SC_vars["voltage_2"]->GetValue(voltage_2);
-    DAQ_inter.SC_vars["voltage_3"]->GetValue(voltage_3);
+    if(DAQ_inter.SC_vars["Start"]->GetValue<bool>()){
+      started =true;
+      DAQ_inter.SC_vars["Start"]->SetValue(false);
+    }
     
-    if(!power_on){
-      voltage_1 = 0.0;
-      voltage_2 = 0.0;
-      voltage_3 = 0.0;
-      DAQ_inter.SC_vars["voltage_1"]->SetValue(voltage_1); 
-      DAQ_inter.SC_vars["voltage_2"]->SetValue(voltage_2);
-      DAQ_inter.SC_vars["voltage_3"]->SetValue(voltage_3);
-   }
-    else{
+    while(started){
+          
+      if(DAQ_inter.SC_vars["Stop"]->GetValue<bool>()){
+	started =false;
+	DAQ_inter.SC_vars["Stop"]->SetValue(false);
+	DAQ_inter.SC_vars["Start"]->SetValue(false);
+      }
+      
+      
+      temp_1 = 30+(rand()%100)/100.;
+      temp_2 = 28+(rand()%100)/100.;
+      temp_3 = 18+(rand()%100)/100.;
+      current_1 = rand()%10/2.;
+      current_2 = rand()%10/2.;
+      current_3 = rand()%10/2.;
+      monitoring_data.Set("temp_1", temp_1);
+      monitoring_data.Set("temp_2", temp_2);
+      monitoring_data.Set("temp_3", temp_3);
+      monitoring_data.Set("current_1", current_1);
+      monitoring_data.Set("current_2", current_2);
+      monitoring_data.Set("current_3", current_3);
+      
+      std::string monitoring_json="";
+      monitoring_data>>monitoring_json;
+      
+      monitoring_data.Delete();
+      
+      DAQ_inter.SendMonitoringData(monitoring_json);
+      
+      
+      
+      DAQ_inter.SC_vars["Power_ON"]->GetValue(power_on);
       DAQ_inter.SC_vars["voltage_1"]->GetValue(voltage_1);
       DAQ_inter.SC_vars["voltage_2"]->GetValue(voltage_2);
       DAQ_inter.SC_vars["voltage_3"]->GetValue(voltage_3);
+      
+      if(!power_on){
+	voltage_1 = 0.0;
+	voltage_2 = 0.0;
+	voltage_3 = 0.0;
+	DAQ_inter.SC_vars["voltage_1"]->SetValue(voltage_1); 
+	DAQ_inter.SC_vars["voltage_2"]->SetValue(voltage_2);
+	DAQ_inter.SC_vars["voltage_3"]->SetValue(voltage_3);
+      }
+      else{
+	DAQ_inter.SC_vars["voltage_1"]->GetValue(voltage_1);
+	DAQ_inter.SC_vars["voltage_2"]->GetValue(voltage_2);
+	DAQ_inter.SC_vars["voltage_3"]->GetValue(voltage_3);
+      }
     }
-
+    
     usleep(1000);
   }
 

@@ -56,7 +56,7 @@ bool SlowControlCollection::Init(zmq::context_t* context, int port, bool new_ser
   
   args->sock->bind(tmp.str().c_str());
   
-  std::cout<<"new_service="<<new_service<<std::endl;
+  //  std::cout<<"new_service="<<new_service<<std::endl;
   if(new_service && !m_util->AddService("SlowControlReceiver",port,false)){
     
     delete args->sock;
@@ -91,7 +91,7 @@ bool SlowControlCollection::InitThreadedReceiver(zmq::context_t* context, int po
 
   if(args) return false;
  
-  std::cout<<"new_service="<<new_service<<std::endl;
+  //std::cout<<"new_service="<<new_service<<std::endl;
   Init(context, port, new_service);
   args->poll_length= poll_length;   
   m_util->CreateThread("receiver", &Thread, args);
@@ -141,7 +141,7 @@ void SlowControlCollection::Thread(Thread_args* arg){
       std::string key="";
       std::string value="";   
       input>>key>>value;
-      if(value=="")value=1;
+      if(value=="") value="1";
       (*args->SCC)[key]->SetValue(value);
       //std::cout<<"value="<<value<<std::endl;
     }
