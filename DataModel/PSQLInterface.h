@@ -20,7 +20,7 @@ class PSQLInterface{
 
   PSQLInterface();
   ~PSQLInterface();
-  bool Initialise(std::string name);
+  bool Initialise(zmq::context_t* context, std::string device_name, std::string config_file);
   bool Finalise();
   bool SQLQuery(std::string dbname, std::string query_string, std::string &result, int &timeout, std::string& err);
   bool SendLog(std::string message, int severity=2, std::string device="");

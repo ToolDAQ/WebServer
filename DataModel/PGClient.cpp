@@ -89,11 +89,11 @@ bool PGClient::Initialise(std::string configfile){
 	
 	/*               Retrieve Configs            */
 	/* ----------------------------------------- */
-	
+
 	// configuration options can be parsed via a Store class
 	if(configfile!="") m_variables.Initialise(configfile);
 	
-	
+
 	/*            General Variables              */
 	/* ----------------------------------------- */
 	verbosity = 1;
@@ -102,37 +102,37 @@ bool PGClient::Initialise(std::string configfile){
 	m_variables.Get("max_retries",max_retries);
 	int advertise_endpoints = 1;
 	m_variables.Get("advertise_endpoints",advertise_endpoints);
-	
+
 	get_ok = InitZMQ();
 	if(not get_ok) return false;
-	
+
 	// new HK version; don't advertise endpoints, middleman just assumes they exist
 	if(advertise_endpoints){
 		get_ok &= RegisterServices();
 		if(not get_ok) return false;
 	}
-	
+
 	/*                Time Tracking              */
 	/* ----------------------------------------- */
-	
+
 	// time to wait between resend attempts if not ack'd
 	int resend_period_ms = 1000;
 	// how often to print out stats on what we're sending
 	int print_stats_period_ms = 5000;
-	
+
 	// Update with user-specified values.
 	m_variables.Get("resend_period_ms",resend_period_ms);
 	m_variables.Get("print_stats_period_ms",print_stats_period_ms);
-	
+
 	// convert times to boost for easy handling
 	resend_period = boost::posix_time::milliseconds(resend_period_ms);
 	print_stats_period = boost::posix_time::milliseconds(print_stats_period_ms);
-	
+
 	// initialise 'last send' times
 	last_write = boost::posix_time::microsec_clock::universal_time();
 	last_read = boost::posix_time::microsec_clock::universal_time();
 	last_printout = boost::posix_time::microsec_clock::universal_time();
-	
+
 	// get the hostname of this machine for monitoring stats
 	char buf[255];
 	get_ok = gethostname(buf, 255);
@@ -149,12 +149,12 @@ bool PGClient::Initialise(std::string configfile){
 	uint64_t nanoseconds_since_epoch = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 	msg_id = static_cast<uint32_t>(nanoseconds_since_epoch);
 	if(verbosity>3) std::cout<<"initialising message ID to "<<msg_id<<std::endl;
-	
+
 	// kick off a thread to do actual send and receive of messages
 	terminator = std::promise<void>{};
 	std::future<void> signal = terminator.get_future();
 	background_thread = std::thread(&PGClient::BackgroundThread, this, std::move(signal));
-	
+
 	return true;
 }
 
@@ -190,6 +190,7 @@ bool PGClient::InitZMQ(){
 	m_variables.Get("outpoll_timeout",outpoll_timeout);
 	m_variables.Get("query_timeout",query_timeout);
 	
+	
 	// to send replies the middleman must know who to send them to.
 	// for read queries, the receiving router socket will append the ZMQ_IDENTITY of the sender
 	// which can be given to the sending router socket to identify the recipient.
@@ -215,6 +216,7 @@ bool PGClient::InitZMQ(){
 	clt_pub_socket = new zmq::socket_t(*context, ZMQ_PUB);
 	clt_pub_socket->setsockopt(ZMQ_SNDTIMEO, clt_pub_socket_timeout);
 	clt_pub_socket->bind(std::string("tcp://*:")+std::to_string(clt_pub_port));
+	
 	
 	// socket to deal read queries and receive responses
 	// -------------------------------------------------

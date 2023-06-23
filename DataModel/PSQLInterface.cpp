@@ -4,17 +4,17 @@ PSQLInterface::PSQLInterface(){}
 PSQLInterface::~PSQLInterface(){}
 
 
-bool PSQLInterface::Initialise(std::string name){
+bool PSQLInterface::Initialise(zmq::context_t* context, std::string device_name, std::string config_file){
 
-  m_name=name;
+  m_context=context;
+
+  m_name=device_name;
 
   m_pgclient.SetUp(m_context);
 
-  std::string configfile="./PGClientConfig";
-
   m_dbname="daq";
 
-  if(!m_pgclient.Initialise(configfile)){
+  if(!m_pgclient.Initialise(config_file)){
 
     std::cout<<"error initialising pgclient"<<std::endl;
     return false;

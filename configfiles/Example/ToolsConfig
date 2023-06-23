@@ -1,6 +1,6 @@
 #test1 DummyTool configfiles/Example/DummyToolConfig
 #test2 DummyTool configfiles/Example/DummyToolConfig
 #SlowControlReceiver SlowControlReceiver Null
-PGStarter PGStarter Null
-#ExampleSlowControl ExampleSlowControl Null
-#ExampleMonitoring ExampleMonitoring Null
+PGStarter PGStarter configfiles/Example/PGClientConfig
+ExampleSlowControl ExampleSlowControl Null
+ExampleMonitoring ExampleMonitoring Null

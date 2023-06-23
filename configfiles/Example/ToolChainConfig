@@ -8,7 +8,7 @@ remote_port 24002	 # port to open for remote commands if running in remote mode
 IO_Threads 1		 # Number of threads for network traffic (~ 1/Gbps)
 
 ###### Logging #####
-log_interactive 0	 # Interactive=cout; 0=false, 1= true
+log_interactive 1	 # Interactive=cout; 0=false, 1= true
 log_local 1 		 # Local = local file log; 0=false, 1= true
 log_local_path ./WebServer/logs/Example 	 # file to store logs to if local is active
 log_remote 0   		 # Remote= remote logging system "serservice_name Remote_Logging";  0=false, 1= true

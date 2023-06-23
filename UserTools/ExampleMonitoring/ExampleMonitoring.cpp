@@ -41,7 +41,7 @@ bool ExampleMonitoring::Execute(){
     
     data>>json_string;
     
-    return m_data->SQL.SendMonitoringData(json_string, "test");
+    return m_data->SQL.SendMonitoringData(json_string);
     
   }
 

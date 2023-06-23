@@ -21,7 +21,12 @@ bool PGStarter::Initialise(std::string configfile, DataModel &data){
 
   }
 
-  m_data->SQL.Initialise(configfile);
+  std::string service_name="";
+  
+  m_data->vars.Get("service_name", service_name);
+
+  m_data->SQL.Initialise(m_data->context, service_name, configfile);
+
 
   return true;
 }
