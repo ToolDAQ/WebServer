@@ -12,7 +12,7 @@
 #include "DAQLogging.h"
 #include "DAQUtilities.h"
 #include "SlowControlCollection.h"
-
+#include "PSQLInterface.h"
 
 #include <zmq.hpp>
 
@@ -46,7 +46,7 @@ class DataModel {
   Logging *Log; ///< Log class pointer for use in Tools, it can be used to send messages which can have multiple error levels and destination end points
   
   zmq::context_t* context; ///< ZMQ contex used for producing zmq sockets for inter thread,  process, or computer communication
-
+  PSQLInterface SQL;
   SlowControlCollection SC_vars;
   //  bool (*Log)(std::string, int);
 

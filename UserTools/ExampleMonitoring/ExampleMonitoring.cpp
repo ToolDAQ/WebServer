@@ -16,23 +16,7 @@ bool ExampleMonitoring::Initialise(std::string configfile, DataModel &data){
   srand (time(NULL));
   last=time(NULL);
 
-  std::stringstream tmp;
-
-  try{
-    
-    //    tmp<<"dbname="<<*(m_variables["dbname"])<<" hostaddr="<<*(m_variables["hostaddr1"])<<" port="<<*(m_variables["port"]);
-    tmp<<"dbname=daq hostaddr=127.0.0.1 port=5432";
-    SQLConnection =new pqxx::connection(tmp.str().c_str());
-    if(!SQLConnection->is_open()) return false;
-         
-    
-  }
-  catch (const std::exception &e){
-    std::cerr << e.what() << std::endl;
-    return false;
-  }
   
-
   
   return true;
 }
@@ -41,51 +25,34 @@ bool ExampleMonitoring::Initialise(std::string configfile, DataModel &data){
 bool ExampleMonitoring::Execute(){
 
   if( difftime(time(NULL),last) > 5){
-
-    last=time(NULL);
-
-    std::stringstream tmp;
     
-    try{
-      
-      pqxx::nontransaction N(*(SQLConnection));
-      
-      Store data;
-      
-      data.Set("temp1", (rand() % 100 +400)/10.0);
-      data.Set("voltage1", (rand() % 1000 +5000)/1000.0);
-      float temp2=0.0;
-      m_data->SC_vars["var2"]->GetValue(temp2);
-      data.Set("temp2", temp2);
-      
-      std::string datastring="";
-      
-      data>>datastring;
-      
-      tmp<<"insert into monitoring(time, name, data) values(Now(), 'example device', '"<<datastring<<"');"; 
-      
-      N.exec(tmp.str().c_str());
-      N.commit();
-      
-      
-      
-    }
-    catch (const std::exception &e){
-      std::cerr << e.what() << std::endl;
-      return false;
-    }
+    last=time(NULL);
+    
+    
+    Store data;
+    
+    data.Set("temp1", (rand() % 100 +400)/10.0);
+    data.Set("voltage1", (rand() % 1000 +5000)/1000.0);
+    float temp2=0.0;
+    m_data->SC_vars["var2"]->GetValue(temp2);
+    data.Set("temp2", temp2);
+    
+    std::string json_string="";
+    
+    data>>json_string;
+    
+    return m_data->SQL.SendMonitoringData(json_string, "test");
     
   }
-  
+
+
   return true;
+  
 }
 
 
 bool ExampleMonitoring::Finalise(){
 
-    SQLConnection->disconnect();
-    delete SQLConnection;
-    SQLConnection=0;
 
 
   return true;
