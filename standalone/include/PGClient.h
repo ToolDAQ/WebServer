@@ -2,12 +2,12 @@
 #define PGCLIENT_H
 
 #include "Store.h"
-#include "ServiceDiscovery.h"
+//#include "ServiceDiscovery.h"
 #include "DAQUtilities.h"
 
 #include "zmq.hpp"
 #include "boost/date_time/posix_time/posix_time.hpp"
-#include "Logging.h"
+//#include "Logging.h"
 
 #include <string>
 #include <iostream>

@@ -2,7 +2,7 @@
 #define DAQ_INTERFACE_H
 
 #include <ServiceDiscovery.h>
-#include <DAQUtilities.h>
+//#include <DAQUtilities.h>
 #include <zmq.hpp>
 #include <iostream>
 #include <string>
@@ -13,7 +13,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/progress.hpp>
 #include <PGClient.h>
-#include <JsonParser.h>
+//#include <JsonParser.h>
 
 
 class DAQInterface{
