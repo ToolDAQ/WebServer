@@ -638,7 +638,7 @@ bool PGClient::SendNextQuery(){
 
 bool PGClient::Finalise(){
 	// terminate our background thread
-	std::cout<<"sending background thread term signal"<<std::endl;
+	Log("PGClient sending background thread term signal",v_debug,verbosity);
 	terminator.set_value();
 	// wait for it to finish up and return
 	Log("PGClient waiting for background thread to rejoin",v_debug,verbosity);
