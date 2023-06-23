@@ -78,10 +78,9 @@ Query& Query::operator=(Query&& qry_in){
 	return *this;
 }
 
-void PGClient::SetUp(zmq::context_t* in_context, ServiceDiscovery* in_service_discovery){
+void PGClient::SetUp(zmq::context_t* in_context){
 	
   context = in_context;
-  service_discovery = in_service_discovery;
 
 }
 
@@ -148,7 +147,7 @@ bool PGClient::Initialise(std::string configfile){
 	//msg_id = (int)time(NULL); -> not unique enough
 	uint64_t nanoseconds_since_epoch = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 	msg_id = static_cast<uint32_t>(nanoseconds_since_epoch);
-	std::cout<<"initialising message ID to "<<msg_id<<std::endl;
+	if(verbosity>3) std::cout<<"initialising message ID to "<<msg_id<<std::endl;
 	
 	// kick off a thread to do actual send and receive of messages
 	terminator = std::promise<void>{};
@@ -264,8 +263,7 @@ bool PGClient::RegisterServices(){
 
 void PGClient::Log(std::string msg, int msg_verb, int verbosity){
 	// this is normally defined in Tool.h
-  if(msg_verb<= verbosity) std::cout<<msg<<std::endl;
-
+	if(msg_verb<= verbosity) std::cout<<msg<<std::endl;
 }
 
 bool PGClient::TestMe(){
@@ -277,13 +275,13 @@ bool PGClient::TestMe(){
 
 bool PGClient::BackgroundThread(std::future<void> signaller){
 	
-	std::cout<<"BackgroundThread starting!"<<std::endl;
+	Log("PGClient BackgroundThread starting!",v_debug,verbosity);
 	while(true){
 		// check if we've been signalled to terminate
 		std::chrono::milliseconds span(10);
 		if(signaller.wait_for(span)!=std::future_status::timeout){
 			// terminate has been set
-			std::cout<<"background thread received terminate signal"<<std::endl;
+			Log("PGClient background thread received terminate signal",v_debug,verbosity);
 			break;
 		}
 		
@@ -643,24 +641,21 @@ bool PGClient::Finalise(){
 	std::cout<<"sending background thread term signal"<<std::endl;
 	terminator.set_value();
 	// wait for it to finish up and return
-	std::cout<<"waiting for background thread to rejoin"<<std::endl;
+	Log("PGClient waiting for background thread to rejoin",v_debug,verbosity);
 	background_thread.join();
 	
-	std::cout<<"Removing services"<<std::endl;
+	Log("PGClient Removing services",v_debug,verbosity);
 	if(utilities) utilities->RemoveService("psql_write");
 	if(utilities) utilities->RemoveService("psql_read");
 	
-	//	std::cout<<"Deleting ServiceDiscovery"<<std::endl;
-	//if(service_discovery!=nullptr) delete service_discovery; service_discovery=nullptr;
-	
-	std::cout<<"Deleting Utilities class"<<std::endl;
+	Log("PGClient Deleting Utilities class",v_debug,verbosity);
 	if(utilities) delete utilities; utilities=nullptr;
 	
 	// clear old connections
 	clt_pub_connections.clear();
 	clt_dlr_connections.clear();
 	
-	std::cout<<"deleting sockets"<<std::endl;
+	Log("PGClient deleting sockets",v_debug,verbosity);
 	delete clt_pub_socket; clt_pub_socket=nullptr;
 	delete clt_dlr_socket; clt_dlr_socket=nullptr;
 	
@@ -673,7 +668,7 @@ bool PGClient::Finalise(){
 	waiting_recipients.clear();
 	
 	// can't use 'Log' since we may have deleted the Logging class
-	std::cout<<"PGClient finalise done"<<std::endl;
+	if(verbosity>3) std::cout<<"PGClient finalise done"<<std::endl;
 	
 	return true;
 }

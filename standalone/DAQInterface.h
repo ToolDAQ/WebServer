@@ -30,7 +30,7 @@ class DAQInterface{
 
   DAQInterface(std::string name);
   ~DAQInterface();
-  bool SQLQuery(std::string dbname, std::string query_string, std::string &result, int &timeout, std::string err);
+  bool SQLQuery(std::string dbname, std::string query_string, std::string &result, int &timeout, std::string& err);
   bool SendLog(std::string message, int severity=2, std::string device="");
   bool SendAlarm(std::string message, std::string device="");
   bool SendMonitoringData(std::string json_data, std::string device="");

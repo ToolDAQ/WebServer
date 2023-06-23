@@ -43,7 +43,7 @@ class PGClient {
 	public:
 	PGClient(){};
 	~PGClient(){};
-	void SetUp(zmq::context_t* in_context, ServiceDiscovery* in_service_discovery);
+	void SetUp(zmq::context_t* in_context);
 	void Log(std::string msg, int msg_verb, int verbosity);
 	bool Initialise(std::string configfile);
 	bool Finalise();
@@ -70,7 +70,6 @@ class PGClient {
 	mutable std::mutex dlr_socket_mutex;
 	
 	Store m_variables;
-	ServiceDiscovery* service_discovery = nullptr;
 	DAQUtilities* utilities = nullptr;
 	// required by the Utilities class to keep track of connections to clients
 	std::map<std::string,Store*> clt_pub_connections;

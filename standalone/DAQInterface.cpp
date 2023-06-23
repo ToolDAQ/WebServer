@@ -8,7 +8,7 @@ DAQInterface::DAQInterface(std::string name){
 
   SC_vars.InitThreadedReceiver(&m_context, 88888, 100, false);
 
-  m_pgclient.SetUp(&m_context, mp_SD);
+  m_pgclient.SetUp(&m_context);
 
   std::string configfile="./PGClientConfig";
 
@@ -20,11 +20,11 @@ DAQInterface::DAQInterface(std::string name){
 
   }
 
-    // we should connecthere i guess
+  // we should connect here i guess
 
-    // after Initilising the pgclient needs ~15 seconds for the middleman to connect
-    std::this_thread::sleep_for(std::chrono::seconds(15));
-    // hopefully the middleman has found us by now
+  // after Initilising the pgclient needs ~15 seconds for the middleman to connect
+  std::this_thread::sleep_for(std::chrono::seconds(15));
+  // hopefully the middleman has found us by now
 
 }
  
@@ -37,7 +37,7 @@ DAQInterface::~DAQInterface(){
   
 }
 
-bool DAQInterface::SQLQuery(std::string dbname, std::string query_string, std::string &result, int &timeout, std::string err){
+bool DAQInterface::SQLQuery(std::string dbname, std::string query_string, std::string &result, int &timeout, std::string& err){
  
   return m_pgclient.SendQuery(dbname, query_string, &result, &timeout, &err);
     
