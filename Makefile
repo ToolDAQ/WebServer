@@ -16,8 +16,8 @@ BoostInclude= -I $(Dependencies)/boost_1_66_0/install/include
 DataModelInclude = 
 DataModelLib = 
 
-MyToolsInclude = -I /web/Dependencies/libpqxx-6.4.5/install/include
-MyToolsLib = -L /web/Dependencies/libpqxx-6.4.5/install/lib -lpqxx
+MyToolsInclude = -I $(Dependencies)/libpqxx-6.4.5/install/include
+MyToolsLib = -L $(Dependencies)/libpqxx-6.4.5/install/lib -lpqxx
 
 debug: all
 
