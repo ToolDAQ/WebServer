@@ -16,7 +16,7 @@ Windows / MacOS:
 
       docker run --name=WebServer -v local_git_clone_path:/web -p 80:80 -p 666:666 -dt tooldaq/newweb   
 
-*note: If your using Windows or MacOs and want to comunicate to the web server on the same computer as any aplications running on the hostOS you will also need to run the Win_Mac_translation program in the background on the hostOS
+*note: If your using Windows or MacOs and want to comunicate to the web server on the same computer as any aplications running on the hostOS you will also need to run the Win_Mac_translation program in the background on the hostOS, this can be found in the standalone branch
 
       ./Win_Mac_translation &
 
