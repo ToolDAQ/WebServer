@@ -11,7 +11,7 @@ int main(){
   Store configuration;
   std::string config_json="";
   
-  auto ok = DAQ_inter.GetConfig(config_json, 0);
+  bool ok = DAQ_inter.GetConfig(config_json, 0);
   
   if(!ok || config_json==""){
     
@@ -28,10 +28,10 @@ int main(){
     config_json.replace(0,9,"");
     config_json.replace(config_json.end()-2, config_json.end(),""); 
     //std::cout<<"got json='"<<config_json<<"'"<<std::endl;
+    configuration.JsonParser(config_json);
     
   }
   
-  configuration.JsonParser(config_json);
   //configuration.Print();
 
   DAQ_inter.SendLog("hello world 1");
