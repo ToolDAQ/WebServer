@@ -9,29 +9,30 @@ int main(){
 
 
   Store configuration;
-
-  configuration.Set("a", 1);
-  configuration.Set("b", 2);
-
   std::string config_json="";
-
-  configuration>>config_json;
   
-  if(!DAQ_inter.SendConfig(config_json)){
-
-    configuration.Delete();
-    DAQ_inter.GetConfig(config_json, 0);
-
-    // std::cout<<"json="<<config_json<<std::endl;
-    config_json.replace(0,10,"");
+  auto ok = DAQ_inter.GetConfig(config_json, 0);
+  
+  if(!ok || config_json==""){
+    
+    configuration.Set("a", 1);
+    configuration.Set("b", 2);
+    
+    configuration>>config_json;
+    
+    //std::cout<<"sending new config_json: '"<<config_json<<"'"<<std::endl;
+    DAQ_inter.SendConfig(config_json);
+    
+  } else {
+    
+    config_json.replace(0,9,"");
     config_json.replace(config_json.end()-2, config_json.end(),""); 
-   
-    configuration.JsonParser(config_json);
-
-    //configuration.Print();
-      
+    //std::cout<<"got json='"<<config_json<<"'"<<std::endl;
+    
   }
-
+  
+  configuration.JsonParser(config_json);
+  //configuration.Print();
 
   DAQ_inter.SendLog("hello world 1");
 
@@ -128,7 +129,7 @@ int main(){
       monitoring_data>>monitoring_json;
       
       monitoring_data.Delete();
-      
+     
       DAQ_inter.SendMonitoringData(monitoring_json);
       
       
