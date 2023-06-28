@@ -31,6 +31,8 @@ To use the DAQ library in your own standalone program include the header in your
 
 and compile with g++ yourprogram.cpp -o yourprogram -I <path to repo>/include -L <path to repo>/lib -lDAQInterface
 
+For detials of the interface see inlcude/DAQInterface.h and for an example please read Example.cpp
+
 To execute add <path to repo>/lib to your LD_LIBRARY_PATH or
 
     source Setup.sh
