@@ -7,7 +7,7 @@ Query::Query(std::string dbname_in, std::string query_string_in, char type_in){
 	success=0;
 	query_response=std::vector<std::string>{};
 	err="";
-	msg_id=-1;
+	msg_id=0;
 }
 
 Query::Query(){
@@ -17,7 +17,7 @@ Query::Query(){
 	success=0;
 	query_response=std::vector<std::string>{};
 	err="";
-	msg_id=-1;
+	msg_id=0;
 }
 
 void Query::Print() const {
@@ -55,7 +55,7 @@ Query::Query(Query&& qry_in){
 	qry_in.query_string="";
 	qry_in.type='\0';
 	qry_in.success=0;
-	qry_in.msg_id=-1;
+	qry_in.msg_id=0;
 	qry_in.query_response=std::vector<std::string>{};
 }
 
@@ -72,7 +72,7 @@ Query& Query::operator=(Query&& qry_in){
 		qry_in.query_string="";
 		qry_in.type='\0';
 		qry_in.success=0;
-		qry_in.msg_id=-1;
+		qry_in.msg_id=0;
 		qry_in.query_response=std::vector<std::string>{};
 	}
 	return *this;
@@ -545,13 +545,16 @@ bool PGClient::GetNextResponse(){
 		qry.success = *reinterpret_cast<uint32_t*>(response.at(1).data());  // 1=success, 0=fail
 	}
 	// if we also had further parts, fetch those
+	// if the query failed the response contains an error message (which will only ever be one part)
 	for(int i=2; i<response.size(); ++i){
 		//qry.query_response.push_back(std::string(reinterpret_cast<const char*>(response.at(i).data())));
 		std::string resp(response.at(i).size(),'\0');
 		memcpy((void*)resp.data(), response.at(i).data(), response.at(i).size());
 		resp = resp.substr(0,resp.find('\0'));
-		qry.query_response.push_back(resp);
+		if(qry.success) qry.query_response.push_back(resp);
+		else qry.err = resp;
 	}
+	
 	
 	if(verbosity>3){
 		std::stringstream logmsg;
