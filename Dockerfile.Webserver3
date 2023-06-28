@@ -43,6 +43,8 @@ RUN echo "unalias cp" >>  /etc/rc.local ;\
     echo "export LD_LIBRARY_PATH=/opt/ToolDAQFramework/lib:/opt/boost_1_66_0/install/lib:/web/setup/cgicc/lib:/opt/zeromq-4.0.7/lib:$LD_LIBRARY_PATH" >> /etc/rc.local ;\
     echo "/opt/middleman/run_middleman.sh &> /dev/null &" >> /etc/rc.local ;\
     echo 'disown $!' >> /etc/rc.local ;\
+    echo "/web/Win_Mac_translation  &> /dev/null &" >> /etc/rc.local ;\
+    echo 'disown $!' >> /etc/rc.local ;\
     echo "httpd -X" >> /etc/rc.local ;
 
 RUN cd /opt; \
@@ -60,4 +62,4 @@ RUN yum install -y \
 
 ### Open terminal
 #CMD ["/bin/bash"]
-CMD /bin/bash -c 'cd /web; make clean; source Setup.sh; make; source /etc/rc.local'
+CMD /bin/bash -c 'cd /web; make; source /etc/rc.local'
