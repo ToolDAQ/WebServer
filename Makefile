@@ -1,5 +1,5 @@
 
-Dependencies=Dependencies
+Dependencies=./Dependencies
 
 
 ZMQLib= -L $(Dependencies)/zeromq-4.0.7/lib -lzmq
@@ -16,3 +16,6 @@ lib/libDAQInterface.so:
 
 Example:
 	g++ -O3  -Wpedantic -std=c++11 Example.cpp -o Example -I ./include/ -L lib/ -lDAQInterface -lpthread $(BoostInclude) $(BoostLib) $(ZMQInclude) $(ZMQLib)
+
+clean:
+	rm lib/libDAQInterface.so Example

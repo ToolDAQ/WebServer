@@ -4,7 +4,7 @@ DAQInterface::DAQInterface(std::string name){
 
   m_name=name;
 
-  mp_SD = new ServiceDiscovery(true, true, 88888, "239.192.1.1", 5000, &m_context, boost::uuids::random_generator()(), name, 5, 60);
+  mp_SD = new ServiceDiscovery(true, false, 88888, "239.192.1.1", 5000, &m_context, boost::uuids::random_generator()(), name, 5, 60);
 
   SC_vars.InitThreadedReceiver(&m_context, 88888, 100, false);
 
