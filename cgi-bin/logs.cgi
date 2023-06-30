@@ -35,4 +35,4 @@ done
 
 echo `cat /web/html/footer.html`
 
-echo "<script src=\"/logtabs.js?v=1\"></script>"
+echo "<script src=\"/logtabs.js?v=1\" async></script>"

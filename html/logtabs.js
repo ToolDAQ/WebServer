@@ -5,9 +5,9 @@ tabbar.classList.add("mdl-js-ripple-effect");
 var tab = document.createElement("div");
 tab.classList.add("mdl-layout__tab");
 tab.innerText = "Log Files";
-tab.setAttribute('href', '/cgi-bin/logs.cgi');
+tab.setAttribute('href', '/logs.html');
 tab.addEventListener('click', function() {
-  window.open('/cgi-bin/logs.cgi', '_self');
+  window.open('/logs.html', '_self');
 });
 tabbar.appendChild(tab);
 
