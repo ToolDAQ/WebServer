@@ -7,7 +7,7 @@ echo "
 </head>
 "
 
-echo `cat /web/WebServer/html/header.html`
+echo `cat /web/html/header.html`
 
 
 for file in `ls ../logs`
@@ -33,6 +33,6 @@ divid.scrollTop = divid.scrollHeight;"
 done
 
 
-echo `cat /web/WebServer/html/footer.html`
+echo `cat /web/html/footer.html`
 
 echo "<script src=\"/logtabs.js?v=1\"></script>"
