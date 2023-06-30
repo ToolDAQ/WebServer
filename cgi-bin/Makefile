@@ -1,21 +1,44 @@
-all:
-	g++ control.cpp -o control.cgi -L /setup/ToolDAQFramework/lib -lStore -lServiceDiscovery -L /setup/cgicc/lib -lcgicc  -I /usr/local/include -I /setup/ToolDAQFramework/include -I /setup/boost_1_66_0/install/include/  -I /setup/zeromq-4.0.7/include -L /setup/boost_1_66_0/install/lib  -lboost_date_time -lboost_serialization  -lboost_iostreams  -L /setup/zeromq-4.0.7/lib -lzmq 
-	chmod a+x control.cgi 
-	g++ controlin.cpp -o controlin.cgi  -L /setup/ToolDAQFramework/lib -lStore -lServiceDiscovery -L /setup/cgicc/lib -lcgicc  -I /usr/local/include -I /setup/ToolDAQFramework/include -I /setup/boost_1_66_0/install/include/  -I /setup/zeromq-4.0.7/include -L /setup/boost_1_66_0/install/lib  -lboost_date_time -lboost_serialization  -lboost_iostreams  -L /setup/zeromq-4.0.7/lib -lzmq -I /setup/cgicc/include
+all: control.cgi controlin.cgi tablecontent.cgi tablecontent2.cgi tablecontent3.cgi sendcommand.cgi sendcommand2.cgi sendcommand2nopadding.cgi tablecontent4.cgi
+
+control.cgi: control.cpp
+	g++ -O3  control.cpp -o control.cgi -L /opt/ToolDAQFramework/lib -lStore -lServiceDiscovery -lcgicc  -I /usr/local/include -I /opt/ToolDAQFramework/include -I /opt/boost_1_66_0/install/include/  -I /opt/zeromq-4.0.7/include -L /opt/boost_1_66_0/install/lib  -lboost_date_time -lboost_serialization  -lboost_iostreams  -L /opt/zeromq-4.0.7/lib -lzmq 
+	chmod a+x control.cgi
+
+controlin.cgi:  controlin.cpp 
+	g++ -O3  controlin.cpp -o controlin.cgi  -L /opt/ToolDAQFramework/lib -lStore -lServiceDiscovery -lcgicc  -I /usr/local/include -I /opt/ToolDAQFramework/include -I /opt/boost_1_66_0/install/include/  -I /opt/zeromq-4.0.7/include -L /opt/boost_1_66_0/install/lib  -lboost_date_time -lboost_serialization  -lboost_iostreams  -L /opt/zeromq-4.0.7/lib -lzmq 
 	chmod a+x controlin.cgi
-	g++ tablecontent.cpp -o tablecontent.cgi -L /setup/ToolDAQFramework/lib -lStore -lServiceDiscovery -L /setup/cgicc/lib -lcgicc  -I /usr/local/include -I /setup/ToolDAQFramework/include -I /setup/boost_1_66_0/install/include/  -I /setup/zeromq-4.0.7/include -L /setup/boost_1_66_0/install/lib  -lboost_date_time -lboost_serialization  -lboost_iostreams  -L /setup/zeromq-4.0.7/lib -lzmq
+
+tablecontent.cgi: tablecontent.cpp
+	g++ -O3  tablecontent.cpp -o tablecontent.cgi -L /opt/ToolDAQFramework/lib -lStore -lServiceDiscovery  -lcgicc  -I /usr/local/include -I /opt/ToolDAQFramework/include -I /opt/boost_1_66_0/install/include/  -I /opt/zeromq-4.0.7/include -L /opt/boost_1_66_0/install/lib  -lboost_date_time -lboost_serialization  -lboost_iostreams  -L /opt/zeromq-4.0.7/lib -lzmq
 	chmod a+x tablecontent.cgi
-	g++ tablecontent2.cpp -o tablecontent2.cgi -L /setup/ToolDAQFramework/lib -lStore -lServiceDiscovery -L /setup/cgicc/lib -lcgicc  -I /usr/local/include -I /setup/ToolDAQFramework/include -I /setup/boost_1_66_0/install/include/  -I /setup/zeromq-4.0.7/include -L /setup/boost_1_66_0/install/lib  -lboost_date_time -lboost_serialization  -lboost_iostreams  -L /setup/zeromq-4.0.7/lib -lzmq
+
+tablecontent2.cgi: tablecontent2.cpp
+	g++ -O3  tablecontent2.cpp -o tablecontent2.cgi -L /opt/ToolDAQFramework/lib -lStore -lServiceDiscovery -lcgicc  -I /usr/local/include -I /opt/ToolDAQFramework/include -I /opt/boost_1_66_0/install/include/  -I /opt/zeromq-4.0.7/include -L /opt/boost_1_66_0/install/lib  -lboost_date_time -lboost_serialization  -lboost_iostreams  -L /opt/zeromq-4.0.7/lib -lzmq
 	chmod a+x tablecontent2.cgi
-	g++ tablecontent3.cpp -o tablecontent3.cgi -L /setup/ToolDAQFramework/lib -lStore -lServiceDiscovery -L /setup/cgicc/lib -lcgicc  -I /usr/local/include -I /setup/ToolDAQFramework/include -I /setup/boost_1_66_0/install/include/  -I /setup/zeromq-4.0.7/include -L /setup/boost_1_66_0/install/lib  -lboost_date_time -lboost_serialization  -lboost_iostreams  -L /setup/zeromq-4.0.7/lib -lzmq
+
+tablecontent3.cgi: tablecontent3.cpp
+	g++ -O3  tablecontent3.cpp -o tablecontent3.cgi -L /opt/ToolDAQFramework/lib -lStore -lServiceDiscovery  -lcgicc  -I /usr/local/include -I /opt/ToolDAQFramework/include -I /opt/boost_1_66_0/install/include/  -I /opt/zeromq-4.0.7/include -L /opt/boost_1_66_0/install/lib  -lboost_date_time -lboost_serialization  -lboost_iostreams  -L /opt/zeromq-4.0.7/lib -lzmq
 	chmod a+x tablecontent3.cgi
-	g++ sendcommand.cpp -o sendcommand.cgi -L /setup/ToolDAQFramework/lib -lStore -lServiceDiscovery -L /setup/cgicc/lib -lcgicc  -I /usr/local/include -I /setup/ToolDAQFramework/include -I /setup/boost_1_66_0/install/include/  -I /setup/zeromq-4.0.7/include -L /setup/boost_1_66_0/install/lib  -lboost_date_time -lboost_serialization  -lboost_iostreams  -L /setup/zeromq-4.0.7/lib -lzmq -I /setup/cgicc/include
+
+sendcommand.cgi: sendcommand.cpp
+	g++ -O3  sendcommand.cpp -o sendcommand.cgi -L /opt/ToolDAQFramework/lib -lStore -lServiceDiscovery  -lcgicc  -I /usr/local/include -I /opt/ToolDAQFramework/include -I /opt/boost_1_66_0/install/include/  -I /opt/zeromq-4.0.7/include -L /opt/boost_1_66_0/install/lib  -lboost_date_time -lboost_serialization  -lboost_iostreams  -L /opt/zeromq-4.0.7/lib -lzmq
 	chmod a+x sendcommand.cgi
-	g++ sendcommand2.cpp -o sendcommand2.cgi -L /setup/ToolDAQFramework/lib -lStore -lServiceDiscovery -L /setup/cgicc/lib -lcgicc  -I /usr/local/include -I /setup/ToolDAQFramework/include -I /setup/boost_1_66_0/install/include/  -I /setup/zeromq-4.0.7/include -L /setup/boost_1_66_0/install/lib  -lboost_date_time -lboost_serialization  -lboost_iostreams  -L /setup/zeromq-4.0.7/lib -lzmq -I /setup/cgicc/include
+
+sendcommand2.cgi: sendcommand2.cpp
+	g++ -O3  sendcommand2.cpp -o sendcommand2.cgi -L /opt/ToolDAQFramework/lib -lStore -lServiceDiscovery -lcgicc  -I /usr/local/include -I /opt/ToolDAQFramework/include -I /opt/boost_1_66_0/install/include/  -I /opt/zeromq-4.0.7/include -L /opt/boost_1_66_0/install/lib  -lboost_date_time -lboost_serialization  -lboost_iostreams  -L /opt/zeromq-4.0.7/lib -lzmq 
 	chmod a+x sendcommand2.cgi
-	g++ sendcommand2nopadding.cpp -o sendcommand2nopadding.cgi -L /setup/ToolDAQFramework/lib -lStore -lServiceDiscovery -L /setup/cgicc/lib -lcgicc  -I /usr/local/include -I /setup/ToolDAQFramework/include -I /setup/boost_1_66_0/install/include/  -I /setup/zeromq-4.0.7/include -L /setup/boost_1_66_0/install/lib  -lboost_date_time -lboost_serialization  -lboost_iostreams  -L /setup/zeromq-4.0.7/lib -lzmq -I /setup/cgicc/include
+
+sendcommand2nopadding.cgi: sendcommand2nopadding.cpp
+	g++ -O3  sendcommand2nopadding.cpp -o sendcommand2nopadding.cgi -L /opt/ToolDAQFramework/lib -lStore -lServiceDiscovery  -lcgicc  -I /usr/local/include -I /opt/ToolDAQFramework/include -I /opt/boost_1_66_0/install/include/  -I /opt/zeromq-4.0.7/include -L /opt/boost_1_66_0/install/lib  -lboost_date_time -lboost_serialization  -lboost_iostreams  -L /opt/zeromq-4.0.7/lib -lzmq 
 	chmod a+x sendcommand2nopadding.cgi
 
+tablecontent4.cgi: tablecontent4.cpp
+	g++ -O3 tablecontent4.cpp -o tablecontent4.cgi -I /opt/zeromq-4.0.7/include/ -L /opt/zeromq-4.0.7/lib/ -lzmq
+	chmod a+x tablecontent4.cgi
+
+clean:
+
+	rm control.cgi controlin.cgi tablecontent.cgi tablecontent2.cgi tablecontent3.cgi sendcommand.cgi sendcommand2.cgi sendcommand2nopadding.cgi tablecontent4.cgi
 
 #	g++ logbook.cpp -o logbook.cgi -L /usr/local/lib  -lcgicc  -I /usr/local/include
 #	chmod a+x logbook.cgi

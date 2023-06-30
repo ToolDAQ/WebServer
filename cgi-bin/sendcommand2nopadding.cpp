@@ -10,8 +10,7 @@
 #include <cgicc/HTTPHTMLHeader.h> 
 #include <cgicc/HTMLClasses.h>  
 
-
-#include "ServiceDiscovery.h"
+#include <Store.h>
 
 #include "zmq.hpp"
 
@@ -28,8 +27,7 @@ using namespace cgicc;
 int main (){
 
   //  boost::uuids::uuid m_UUID=boost::uuids::random_generator()();
-  //long msg_id=0;
-    
+  //long msg_id=0;    
    
   zmq::context_t *context=new zmq::context_t(1);
 
@@ -65,7 +63,7 @@ int main (){
 	
 
 	zmq::socket_t ServiceSend (*context, ZMQ_REQ);
-        int a=120000;
+        int a=5000;
         ServiceSend.setsockopt(ZMQ_RCVTIMEO, a);
         ServiceSend.setsockopt(ZMQ_SNDTIMEO, a);
 

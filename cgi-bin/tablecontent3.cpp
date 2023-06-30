@@ -26,7 +26,7 @@ int main (){
   boost::uuids::uuid m_UUID=boost::uuids::random_generator()();
   long msg_id=0;
   
-  zmq::context_t *context=new zmq::context_t(3);
+  zmq::context_t *context=new zmq::context_t(1);
   
   
   std::vector<Store*> RemoteServices;

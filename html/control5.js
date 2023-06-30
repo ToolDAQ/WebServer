@@ -1,15 +1,37 @@
 var updating =false;
+var pause_updating =false;
 var table = document.getElementById("table-container");
 var select = document.getElementById("ip");
+var update = setInterval(updateTable, 5000); // Run the updateTable() function every minute
+var refresh_button = document.getElementById('refresh');
+var ip_box = document.getElementById('ip_filter');
+var name_box = document.getElementById('name_filter');
+var status_box = document.getElementById('status_filter');
+var groupbox= document.getElementById('group');
+var groupcell= document.getElementById('groupcell');
+var controls = document.getElementById("controls");   
+var send_button = document.getElementById('Send Command');
+var command_output = document.getElementById("output");
+var commands = document.getElementById("command");
 
 
+////////////////////////////////////////////////////////////////
+//////////////////////////////////Service discovery table section
+////////////////////////////////////////////////////////////////
 
-function updateTable() {
+// Run the updateTable() function on startup
+updateTable();
 
-    if(updating==true) return;  
-    updateing=true;
+// Run the updateTable() function on refresh press
+refresh_button.onclick = updateTable;
+
+
+function updateTable() { //this command updates the service discovery table
+
+    if(updating || pause_updating) return;  
+    updating=true;
     
-    var csvFile = "./cgi-bin/tablecontent3.cgi";
+    var csvFile = "./cgi-bin/tablecontent5.cgi";
     
     // Use XMLHttpRequest to get the CSV content from the file
     var xhr = new XMLHttpRequest();
@@ -30,6 +52,7 @@ function updateTable() {
 //probably want to get slect box posion to replace it after update
 
 	    // Set the length of the <select> options to 0
+	    var tmp_select_value=select.value;
 	    select.options.length = 0;
 	   
 
@@ -61,7 +84,6 @@ function updateTable() {
 		    
 		    select.options.add(new Option("[" + cells[0] + "]", cells[1] + ":" + cells[2]));	
 		    
-		    //		    btn.disabled=false;
 		    
 		    
 		    
@@ -72,6 +94,9 @@ function updateTable() {
 
 	    select.options.add(new Option("Group", "Group"));	
 
+
+	    select.value=tmp_select_value;
+
  	    // trigger the onchange function
 	    select.dispatchEvent(new Event("change"));   
 
@@ -81,16 +106,166 @@ function updateTable() {
 		buttons[i].disabled = false;
 		
 	    }
+	    updating=false;
 	}
+	
     };
     xhr.open("GET", csvFile, true);
     xhr.send();
 }
 
-function command(ip, port, command){
+
+
+ip_box.addEventListener('change', function() {  //apply flitering to table based on ip
+    var ip_filter = "";
+    if(ip_box.value == "<filter>")  ip_filter = "";
+    else if(ip_box.value == "")  ip_box.value = "<filter>";
+    else ip_filter = ip_box.value;
+    var style="";
+    for(var i=1; i<table.rows.length; i++){
+        if (table.rows[i].cells[1].innerText.includes(ip_filter)){ style=""}
+        else { style="display:none"}
+
+        for(var j=0; j<table.rows[i].cells.length; j++){
+            if(j != 2) table.rows[i].cells[j].style=style;
+        }
+	
+    }
+});
+
+
+
+name_box.addEventListener('change', function() { //apply flitering to table based on name
+    var name_filter = "";
+    if(name_box.value == "<filter>")  name_filter = "";   
+    else if(name_box.value == "") name_box.value = "<filter>";
+    else name_filter = name_box.value;
+    var style="";
+    for(var i=1; i<table.rows.length; i++){
+        if (table.rows[i].cells[3].innerText.includes(name_filter)){ style=""}
+        else { style="display:none"}
+
+        for(var j=0; j<table.rows[i].cells.length; j++){
+            if(j != 2) table.rows[i].cells[j].style=style;
+        }
+
+    }
+});
+
+
+
+status_box.addEventListener('change', function() {  //apply flitering to table based on status
+    var status_filter = "";
+    if(status_box.value == "<filter>") status_filter = "";
+    else if(status_box.value == "") status_box.value = "<filter>";
+    else status_filter = status_box.value;
+    var style="";
+    for(var i=1; i<table.rows.length; i++){
+	if (table.rows[i].cells[4].innerText.includes(status_filter)){ style=""}
+	else { style="display:none"}
+	
+	for(var j=0; j<table.rows[i].cells.length; j++){
+	    if(j != 2) table.rows[i].cells[j].style=style;
+	}
+	
+    }    
+});
+
+////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+////////////////////////////////////////////////
+///////////////////// Send Command Section
+///////////////////////////////////////////////////////////////
+
+
+send_button.addEventListener('click', function() {  ///send a command if send command pressed
+    
+    if(select.value != "Group") sendcommand2();
+    else{
+	var list=[];
+	if(groupbox.value.includes("(")){
+	    var item=groupbox.value.replace("(","");
+	    item=item.replace(")","");
+	    list=item.split(",");
+	    
+	} 
+	else{
+	    for(var i=1; i<table.rows.length; i++){
+		if (table.rows[i].cells[3].innerText== groupbox.value){
+		    var item=table.rows[i].cells[0].innerText;
+		    item=item.replace("[","");
+		    item=item.replace("]","");
+		    list.push(item);
+		}	    
+	    }
+	}
+	var text="";
+	list.map(function(item) {
+	    select.selectedIndex=item;
+	    sendcommand2(); 
+	    // below not working ben need to fix
+	    text+=command_output.InnerText;
+	    command_output.InnerText=text;
+	    
+	});
+	
+	select.selectedIndex=select.length -1;
+    }
+    
+});
+
+
+
+function sendcommand2(){ // function to send command to device
+    
+    let buttons = document.getElementsByTagName('button');
+    for (let i = 0; i < buttons.length; i++) {
+	buttons[i].disabled = true;
+    }    
+
+    if(commands.value == ""){
+	command_output.innerHTML = "No command given"
+
+	let buttons = document.getElementsByTagName('button');
+	for (let i = 0; i < buttons.length; i++) {
+	    buttons[i].disabled = false;
+	}
+
+	return;
+    }
+    
+    command(select.value.split(":")[0], select.value.split(":")[1], commands.value).then(function(result){
+	
+	command_output.innerHTML = "Sending Command {" + commands.value + "} to [" + select.value + "] <br>";
+	command_output.innerHTML += "[" + select.value + "] Reply: " + result;
+	
+	commands.value="";
+	
+	updateTable();
+	
+	
+	let buttons = document.getElementsByTagName('button');
+	for (let i = 0; i < buttons.length; i++) {
+	    buttons[i].disabled = false;
+	}
+	
+	
+    });
+    
+}
+    
+function command(ip, port, command){ //this command sends messages to services
     
     return new Promise(function(resolve, reject){
-	// Create a new XMLHttpRequest object
+
+	pause_updating=true;
+
+	 // Create a new XMLHttpRequest object
 	var xhr = new XMLHttpRequest();
 	
 	// Set the URL of the webpage you want to send data to
@@ -114,7 +289,7 @@ function command(ip, port, command){
 	// Send the request
 	xhr.send(dataString);
 	
-	
+	pause_updating=false;	
 	
 	xhr.onreadystatechange = function() {
 	    var cell = document.getElementById("output");
@@ -134,52 +309,94 @@ function command(ip, port, command){
     });
 }
 
-function sendcommand2(){
-    
-    let buttons = document.getElementsByTagName('button');
-    for (let i = 0; i < buttons.length; i++) {
-	buttons[i].disabled = true;
-    }    
+
+
+////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
 
 
 
-    var ip = document.getElementById("ip");
-    var commands = document.getElementById("command");
-    var groupbox = document.getElementById("group");    
-    var button = document.getElementById("Send Command")
-    var cell = document.getElementById("output");    
-    if(commands.value == ""){
-	cell.innerHTML = "No command given"
-	return;
+
+////////////////////////////////////////////////
+///////////////////// Slow Control section
+///////////////////////////////////////////////////////////////
+
+////// hised and shows group box and gets slow control commands
+select.addEventListener('change', function() {
+    if(select.value=="Group"){
+	groupcell.style.display = 'block'
     }
+    else{
+	groupcell.style.display = 'none'
+	getcommands();
+    }
+});
+
+
+function getcommands(){
     
-    ip.disabled=true;
-    commands.disabled=true;
-    button.disabled=true;
-    groupbox.disabled=true;
-    
-    command(ip.value.split(":")[0], ip.value.split(":")[1], commands.value).then(function(result){
-	
-	cell.innerHTML = "Sending Command {" + commands.value + "} to [" + ip.value + "] <br>";
-	cell.innerHTML += "[" + ip.value + "] Reply: " + result;
-	
-	commands.value="";
-	ip.disabled=false;
-	commands.disabled=false;
-	button.disabled=false;
-	groupbox.disabled=false;
+    var commands = "?" 
+    var tmp_controls= "";
 
-	updateTable();
+    command(select.value.split(":")[0], select.value.split(":")[1], commands).then(function(result){
 
-    let buttons = document.getElementsByTagName('button');
-    for (let i = 0; i < buttons.length; i++) {
-	buttons[i].disabled = false;
-    }    
+	result=result.replace('Available commands: ', '');
+	tmp_controls = "<form id=\"input\">";
+	//result="Start <service>, Stop <service>, KILL, hello <name> <fish>, [voltage1:0.0:100.0:0.1:50.0], [voltage2:0:100:1:50], [state;a;b;c;a], [LED1;on;off;on], ? ";	
+	var commands = result.split(",");
+	commands.map(function(type) {
+	    type=type.trim();
+	    
+	    if(type.includes("[") && type.includes(":")){
+		type=type.replace("[","");
+		type=type.replace("]","");
+		var fields=type.split(":");
+		fields=fields.map(function(item){return item.trim();});
+		tmp_controls +=  "<p>" +fields[0] + "  <input type=\"range\" min=\"" + fields[1] + "\" max=\"" + fields[2] + "\"  step=\"" + fields[3] + "\" value=\"" + fields[4] + "\" id=\"" + fields[0] + "slider\" onchange=\"document.getElementById('"+ fields[0] + "').value=this.value\">  <input type=\"number\" id=\"" + fields[0] + "\" min=\""+ fields[1] + "\" max=\"" + fields[2] + "\" step=\"" + fields[3] + "\" value=\"" + fields[4] + "\" onchange=\"document.getElementById('"+ fields[0] + "slider').value=this.value\">  <button type=\"button\" onclick=\"sendcommand3(\'" + fields[0] + "', '" + fields[0] + "slider' )\">Update</button></p>"
+	    }
 
-	
+	    else if(type.includes("[") && type.includes(";")){
+		type=type.replace("[","");
+		type=type.replace("]","");
+		var fields=type.split(";");
+		fields=fields.map(function(item){return item.trim();});
+		var html ="<p>" + fields[0] ; 
+		for (let i = 1; i < fields.length-1; i++) {
+		    html += " <input type=\"radio\" id=\"" + fields[0] + fields[i] + "\" name=\"" + fields[0] + "\" value=\"" + fields[i] +"\" ";
+		    if( fields[i] == fields[fields.length-1]) html +="checked";
+		    html +="><label for=\"" + fields[0] + fields[i] + "\">" + fields[i] + "</label>";
+		}
+		tmp_controls += html + "  <button type=\"button\" onclick=\"sendcommand3(\'" + fields[0] + "', '" + fields[0] + fields[fields.length-1] +"')\">Update</button></p>";
+		
+	    }
+	    
+	    else if(type.includes("<") && type.includes(">")){
+		type=type.replace(/>/g,"");
+		var fields=type.split("<");
+		fields=fields.map(function(item){return item.trim();});
+		var html ="<p>" + fields[0] + "  <input type=\"text\" id=\"" + fields[0] + "args\" value=\"";
+
+		for (let i = 1; i < fields.length; i++) {
+		    html += "<" + fields[i] + "> "; 
+		}
+		tmp_controls += html + "\">  <button type=\"button\" onclick=\"sendcommand3(\'" + fields[0] + "', '" + fields[0] +"args')\">Send</button></p>";
+
+	    }
+	    
+	    else{
+		
+		tmp_controls += "<p><button type=\"button\" onclick=\"sendcommand3(\'" + type + "\')\">" + type + "</button></p>";
+	    }
+	    
+	});
+	tmp_controls += "</form> ";
+	controls.innerHTML = tmp_controls;
+
     });
-    
 }
+									  
+
 
 function sendcommand3(...incommands){
     
@@ -194,27 +411,15 @@ function sendcommand3(...incommands){
 	if(tmp.type=="radio") incommand+= " " +document.querySelector('input[name="' + tmp.name + '"]:checked').value;
 	else incommand+= " " + tmp.value;
     }
-    var ip = document.getElementById("ip");
-    var commands = document.getElementById("command");    
-    var button = document.getElementById("Send Command")
-    var cell = document.getElementById("output");    
-    var groupbox = document.getElementById("group");
 
-    ip.disabled=true;
-    commands.disabled=true;
-    button.disabled=true;
-    groupbox.disabled=true;
+
     
-    command(ip.value.split(":")[0], ip.value.split(":")[1], incommand).then(function(result){
+    command(select.value.split(":")[0], select.value.split(":")[1], incommand).then(function(result){
 	
-	cell.innerHTML = "Sending Command {" + incommand + "} to [" + ip.value + "] <br>";
-	cell.innerHTML += "[" + ip.value + "] Reply: " + result;
+	command_output.innerHTML = "Sending Command {" + incommand + "} to [" + select.value + "] <br>";
+	command_output.innerHTML += "[" + select.value + "] Reply: " + result;
 	
 	commands.value="";
-	ip.disabled=false;
-	commands.disabled=false;
-	button.disabled=false;
-	groupbox.disabled=false;	
 
 	updateTable();
 	
@@ -226,6 +431,18 @@ function sendcommand3(...incommands){
     });
     
 }
+
+
+
+////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
+
+/*
+
+
+/*
+
 
 function sendcommand(){
     
@@ -289,119 +506,11 @@ function sendcommand(){
     
 }
 
-function getcommands(){
-    
-    var ip = document.getElementById("ip");
-    var commands = "?" 
-    var div = document.getElementById("controls");   
-    div.innerHTML = "";
-    
-    command(ip.value.split(":")[0], ip.value.split(":")[1], commands).then(function(result){
 
-	result=result.replace('Available commands: ', '');
-	div.innerHTML = "<form id=\"input\">";
-	//result="Start <service>, Stop <service>, KILL, hello <name> <fish>, [voltage1:0.0:100.0:0.1:50.0], [voltage2:0:100:1:50], [state;a;b;c;a], [LED1;on;off;on], ? ";	
-	var commands = result.split(",");
-	commands.map(function(type) {
-	    type=type.trim();
-	    
-	    if(type.includes("[") && type.includes(":")){
-		type=type.replace("[","");
-		type=type.replace("]","");
-		var fields=type.split(":");
-		fields=fields.map(function(item){return item.trim();});
-		div.innerHTML +=  "<p>" +fields[0] + "  <input type=\"range\" min=\"" + fields[1] + "\" max=\"" + fields[2] + "\"  step=\"" + fields[3] + "\" value=\"" + fields[4] + "\" id=\"" + fields[0] + "slider\" onchange=\"document.getElementById('"+ fields[0] + "').value=this.value\">  <input type=\"number\" id=\"" + fields[0] + "\" min=\""+ fields[1] + "\" max=\"" + fields[2] + "\" step=\"" + fields[3] + "\" value=\"" + fields[4] + "\" onchange=\"document.getElementById('"+ fields[0] + "slider').value=this.value\">  <button type=\"button\" onclick=\"sendcommand3(\'" + fields[0] + "', '" + fields[0] + "slider' )\">Update</button></p>"
-	    }
-
-	    else if(type.includes("[") && type.includes(";")){
-		type=type.replace("[","");
-		type=type.replace("]","");
-		var fields=type.split(";");
-		fields=fields.map(function(item){return item.trim();});
-		var html ="<p>" + fields[0] ; 
-		for (let i = 1; i < fields.length-1; i++) {
-		    html += " <input type=\"radio\" id=\"" + fields[0] + fields[i] + "\" name=\"" + fields[0] + "\" value=\"" + fields[i] +"\" ";
-		    if( fields[i] == fields[fields.length-1]) html +="checked";
-		    html +="><label for=\"" + fields[0] + fields[i] + "\">" + fields[i] + "</label>";
-		}
-		div.innerHTML += html + "  <button type=\"button\" onclick=\"sendcommand3(\'" + fields[0] + "', '" + fields[0] + fields[fields.length-1] +"')\">Update</button></p>";
-		
-	    }
-	    
-	    else if(type.includes("<") && type.includes(">")){
-		type=type.replace(/>/g,"");
-		var fields=type.split("<");
-		fields=fields.map(function(item){return item.trim();});
-		var html ="<p>" + fields[0] + "  <input type=\"text\" id=\"" + fields[0] + "args\" value=\"";
-
-		for (let i = 1; i < fields.length; i++) {
-		    html += "<" + fields[i] + "> "; 
-		}
-		div.innerHTML += html + "\">  <button type=\"button\" onclick=\"sendcommand3(\'" + fields[0] + "', '" + fields[0] +"args')\">Send</button></p>";
-
-	    }
-	    
-	    else{
-		
-		div.innerHTML += "<p><button type=\"button\" onclick=\"sendcommand3(\'" + type + "\')\">" + type + "</button></p>";
-	    }
-	    
-	});
-	div.innerHTML += "</form> ";
-    });
-}
-									  
-
-
-// Run the updateTable() function on startup
-updateTable();
-
-// Run the updateTable() function every minute
-var update = setInterval(updateTable, 60000);
-
-// Run the updateTable() function on refresh press
-var btn = document.getElementById('refresh');
-btn.onclick = updateTable;
-                  
+                 
 
 // sends command on button click
 var btn2 = document.getElementById('Send Command');
-btn2.addEventListener('click', function() {
-    var ip = document.getElementById("ip");
-    var table = document.getElementById("table-container");
-    var groupbox= document.getElementById('group');   
-    if(ip.value != "Group") sendcommand2();
-    else{
-	var list=[];
-	if(groupbox.value.includes("(")){
-	    var item=groupbox.value.replace("(","");
-	    item=item.replace(")","");
-	    list=item.split(",");
-	    
-	} 
-	else{
-	    for(var i=1; i<table.rows.length; i++){
-		if (table.rows[i].cells[3].innerText== groupbox.value){
-		    var item=table.rows[i].cells[0].innerText;
-		    item=item.replace("[","");
-		    item=item.replace("]","");
-		    list.push(item);
-		}	    
-	    }
-	}
-	var cell = document.getElementById("output");
-	var text="";
-	list.map(function(item) {
-	    ip.selectedIndex=item;
-	    sendcommand2(); 
-	    // below not working ben need to fix
-	    text+=cell.InnerText;
-	    cell.InnerText=text;
-	    
-	});
-	
-	ip.selectedIndex=ip.length -1;
-    }
 
 });
 //disables updates when interacting with command interface
@@ -423,21 +532,6 @@ dropdown.addEventListener('blur', function() {
     update = setInterval(updateTable, 60000)
 });
 
-dropdown.addEventListener('change', function() {
-    clearInterval(update);
-    var groupbox= document.getElementById('group');
-    var groupcell= document.getElementById('groupcell');
-    var div = document.getElementById("controls");   
-    div.innerHTML = "";
-    if(dropdown.value=="Group"){
-	groupcell.style.display = 'block'
-    }
-    else{
-	groupcell.style.display = 'none'
-	getcommands();
-    }
-    update = setInterval(updateTable, 60000)
-});
 
 btn2.addEventListener('focus', function() {
     clearInterval(update);
@@ -456,61 +550,5 @@ controls.addEventListener('mouseout', function() {
     update = setInterval(updateTable, 60000)
 });
 
-var ip_box = document.getElementById('ip_filter');
-var name_box = document.getElementById('name_filter');
-var status_box = document.getElementById('status_filter');
 
-ip_box.addEventListener('change', function() {
-    var ip_filter = "";
-    if(ip_box.value == "<filter>")  ip_filter = "";
-    else if(ip_box.value == "")  ip_box.value = "<filter>";
-    else ip_filter = ip_box.value;
-    var style="";
-    var table = document.getElementById("table-container");
-    for(var i=1; i<table.rows.length; i++){
-        if (table.rows[i].cells[1].innerText.includes(ip_filter)){ style=""}
-        else { style="display:none"}
-
-        for(var j=0; j<table.rows[i].cells.length; j++){
-            if(j != 2) table.rows[i].cells[j].style=style;
-        }
-	
-    }
-});
-
-name_box.addEventListener('change', function() {
-    var name_filter = "";
-    if(name_box.value == "<filter>")  name_filter = "";   
-    else if(name_box.value == "") name_box.value = "<filter>";
-    else name_filter = name_box.value;
-    var style="";
-    var table = document.getElementById("table-container");
-    for(var i=1; i<table.rows.length; i++){
-        if (table.rows[i].cells[3].innerText.includes(name_filter)){ style=""}
-        else { style="display:none"}
-
-        for(var j=0; j<table.rows[i].cells.length; j++){
-            if(j != 2) table.rows[i].cells[j].style=style;
-        }
-
-    }
-});
-
-status_box.addEventListener('change', function() {
-    var status_filter = "";
-    if(status_box.value == "<filter>") status_filter = "";
-    else if(status_box.value == "") status_box.value = "<filter>";
-    else status_filter = status_box.value;
-    var style="";
-    var table = document.getElementById("table-container");
-    for(var i=1; i<table.rows.length; i++){
-	if (table.rows[i].cells[4].innerText.includes(status_filter)){ style=""}
-	else { style="display:none"}
-	
-	for(var j=0; j<table.rows[i].cells.length; j++){
-	    if(j != 2) table.rows[i].cells[j].style=style;
-	}
-	
-    }    
-});
-
+*/
