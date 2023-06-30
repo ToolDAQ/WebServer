@@ -9,7 +9,7 @@ echo "
 </head>
 "
 
-echo `cat /web/WebServer/html/header.html`
+echo `cat /web/html/header.html`
 
 echo "
 
@@ -25,6 +25,6 @@ done
 
 echo "<p>"
 
-echo `cat /web/WebServer/html/footer.html`
+echo `cat /web/html/footer.html`
 
 echo "<script src=\"/monitoringtabs.js?v=1\"></script>"                                                                                                
