@@ -13,19 +13,12 @@
     
     <h1 align="center">SQL database</h1>
     
-    <div align="center"><select id="tableselect"></select>
-      <label for="tableselect">Select SQL table to display </label><br>      
-      <br>      
-<br>
-      <div align="center" id="output"></div>
       
-      <br>
-
       <div align="center" id="sqldirect">
 	<p>
-	<label for="command">SQL Command:</label>  
-	<input type="text" id="command" name="command" value="type command here">
-	<input type="button" id="submit" value="Submit">
+	  <label for="command">SQL Command:</label>  
+	  <input type="text" id="command" name="command" value="type command here">
+	  <input type="button" id="submit" value="Submit">
 	</p>
 	<p>
 	  <table  border="1" align="center" >
@@ -33,10 +26,20 @@
           </table>
 	<p>
       </div>
+      <br>
+
+    <div align="center"><select id="tableselect"></select>
+      <label for="tableselect">Select SQL table to display </label><br>      
+      <br>      
+      <br>
+
+      <div align="center" id="output"></div>
+      
+      <br>
       
       <!--#include file="footer.html" -->
       
   </body>
 </html>
 
-<script src="./sql.js?v=11"></script>
+<script src="./sql.js?v=11" async></script>
