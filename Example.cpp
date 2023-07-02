@@ -6,7 +6,6 @@ int main(){
 
 
   DAQInterface DAQ_inter("my_service");
-  DAQ_inter.SC_vars.Add("Status",SlowControlElementType(BUTTON));
   DAQ_inter.SC_vars["Status"]->SetValue("Initialising");
 
 
