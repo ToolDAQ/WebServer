@@ -105,7 +105,7 @@ int main(){
       DAQ_inter.SC_vars["Start"]->SetValue(false);
     }
     
-    while(started && running){
+    while(started){
           
       if(DAQ_inter.SC_vars["Stop"]->GetValue<bool>()){
 	started =false;
