@@ -6,6 +6,8 @@ int main(){
 
 
   DAQInterface DAQ_inter("my_service");
+  DAQ_inter.SC_vars.Add("Status",SlowControlElementType(BUTTON));
+  DAQ_inter.SC_vars["Status"]->SetValue("Initialising");
 
 
   Store configuration;
@@ -52,8 +54,7 @@ int main(){
 
   Store monitoring_data;
 
-  DAQ_inter.SC_vars.Add("Status",SlowControlElementType(BUTTON));
-  DAQ_inter.SC_vars["Status"]->SetValue("OK");
+  DAQ_inter.SC_vars["Status"]->SetValue("Ready");
 
   DAQ_inter.SC_vars.Add("Start",SlowControlElementType(BUTTON));
   DAQ_inter.SC_vars["Start"]->SetValue(false);
@@ -100,6 +101,7 @@ int main(){
 
     if(DAQ_inter.SC_vars["Start"]->GetValue<bool>()){
       started =true;
+      DAQ_inter.SC_vars["Status"]->SetValue("Running");
       DAQ_inter.SC_vars["Start"]->SetValue(false);
     }
     
@@ -109,6 +111,7 @@ int main(){
 
       if(DAQ_inter.SC_vars["Stop"]->GetValue<bool>() || !running){
 	started =false;
+	DAQ_inter.SC_vars["Status"]->SetValue("Stopped");
 	DAQ_inter.SC_vars["Stop"]->SetValue(false);
 	DAQ_inter.SC_vars["Start"]->SetValue(false);
       }
@@ -158,6 +161,7 @@ int main(){
     
     usleep(1000);
   }
+  DAQ_inter.SC_vars["Status"]->SetValue("Terminated");
 
 
   return 0;
