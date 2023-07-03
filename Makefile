@@ -24,4 +24,4 @@ Example: Example.cpp
 	g++ -O3  -Wpedantic -std=c++11 Example.cpp -o Example -I ./include/ -L lib/ -lDAQInterface -lpthread $(BoostInclude) $(BoostLib) $(ZMQInclude) $(ZMQLib)
 
 clean:
-	rm lib/libDAQInterface.so RemoteControl Win_Mac_translation Example
+	rm -f lib/libDAQInterface.so RemoteControl Win_Mac_translation Example
