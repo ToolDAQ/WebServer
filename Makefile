@@ -7,5 +7,5 @@ backgroundSD: src/backgroundSD2.cpp
 	g++ -O3 src/backgroundSD2.cpp -o backgroundSD -I /opt/zeromq-4.0.7/include/ -L /opt/zeromq-4.0.7/lib/ -lzmq -I /opt/boost_1_66_0/install/include/ -L /opt/boost_1_66_0/install/lib/ -lboost_date_time -lboost_serialization -lboost_iostreams -I /opt/ToolDAQFramework/include/ -L /opt/ToolDAQFramework/lib/ -lStore -lServiceDiscovery
 
 clean:
-	rm Win_Mac_translation_server
-	rm backgroundSD
+	rm -f Win_Mac_translation_server
+	rm -f backgroundSD
