@@ -4,6 +4,7 @@ var select = document.querySelector('select');
 var submit= document.getElementById("submit");
 var command= document.getElementById("command");
 var sqloutput= document.getElementById("sqloutput");
+var limit= document.getElementById("limit");
 
 //update dropdown at startup
 updatedropdown();
@@ -97,6 +98,7 @@ select.addEventListener('change', function() {  //actions to take on change of s
     var command = "select '*' from "+ selectedOption.value;
 
     if(selectedOption.value=="monitoring" || selectedOption.value=="logging" || selectedOption.value=="alarms" || selectedOption.value=="configurations") command +=" order by time desc";
+    command+=" limit " + limit.value;
 
     gettable(command).then(function(result){
 
