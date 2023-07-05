@@ -75,6 +75,8 @@ RUN echo "unalias cp" >>  /etc/rc.local ;\
     echo 'disown $!' >> /etc/rc.local ;\
     echo "/web/Win_Mac_translation_server  &> /dev/null &" >> /etc/rc.local ;\
     echo 'disown $!' >> /etc/rc.local ;\
+    echo "/web/Trigger_proxy  &> /dev/null &" >> /etc/rc.local ;\
+    echo 'disown $!' >> /etc/rc.local ;\
     echo "httpd" >> /etc/rc.local ; \
     echo "/web/backgroundSD  &> /dev/null " >> /etc/rc.local ;
 
