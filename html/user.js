@@ -1,24 +1,43 @@
 var div = document.getElementById("test");   
-
+/*
+//syncronous method
 var table=GetSDTable("");
 div.appendChild(table);
 var ip = GetIP(table.rows[0].cells[3].innerText);
-var port =GetPort(table.rows[0].cells[3].innerText);
-div.innerHTML=Command(ip, port, "Status", false);
-GetSlowCommands(div, ip, port);
+var port = GetPort(table.rows[0].cells[3].innerText);
+div.innerHTML=Command(ip, port, "Status");
+div.innerHTML=GetSlowCommands(ip, port);
+*/
 
 
+//asyncromnous method
+var table = ResolveVariable(GetSDTable(""),true);
+div.appendChild(table);
+var ip = GetIP(table.rows[0].cells[3].innerText,true);
+var port = GetPort(table.rows[0].cells[3].innerText, true);
+
+div.innerHTML=Command(ip, port, "Status",true);
+div.innerHTML=GetSlowCommands(ip, port,true);
 
 /*
-GetSDTable2("").then(function(result){
-    div.appendChild(result);
-    //    var ip = result.rows[0].cells[1].innerText;
-    //   var port = result.rows[0].cells[2].innerText;
-    var ip = GetIP(result.rows[0].cells[3].innerText).then( 
-    var port =GetPort(result.rows[0].cells[3].innerText).then(
-    //var ip="172.17.0.2";
-    //var port="24011";
-    GetSlowCommands(div, ip, port)));
+GetSDTable("",true).then(function(table){
 
+    div.appendChild(table);
 });
+    GetIP(table.rows[0].cells[3].innerText, true).then(function(ip){ 
+
+	GetPort(table.rows[0].cells[3].innerText, true).then(function(port){
+
+            Command(ip, port, "Status", true).then(function(status){
+
+		div.innerHTML=status;
+		GetSlowCommands(ip, port,true).then(function(slowcontrols){
+
+		    div.innerHTML=slowcontrols;
+
+		});
+	    });
+	});
+    });    
 */
+

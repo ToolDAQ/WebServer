@@ -2,10 +2,20 @@
 // HTTPRequest(method, url, async=false, data=null, user=null, password=null) - undertakes HTTP request and returns data
 // GetSDTable(filter=null, async=null) - returns SDTable with filter applied to service name
 // GetIP(service_name, async=false) - returns IP of first service with name given
-// GetPort(service_name, async=false) - returhns port of first serivce with anme given
-// Command(ip, port, command, asynx) - Sends command serivce specified returns string response
+// GetPort(service_name, async=false) - returns port of first serivce with anme given
+// Command(ip, port, command, asynx) - Sends command to the serivce specified and returns string response
+// GetSlowCommands(ip, port, async=false) - returns html to produce all slow control buttons of client
 
-
+function ResolveVariable(variable){
+ if (variable instanceof Promise) {
+    // If the variable is a promise, block until it's resolved
+    variable.then(function(result){
+ return result});
+  } else {
+    // If the variable is not a promise, return it immediately
+    return variable;
+  }
+}
 
 function HTTPRequest(method, url, async=false, data=null, user=null, password=null){
     
@@ -37,8 +47,9 @@ function HTTPRequest(method, url, async=false, data=null, user=null, password=nu
 }
 
 function GetSDTable(filter=null, async=false) { 
-    
-    function process_table(csvData){
+    filter= ResolveVariable(filter); 
+   
+    function ProcessTable(csvData){
 	var table= document.createElement('table');
 	table.id="SDTable";
 	
@@ -68,15 +79,15 @@ function GetSDTable(filter=null, async=false) {
 	
 	return new Promise(function(resolve, reject){
 	    
-	    HTTPRequest("GET", "./cgi-bin/tablecontent5.cgi").then(function(result){
+	    HTTPRequest("GET", "./cgi-bin/tablecontent5.cgi", true).then(function(result){
 		
-		resolve(process_table(result));
+		resolve(ProcessTable(result));
 		
 	    });
 	});
     }
     
-    else return process_table(HTTPRequest("GET", "./cgi-bin/tablecontent5.cgi", false));
+    else return ProcessTable(HTTPRequest("GET", "./cgi-bin/tablecontent5.cgi", false));
     
     
     
@@ -84,7 +95,8 @@ function GetSDTable(filter=null, async=false) {
 
 
 function GetIP(service_name, async=false){
-    
+  service_name= ResolveVariable(service_name);    
+
     if(async){
 	return new Promise(function(resolve, reject){
 	    
@@ -104,7 +116,8 @@ function GetIP(service_name, async=false){
 
 
 function GetPort(service_name, async=false){
-    
+    service_name= ResolveVariable(service_name);
+
     if(async){
 	return new Promise(function(resolve, reject){
 	    
@@ -124,7 +137,10 @@ function GetPort(service_name, async=false){
 
 
 function Command(ip, port, command, async=false){ //this command sends messages to services
-
+    ip= ResolveVariable(ip);
+    port= ResolveVariable(port);
+    command= ResolveVariable(command);
+    
     // Convert the object to a URL-encoded string
     var data_string = "ip=" + ip + "&port=" + port + "&command=" + command;
     
@@ -135,7 +151,7 @@ function Command(ip, port, command, async=false){ //this command sends messages 
 	
 	return new Promise(function(resolve, reject){
 	    
-	    HTTPRequest("POST", "./cgi-bin/sendcommand2nopadding.cgi", true, datastring).then(function(result){
+	    HTTPRequest("POST", "./cgi-bin/sendcommand2nopadding.cgi", true, data_string).then(function(result){
 		
 		resolve(result.split("\n")[1]);
 		
@@ -144,69 +160,120 @@ function Command(ip, port, command, async=false){ //this command sends messages 
     }
 }
 	
-
-
-
-
-
-
-function GetSlowCommands(div, ip, port){
+function GetSlowCommands(ip, port, command_output, async=false){
     
-    var commands = "?" 
-    var tmp_controls= "";
+    ip = ResolveVariable(ip);
+    port = ResolveVariable(port);
+    
 
-    Command(ip, port, commands).then(function(result){
+    function MakeControls(result){
 	
-	result=result.replace('Available commands: ', '');
-	tmp_controls = "<form id=\"input\">";
-	var commands = result.split(",");
-	commands.map(function(type) {
-	    type=type.trim();
+        var tmp_controls= "";
+	
+        result=result.replace('Available commands: ', '');
+        tmp_controls = "<form id=\"input\">";
+	
+        var commands = result.split(",");
+        commands.map(function(type) {
+            type=type.trim();
 	    
-	    if(type.includes("[") && type.includes(":")){
-		type=type.replace("[","");
-		type=type.replace("]","");
-		var fields=type.split(":");
-		fields=fields.map(function(item){return item.trim();});
-		tmp_controls +=  "<p>" +fields[0] + "  <input type=\"range\" min=\"" + fields[1] + "\" max=\"" + fields[2] + "\"  step=\"" + fields[3] + "\" value=\"" + fields[4] + "\" id=\"" + fields[0] + "slider\" onchange=\"document.getElementById('"+ fields[0] + "').value=this.value\">  <input type=\"number\" id=\"" + fields[0] + "\" min=\""+ fields[1] + "\" max=\"" + fields[2] + "\" step=\"" + fields[3] + "\" value=\"" + fields[4] + "\" onchange=\"document.getElementById('"+ fields[0] + "slider').value=this.value\">  <button type=\"button\" onclick=\"sendcommand3(\'" + fields[0] + "', '" + fields[0] + "slider' )\">Update</button></p>"
-	    }
+            if(type.includes("[") && type.includes(":")){
+                type=type.replace("[","");
+                type=type.replace("]","");
+                var fields=type.split(":");
+                fields=fields.map(function(item){return item.trim();});
+                tmp_controls +=  "<p>" +fields[0] + "  <input type=\"range\" min=\"" + fields[1] + "\" max=\"" + fields[2] + "\"  step=\"" + fields[3] + "\" value=\"" + fields[4] + "\" id=\"" + fields[0] + "slider\" onchange=\"document.getElementById('"+ fields[0] + "').value=this.value\">  <input type=\"number\" id=\"" + fields[0] + "\" min=\""+ fields[1] + "\" max=\"" + fields[2] + "\" step=\"" + fields[3] + "\" value=\"" + fields[4] + "\" onchange=\"document.getElementById('"+ fields[0] + "slider').value=this.value\">  <button type=\"button\" onclick=\"sendcommand3(\'" + fields[0] + "', '" + fields[0] + "slider' )\">Update</button></p>";
+            }
 	    
-	    else if(type.includes("[") && type.includes(";")){
-		type=type.replace("[","");
-		type=type.replace("]","");
-		var fields=type.split(";");
-		fields=fields.map(function(item){return item.trim();});
-		var html ="<p>" + fields[0] ; 
-		for (let i = 1; i < fields.length-1; i++) {
-		    html += " <input type=\"radio\" id=\"" + fields[0] + fields[i] + "\" name=\"" + fields[0] + "\" value=\"" + fields[i] +"\" ";
-		    if( fields[i] == fields[fields.length-1]) html +="checked";
-		    html +="><label for=\"" + fields[0] + fields[i] + "\">" + fields[i] + "</label>";
-		}
-		tmp_controls += html + "  <button type=\"button\" onclick=\"sendcommand3(\'" + fields[0] + "', '" + fields[0] + fields[fields.length-1] +"')\">Update</button></p>";
+            else if(type.includes("[") && type.includes(";")){
+                type=type.replace("[","");
+                type=type.replace("]","");
+                var fields=type.split(";");
+                fields=fields.map(function(item){return item.trim();});
+                var html ="<p>" + fields[0] ;
+                for (let i = 1; i < fields.length-1; i++) {
+                    html += " <input type=\"radio\" id=\"" + fields[0] + fields[i] + "\" name=\"" + fields[0] + "\" value=\"" + fields[i] +"\" ";
+                    if( fields[i] == fields[fields.length-1]) html +="checked";
+                    html +="><label for=\"" + fields[0] + fields[i] + "\">" + fields[i] + "</label>";
+                }
+                tmp_controls += html + "  <button type=\"button\" onclick=\"sendcommand3(\'" + fields[0] + "', '" + fields[0] + fields[fields.length-1] +"')\">Update</button></p>";
 		
-	    }
+            }
 	    
-	    else if(type.includes("<") && type.includes(">")){
-		type=type.replace(/>/g,"");
-		var fields=type.split("<");
-		fields=fields.map(function(item){return item.trim();});
-		var html ="<p>" + fields[0] + "  <input type=\"text\" id=\"" + fields[0] + "args\" value=\"";
-
-		for (let i = 1; i < fields.length; i++) {
-		    html += "<" + fields[i] + "> "; 
-		}
-		tmp_controls += html + "\">  <button type=\"button\" onclick=\"sendcommand3(\'" + fields[0] + "', '" + fields[0] +"args')\">Send</button></p>";
-
-	    }
-	    
-	    else{
+            else if(type.includes("<") && type.includes(">")){
+                type=type.replace(/>/g,"");
+                var fields=type.split("<");
+                fields=fields.map(function(item){return item.trim();});
+                var html ="<p>" + fields[0] + "  <input type=\"text\" id=\"" + fields[0] + "args\" value=\"";
 		
-		tmp_controls += "<p><button type=\"button\" onclick=\"sendcommand3(\'" + type + "\')\">" + type + "</button></p>";
-	    }
+                for (let i = 1; i < fields.length; i++) {
+                    html += "<" + fields[i] + "> ";
+                }
+                tmp_controls += html + "\">  <button type=\"button\" onclick=\"sendcommand3(\'" + fields[0] + "', '" + fields[0] +"args')\">Send</button></p>";
+		
+            }
 	    
+            else{
+		
+                tmp_controls += "<p><button type=\"button\" onclick=\"sendcommand3(\'" + type + "\')\">" + type + "</button></p>";
+            }
+	    
+        });
+        tmp_controls += "</form> ";
+        return tmp_controls;
+	
+    };
+    
+    
+    var commands = "?"
+    
+    if(!async) return MakeControls(Command(ip, port, commands, async));
+    
+    else{
+	
+	return new Promise(function(resolve, reject){	
+	    
+	    Command(ip, port, commands, async).then(function(result){
+		
+		resolve(MakeControls(result));
+		
+	    });
 	});
-	tmp_controls += "</form> ";
-	div.innerHTML = tmp_controls;
+    }
+    
+}
+
+
+function sendcommand3(...incommands){
+
+   let buttons = document.getElementsByTagName('button');
+    for (let i = 0; i < buttons.length; i++) {
+        buttons[i].disabled = true;
+    }
+
+    var incommand=incommands[0];
+    for (let i = 1; i < incommands.length; i++) {
+        var tmp = document.getElementById(incommands[i])
+        if(tmp.type=="radio") incommand+= " " +document.querySelector('input[name="' + tmp.name + '"]:checked').value;
+        else incommand+= " " + tmp.value;
+    }
+
+
+
+    command(select.value.split(":")[0], select.value.split(":")[1], incommand).then(function(result){
+
+        command_output.innerHTML = "Sending Command {" + incommand + "} to [" + select.value + "] <br>";
+        command_output.innerHTML += "[" + select.value + "] Reply: " + result;
+
+        commands.value="";
+
+        updateTable();
+
+        let buttons = document.getElementsByTagName('button');
+        for (let i = 0; i < buttons.length; i++) {
+            buttons[i].disabled = false;
+        }
 
     });
+
 }
