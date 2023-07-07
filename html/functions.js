@@ -5,7 +5,10 @@
 // GetPort(service_name, async=false) - returns port of first serivce with anme given
 // Command(ip, port, command, asynx) - Sends command to the serivce specified and returns string response
 // GetSlowCommands(ip, port, async=false) - returns html to produce all slow control buttons of client
+// SendSCCommand(ip, port, command_output, ...incommands) - command used by slow cotnrol buttons to send commands to clients
+// GetPSQLTable(command, user, database, async=false) - get sql table from database
 
+/*
 function ResolveVariable(variable){
  if (variable instanceof Promise) {
     // If the variable is a promise, block until it's resolved
@@ -16,6 +19,7 @@ function ResolveVariable(variable){
     return variable;
   }
 }
+*/
 
 function HTTPRequest(method, url, async=false, data=null, user=null, password=null){
     
@@ -47,7 +51,7 @@ function HTTPRequest(method, url, async=false, data=null, user=null, password=nu
 }
 
 function GetSDTable(filter=null, async=false) { 
-    filter= ResolveVariable(filter); 
+  //  filter= ResolveVariable(filter); 
    
     function ProcessTable(csvData){
 	var table= document.createElement('table');
@@ -95,7 +99,7 @@ function GetSDTable(filter=null, async=false) {
 
 
 function GetIP(service_name, async=false){
-  service_name= ResolveVariable(service_name);    
+  //service_name= ResolveVariable(service_name);    
 
     if(async){
 	return new Promise(function(resolve, reject){
@@ -116,7 +120,7 @@ function GetIP(service_name, async=false){
 
 
 function GetPort(service_name, async=false){
-    service_name= ResolveVariable(service_name);
+    //service_name= ResolveVariable(service_name);
 
     if(async){
 	return new Promise(function(resolve, reject){
@@ -137,9 +141,9 @@ function GetPort(service_name, async=false){
 
 
 function Command(ip, port, command, async=false){ //this command sends messages to services
-    ip= ResolveVariable(ip);
-    port= ResolveVariable(port);
-    command= ResolveVariable(command);
+    //ip= ResolveVariable(ip);
+    //port= ResolveVariable(port);
+    //command= ResolveVariable(command);
     
     // Convert the object to a URL-encoded string
     var data_string = "ip=" + ip + "&port=" + port + "&command=" + command;
@@ -162,8 +166,8 @@ function Command(ip, port, command, async=false){ //this command sends messages 
 	
 function GetSlowCommands(ip, port, command_output, async=false){
     
-    ip = ResolveVariable(ip);
-    port = ResolveVariable(port);
+    //ip = ResolveVariable(ip);
+    //port = ResolveVariable(port);
     
 
     function MakeControls(result){
@@ -176,13 +180,20 @@ function GetSlowCommands(ip, port, command_output, async=false){
         var commands = result.split(",");
         commands.map(function(type) {
             type=type.trim();
+	
+	    if(type.includes("{") && type.includes("}")){
+                type=type.replace(/}/g,"");
+                var fields=type.split("{");
+		var html ="<p>" + fields[0] + ":  <textarea id=\"" + fields[0] + "args\" readonly>" +  fields[1] + "</textarea><\p>";
+		tmp_controls += html;
+            }
 	    
-            if(type.includes("[") && type.includes(":")){
+            else if(type.includes("[") && type.includes(":")){
                 type=type.replace("[","");
                 type=type.replace("]","");
                 var fields=type.split(":");
                 fields=fields.map(function(item){return item.trim();});
-                tmp_controls +=  "<p>" +fields[0] + "  <input type=\"range\" min=\"" + fields[1] + "\" max=\"" + fields[2] + "\"  step=\"" + fields[3] + "\" value=\"" + fields[4] + "\" id=\"" + fields[0] + "slider\" onchange=\"document.getElementById('"+ fields[0] + "').value=this.value\">  <input type=\"number\" id=\"" + fields[0] + "\" min=\""+ fields[1] + "\" max=\"" + fields[2] + "\" step=\"" + fields[3] + "\" value=\"" + fields[4] + "\" onchange=\"document.getElementById('"+ fields[0] + "slider').value=this.value\">  <button type=\"button\" onclick=\"sendcommand3(\'" + fields[0] + "', '" + fields[0] + "slider' )\">Update</button></p>";
+                tmp_controls +=  "<p>" +fields[0] + "  <input type=\"range\" min=\"" + fields[1] + "\" max=\"" + fields[2] + "\"  step=\"" + fields[3] + "\" value=\"" + fields[4] + "\" id=\"" + fields[0] + "slider\" onchange=\"document.getElementById('"+ fields[0] + "').value=this.value\">  <input type=\"number\" id=\"" + fields[0] + "\" min=\""+ fields[1] + "\" max=\"" + fields[2] + "\" step=\"" + fields[3] + "\" value=\"" + fields[4] + "\" onchange=\"document.getElementById('"+ fields[0] + "slider').value=this.value\">  <button type=\"button\" onclick=\"SendSCCommand('" + ip + "', '" + port + "', '" +  command_output.id + "', \'" + fields[0] + "', '" + fields[0] + "slider' )\">Update</button></p>";
             }
 	    
             else if(type.includes("[") && type.includes(";")){
@@ -196,7 +207,7 @@ function GetSlowCommands(ip, port, command_output, async=false){
                     if( fields[i] == fields[fields.length-1]) html +="checked";
                     html +="><label for=\"" + fields[0] + fields[i] + "\">" + fields[i] + "</label>";
                 }
-                tmp_controls += html + "  <button type=\"button\" onclick=\"sendcommand3(\'" + fields[0] + "', '" + fields[0] + fields[fields.length-1] +"')\">Update</button></p>";
+                tmp_controls += html + "  <button type=\"button\" onclick=\"SendSCCommand('" + ip + "', '" + port + "', '" +  command_output.id + "', \'" + fields[0] + "', '" + fields[0] + fields[fields.length-1] +"')\">Update</button></p>";
 		
             }
 	    
@@ -209,13 +220,13 @@ function GetSlowCommands(ip, port, command_output, async=false){
                 for (let i = 1; i < fields.length; i++) {
                     html += "<" + fields[i] + "> ";
                 }
-                tmp_controls += html + "\">  <button type=\"button\" onclick=\"sendcommand3(\'" + fields[0] + "', '" + fields[0] +"args')\">Send</button></p>";
+                tmp_controls += html + "\">  <button type=\"button\" onclick=\"SendSCCommand('" + ip + "', '" + port + "', '" +  command_output.id + "', \'" + fields[0] + "', '" + fields[0] +"args')\">Send</button></p>";
 		
             }
 	    
             else{
 		
-                tmp_controls += "<p><button type=\"button\" onclick=\"sendcommand3(\'" + type + "\')\">" + type + "</button></p>";
+                tmp_controls += "<p><button type=\"button\" onclick=\"SendSCCommand('" + ip + "', '" + port + "', '" +  command_output.id + "', \'" + type + "\')\">" + type + "</button></p>";
             }
 	    
         });
@@ -244,36 +255,120 @@ function GetSlowCommands(ip, port, command_output, async=false){
 }
 
 
-function sendcommand3(...incommands){
+function SendSCCommand(ip, port, command_output, ...incommands){
 
-   let buttons = document.getElementsByTagName('button');
+    command_output = document.getElementById(command_output);
+    
+    let buttons = document.getElementsByTagName('button');
     for (let i = 0; i < buttons.length; i++) {
         buttons[i].disabled = true;
     }
-
+    
     var incommand=incommands[0];
     for (let i = 1; i < incommands.length; i++) {
         var tmp = document.getElementById(incommands[i])
         if(tmp.type=="radio") incommand+= " " +document.querySelector('input[name="' + tmp.name + '"]:checked').value;
         else incommand+= " " + tmp.value;
     }
+    
+    
 
-
-
-    command(select.value.split(":")[0], select.value.split(":")[1], incommand).then(function(result){
-
-        command_output.innerHTML = "Sending Command {" + incommand + "} to [" + select.value + "] <br>";
-        command_output.innerHTML += "[" + select.value + "] Reply: " + result;
-
-        commands.value="";
-
-        updateTable();
-
+    Command(ip, port, incommand, true).then(function(result){
+	
+        command_output.innerHTML = "Sending Command {" + incommand + "} to [" + ip + "] <br>";
+        command_output.innerHTML += "[" + ip + "] Reply: " + result;
+	
         let buttons = document.getElementsByTagName('button');
         for (let i = 0; i < buttons.length; i++) {
             buttons[i].disabled = false;
         }
-
+	
     });
 
 }
+
+
+function GetPSQLTable(command, user, database, async=false){
+ 
+    command = command.replace("*", "'*'");   
+    var data_string = "user=" + user + "&db=" + database + "&command=" + command;
+    
+    return HTTPRequest("POST", "./cgi-bin/sqlquery.cgi", async, data_string);
+
+
+}
+
+
+function MakePlotDataFromPSQL(command, user, databse, output_data_array=null, async=false){ //function to generate plotly plot
+ 
+     function MakePlotData(table){
+	    
+	    var div = document.createElement("div");
+	    div.innerHTML=result;
+	    var table = div.getElementById("table");
+	    table.style.display = "none";
+	    var xdata= new Map();
+	    var ydata= new Map();
+	    
+	    for( var i=1; i< table.rows.length; i++){
+		
+		var jsondata = JSON.parse(table.rows[i].cells[2].innerText);
+		
+		for (let key in jsondata) {
+		    if(!xdata.has(key)){
+			xdata.set(key,[table.rows[i].cells[0].innerText]);
+			ydata.set(key,[jsondata[key]]);
+		    }
+		    else{
+			xdata.get(key).push(table.rows[i].cells[0].innerText);
+			ydata.get(key).push(jsondata[key]);
+			
+		    }
+		}
+	    }
+	    
+	    if( output_data_array == null)  output_data_array = [];
+	    for(let [key, value] of xdata){
+		
+		output_data_array.push({
+		    name: selectedOption.value + ":" +key,
+		    mode: 'lines',
+		    x: value,
+		    y: ydata.get(key)
+		});
+		
+	    }
+	    return output_data_array;
+	}
+ 
+    
+    
+    
+    if(!async) return MakePlotData(GetPSQLTable(ip, port, command, async));
+    
+    else{
+	
+	return new Promise(function(resolve, reject){	
+	    
+	    GetPSQLTable(ip, port, command, async).then(function(result){
+		
+		resolve(MakePlotData(result));
+		
+	    });
+	});
+    }
+    
+
+}
+
+
+
+function MakePlot(div, data, layout, update=false){
+
+    if(!update){
+	Plotly.deleteTraces(div, 0);
+	Plotly.plot(graphDiv, data, layout);
+    }
+    else Plotly.redraw(graphDiv,data, layout);
+}
+   

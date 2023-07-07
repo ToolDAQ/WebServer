@@ -348,7 +348,14 @@ function getcommands(){
 	commands.map(function(type) {
 	    type=type.trim();
 	    
-	    if(type.includes("[") && type.includes(":")){
+	    if(type.includes("{") && type.includes("}")){
+                type=type.replace(/}/g,"");
+                var fields=type.split("{");
+                var html ="<p>" + fields[0] + ":  <textarea id=\"" + fields[0] + "args\" readonly>" +  fields[1] + "</textarea><\p>";
+		tmp_controls += html;
+            }
+	    
+	    else if(type.includes("[") && type.includes(":")){
 		type=type.replace("[","");
 		type=type.replace("]","");
 		var fields=type.split(":");
