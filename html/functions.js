@@ -7,6 +7,8 @@
 // GetSlowCommands(ip, port, async=false) - returns html to produce all slow control buttons of client
 // SendSCCommand(ip, port, command_output, ...incommands) - command used by slow cotnrol buttons to send commands to clients
 // GetPSQLTable(command, user, database, async=false) - get sql table from database
+// MakePlotDataFromPSQL(command, user, databse, output_data_array=null, async=false) - makes data for a plotly plot based on sql table
+// MakePlot(div, data, layout, update=false) - makes or updates a plot div
 
 /*
 function ResolveVariable(variable){

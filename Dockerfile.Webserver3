@@ -35,11 +35,12 @@ RUN sudo -u postgres /usr/bin/initdb /var/lib/pgsql/data/; \
     sudo -u postgres /usr/bin/pg_ctl start -D /var/lib/pgsql/data -s -o "-p 5432" -w -t 300; \
     sudo -u postgres createuser -s root ;\
     sudo -u postgres psql -c "create database daq with owner=root;"; \
-    psql -ddaq -c "create table monitoring (time timestamp NOT NULL, name text NOT NULL, data JSON NOT NULL);";\
-    psql -ddaq -c "create table logging (time timestamp NOT NULL, source text NOT NULL, severity integer NOT NULL, message text NOT NULL);";\
-    psql -ddaq -c "create table Alarms (time timestamp NOT NULL, name text NOT NULL, alarm text NOT NULL, silenced integer DEFAULT 0 );";\
-    psql -ddaq -c "create table configurations (time timestamp NOT NULL, name text NOT NULL, version int NOT NULL, data JSON NOT NULL, UNIQUE (name, version) );";\
-    psql -ddaq -c "create table runinfo (run int NOT NULL, subrun int NOT NULL, starttime timestamp NOT NULL, stoptime timestamp, number int , comments text, UNIQUE (run, subrun));";\
+    psql -ddaq -c "create table monitoring (time timestamp with time zone NOT NULL, source text NOT NULL, data JSON NOT NULL);";\
+    psql -ddaq -c "create table logging (time timestamp with time zone NOT NULL, source text NOT NULL, severity integer NOT NULL, message text NOT NULL);";\
+    psql -ddaq -c "create table alarms (time timestamp with time zone NOT NULL,  source text NOT NULL, type text NOT NULL, alarm text NOT NULL, silenced integer DEFAULT 0 );";\
+    psql -ddaq -c "create table device_config (time timestamp with time zone NOT NULL, device text NOT NULL, version int NOT NULL, author text NOT NULL, data JSON NOT NULL, UNIQUE (device, version) );";\
+    psql -ddaq -c "create table configurations (config_id int NOT NULL primary key, time timestamp with time zone NOT NULL, name text NOT NULL, version int NOT NULL, description text NOT NULL, author text NOT NULL, data JSON NOT NULL, UNIQUE (config_id) );";\
+    psql -ddaq -c "create table run_info (run int NOT NULL, subrun int NOT NULL, start_time timestamp with time zone NOT NULL, stop_time timestamp with time zone, config_id int NOT NULL, comments text NOT NULL, UNIQUE (run, subrun));";\
     echo " sudo -u postgres /usr/bin/pg_ctl start -D /var/lib/pgsql/data -s -o \"-p 5432\" -w -t 300;" >> /etc/rc.local
 
 RUN cd /opt; \

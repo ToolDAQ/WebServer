@@ -1,11 +1,11 @@
-var last=new Date();
+var last;
 var updateinterval;
 var output = document.getElementById("output");
 var tableselect = document.getElementById("tableselect");
 var data =[];
 var select = document.querySelector('select');
 var graphDiv = document.getElementById("graph"); 
-	    
+var updating=false;;	    
 
 //update dropdown called on startup
 updatedropdown();
@@ -18,7 +18,7 @@ function updatedropdown(){ //function for updating dropdown box with monitoring 
     
     //var user ="root";
     //var db="daq";
-    var command="SELECT distinct(name) from monitoring"
+    var command="SELECT distinct(source) from monitoring"
     
     // Set the request method to POST
     //xhr.open("POST", url);
@@ -92,7 +92,6 @@ select.addEventListener('change', function(){ //actions to take when drobdown ch
  
     if(tableselect.selectedIndex==-1) return;
     makeplot();
-    last= new Date();
     updateinterval=setInterval(updateplot, 2000);
 
 });
@@ -101,12 +100,12 @@ select.addEventListener('change', function(){ //actions to take when drobdown ch
 function makeplot(){ //function to generate plotly plot
 
     clearInterval(updateinterval);
-    
+          
     
     // Get the selected option
     if (select.options.length >0){
 	var selectedOption = select.options[select.selectedIndex];
-	var command = "select '*' from monitoring where name=\""+ selectedOption.value + "\"";
+	var command = "select '*' from monitoring where source=\""+ selectedOption.value + "\" order by time asc";
 	
 	gettable(command).then(function(result){
 	    
@@ -124,11 +123,11 @@ function makeplot(){ //function to generate plotly plot
 		    
 		    //		    if( i == 1 ){
 		    if(!xdata.has(key)){
-			xdata.set(key,[table.rows[i].cells[0].innerText]);
+			xdata.set(key,[table.rows[i].cells[0].innerText.slice(0,-3)]);
 			ydata.set(key,[jsondata[key]]);
 		    }
 		    else{
-			xdata.get(key).push(table.rows[i].cells[0].innerText);
+			xdata.get(key).push(table.rows[i].cells[0].innerText.slice(0,-3));
 			ydata.get(key).push(jsondata[key]);
 			
 		    }
@@ -171,17 +170,23 @@ function makeplot(){ //function to generate plotly plot
 
 
 function updateplot(){ //fucntion to update plot
-    
+    if(updating) return; 
+    else{
+	updating=true;
     // Get the selected option
     if (select.options.length >0){
 	var selectedOption = select.options[select.selectedIndex];
-	
-	var command = "select '*' from monitoring where name=\""+ selectedOption.value + "\" and time>to_timestamp(" + ((last.valueOf())/1000.0) + ");  ";
+
+      last=data[0].x[data[0].x.length-1];
+
+//	var command = "select '*' from monitoring where source=\""+ selectedOption.value + "\" and time>to_timestamp(" + ((last.valueOf())/1000.0) + ");  ";
+
+var command = "select '*' from monitoring where source=\""+ selectedOption.value + "\" and time>\"" + last.valueOf() + "\" order by time asc;  ";
 	
 	gettable(command).then(function(result){
-	    
-	    last=new Date();
-	    
+
+          last=data[0].x[data[0].x.length-1];
+    
 	    output.innerHTML=result;
 	    var table = document.getElementById("table");
 	    table.style.display = "none";
@@ -196,13 +201,13 @@ function updateplot(){ //fucntion to update plot
 		    
 		    //		    if( i == 1 ){
 		    if(!xdata.has(key)){
-			xdata.set(key,[table.rows[i].cells[0].innerText]);
+			xdata.set(key,[table.rows[i].cells[0].innerText.slice(0,-3)]);
 			ydata.set(key,[jsondata[key]]);
 		    }
 		    else{
-			xdata.get(key).push(table.rows[i].cells[0].innerText);
-			ydata.get(key).push(jsondata[key]);
-			
+			    xdata.get(key).push(table.rows[i].cells[0].innerText.slice(0,-3));
+			    ydata.get(key).push(jsondata[key]);
+		
 		    }
 		}
 	    }
@@ -233,13 +238,14 @@ function updateplot(){ //fucntion to update plot
 		//	    }    	
 		Plotly.redraw(graphDiv,data, layout);	
 	    //	    Plotly.plot(graphDiv, data, layout);	    
-	    
+	    updating=false;
 	});
 	// Perform an action with the selected option
 	//console.log('You selected: ' + selectedOption.value);
     }
 
     
+    }
 };
 
 
@@ -305,6 +311,6 @@ var selectorOptions = { //plot options definitions
         count: 1,
         label: '1y'
     }, {
-        step: 'all',
+        step: 'all'
     }],
 };
