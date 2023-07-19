@@ -1,14 +1,14 @@
 // Functions:
-// HTTPRequest(method, url, async=false, data=null, user=null, password=null) - undertakes HTTP request and returns data
-// GetSDTable(filter=null, async=null) - returns SDTable with filter applied to service name
-// GetIP(service_name, async=false) - returns IP of first service with name given
-// GetPort(service_name, async=false) - returns port of first serivce with anme given
-// Command(ip, port, command, asynx) - Sends command to the serivce specified and returns string response
-// GetSlowCommands(ip, port, async=false) - returns html to produce all slow control buttons of client
-// SendSCCommand(ip, port, command_output, ...incommands) - command used by slow cotnrol buttons to send commands to clients
-// GetPSQLTable(command, user, database, async=false) - get sql table from database
-// MakePlotDataFromPSQL(command, user, databse, output_data_array=null, async=false) - makes data for a plotly plot based on sql table
-// MakePlot(div, data, layout, update=false) - makes or updates a plot div
+//   HTTPRequest(method, url, async=false, data=null, user=null, password=null) - undertakes HTTP request and returns data
+//   GetSDTable(filter=null, async=null) - returns SDTable with filter applied to service name
+//   GetIP(service_name, async=false) - returns IP of first service with name given
+//   GetPort(service_name, async=false) - returns port of first serivce with anme given
+//   Command(ip, port, command, asynx) - Sends command to the serivce specified and returns string response
+//   GetSlowCommands(ip, port, async=false) - returns html to produce all slow control buttons of client
+//   SendSCCommand(ip, port, command_output, ...incommands) - command used by slow cotnrol buttons to send commands to clients
+//   GetPSQLTable(command, user, database, async=false) - get sql table from database
+//   MakePlotDataFromPSQL(command, user, databse, output_data_array=null, async=false) - makes data for a plotly plot based on sql table
+//   MakePlot(div, data, layout, update=false) - makes or updates a plot div
 
 /*
 function ResolveVariable(variable){
