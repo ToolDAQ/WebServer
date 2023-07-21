@@ -292,7 +292,8 @@ function SendSCCommand(ip, port, command_output, ...incommands){
 
 function GetPSQLTable(command, user, database, async=false){
  
-    command = command.replace("*", "'*'");   
+    command = command.replaceAll("*", "'*'");   
+    command = command.replaceAll("=", "|"); 
     var data_string = "user=" + user + "&db=" + database + "&command=" + command;
     
     return HTTPRequest("POST", "./cgi-bin/sqlquery.cgi", async, data_string);
