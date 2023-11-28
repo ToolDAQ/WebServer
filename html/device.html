@@ -1,0 +1,31 @@
+<head>
+  <title>ToolDAQ Webpage</title>
+  
+</head>
+
+<!--#include file="header.html" -->
+
+<table style="width: 80%; text-align: center; padding: 20px;">
+  <tr>
+    <td colspan="2" style="width: 50%; text-align: center;"><div id="status"><br></div></td>
+
+  </tr>
+  <tr>
+    <td style="width: 40%; text-align: center;"><div id="commands"></div></td>
+    <td style="width: 40%; text-align: center;"><div id="commands_output"> Slow Control Output</div></td>
+  </tr>
+  <tr>  
+  <td colspan="2" style="width: 80%; text-align: center;"><div id="plots"></div></td>
+  </tr>
+  <tr>
+    <td colspan="2" style="width: 80%; text-align: center;"><div id="logs" align="left" style="#ccc;font:12px/13px Georgia, Garamond, Serif;overflow:scroll;border:2px solid;padding:1%;height:200px">
+    </div></td>
+  </tr>
+</table>
+
+<!--#include file="footer.html" -->
+
+<script src="https://cdn.plot.ly/plotly-1.8.0.min.js"></script>
+<script src="/functions.js?v=1"></script>
+<script src="/plotlylayouts.js?v=1"></script>
+<script src="/device.js?v=1" defer></script>

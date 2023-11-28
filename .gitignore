@@ -1,0 +1,11 @@
+*.o
+*.so
+*.d
+*.a
+*~
+include
+lib
+*/a.out
+main
+NodeDaemon
+RemoteControl
