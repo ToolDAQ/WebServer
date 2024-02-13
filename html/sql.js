@@ -53,7 +53,7 @@ function updatedropdown(){ //function to get SQL tables and populate dropdown
     
     //var user ="root";
     //var db="daq";
-    var command="SELECT table_name from information_schema.tables where table_schema=\"public\" AND table_type=\"BASE TABLE\""
+    var command="SELECT table_name from information_schema.tables where table_schema='public' AND table_type='BASE TABLE'"
     
     // Set the request method to POST
     //xhr.open("POST", url);
@@ -95,7 +95,7 @@ select.addEventListener('change', function() {  //actions to take on change of s
     // Get the selected option
     if( tableselect.selectedIndex==-1) return;
     var selectedOption = this.options[this.selectedIndex];
-    var command = "select '*' from "+ selectedOption.value;
+    var command = "select * from "+ selectedOption.value;
 
     if(selectedOption.value=="monitoring" || selectedOption.value=="logging" || selectedOption.value=="alarms" || selectedOption.value=="configurations") command +=" order by time desc";
     command+=" limit " + limit.value;
@@ -112,12 +112,7 @@ select.addEventListener('change', function() {  //actions to take on change of s
 
 submit.addEventListener('click', function(){ //actions to take when submit button pressed
     submit.disabled=true;
-    // var commandsend=command.value.replace(/\*/g, "'*'");
-    //commandsend=commandsend.replace(/'/g, "\"");
-    var commandsend=command.value.replace(/'/g, "\"");
-    commandsend=commandsend.replace(/\*/g, "'*'");
-    
-    gettable(commandsend).then(function(result){
+    gettable(command.value).then(function(result){
 
 	sqloutput.innerHTML=result;
 	submit.disabled=false;
