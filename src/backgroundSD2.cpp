@@ -18,6 +18,8 @@
 #include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
 #include <boost/date_time/posix_time/posix_time.hpp>
 
+using namespace ToolFramework;
+
 int main (){
 
   

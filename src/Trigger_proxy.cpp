@@ -6,6 +6,8 @@
 #include <ServiceDiscovery.h>
 #include <Store.h>
 
+using namespace ToolFramework;
+
 int main(){
 
   zmq::context_t context(1);
