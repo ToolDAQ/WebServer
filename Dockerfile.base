@@ -1,0 +1,63 @@
+FROM rockylinux:9
+
+USER root
+
+RUN yum install -y                   \
+                git                  \
+                wget                 \
+                tar                  \
+                gcc-c++              \
+                make                 \
+                cmake                \
+                file                 \
+                which                \
+                dialog               \
+                zlib-devel           \
+                nano                 \
+    && yum clean all                 \
+    && rm -rf /var/cache/yum         \
+    && ln -s /usr/bin/python3 /usr/bin/python
+
+RUN git config --global --add safe.directory /opt \
+    && git config --global --add safe.directory /web;
+
+RUN cd /opt \
+    && git clone https://github.com/ToolDAQ/zeromq-4.0.7.git \
+    && cd zeromq-4.0.7 \
+    && ./configure --prefix=`pwd`/../tmp \
+    && make -j `nproc --all` \
+    && make install \
+    && cp include/zmq.hpp ../tmp/include/ \
+    && rm -rf ./* \
+    && mv ../tmp/* ./ \
+    && rm -rf ../tmp
+
+# skip as bind mounted
+#RUN cd /opt \
+#    && git clone https://github.com/ToolFramework/ToolFrameworkCore.git \
+#    && cd ToolFrameworkCore/ \
+#    && git checkout v3.0 \
+#    && make
+
+# change to boost 1.84 ? didn't seem needed...
+RUN cd /opt \
+    && git clone https://github.com/ToolDAQ/boost_1_66_0.git \
+    && cd boost_1_66_0/ \
+    && rm -rf INSTALL \
+    && mkdir install \
+    && ./bootstrap.sh --prefix=`pwd`/install --without-libraries=python \
+    && ./b2 install iostreams -j$(nproc) \
+    && mv install/ ../ \
+    && rm -rf ./* \
+    && mv ../install/ ./
+
+# skip as bind mounted
+# change Makefile to point to boost 1.66 if necessary
+#RUN cd /opt \
+#    && git clone https://github.com/ToolDAQ/ToolDAQFramework.git \
+#    && cd ToolDAQFramework/ \
+#    && checkout v3.0 \
+#    && make
+
+CMD ["/bin/bash"]
+
