@@ -45,7 +45,7 @@ RUN sudo -u postgres /usr/bin/initdb /var/lib/pgsql/data/; \
 RUN cd /opt; \
     git clone --depth 1 --single-branch -b hkexample https://github.com/marc1uk/middleman.git; \
     cd middleman; \
-    ./Setup.sh; \
+    . ./Setup.sh; \
     make -j`nproc --all`; \
     chmod a+x  run_middleman.sh; 
 
