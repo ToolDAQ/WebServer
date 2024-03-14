@@ -26,7 +26,7 @@ function GetLogSources(){ //command to get log files, first cehckes which device
 	
 	tmp.map(function(row){
 	    
-	    var command= "select time, severity, message from logging where source=\"" + row + "\" order by time desc limit 15;";
+	    var command= "select time, severity, message from logging where source='" + row + "' order by time desc limit 15;";
 	    gettable(command).then(function(result2){
 		
 		var pos=0;
