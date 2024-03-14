@@ -34,11 +34,11 @@ function gettable(command){ //generic get sql table command
 	xhr.send(dataString);
 	
 	xhr.onreadystatechange = function() {
-	    if (this.readyState == 4 && this.status == 200) {
-		
-		resolve(xhr.responseText);
-	    }	       
-//	    else reject(new Error('error loading'));
+          if (this.readyState == XMLHttpRequest.DONE)
+            if (this.status == 200)
+              resolve(xhr.responseText);
+            else
+              reject(new Error('error loading'));
 	}
     });
     
@@ -89,7 +89,21 @@ function updatedropdown(){ //function to get SQL tables and populate dropdown
     
     
 }
-		   
+
+// actions to take when submit button pressed
+function submit_query() {
+    submit.disabled=true;
+    gettable(command.value).then(
+      function(result){
+	sqloutput.innerHTML=result;
+	submit.disabled=false;
+      },
+      function (error) {
+        sqloutput.textContent = error.message;
+        submit.disabled = false;
+      }
+    );
+}
 
 select.addEventListener('change', function() {  //actions to take on change of select box 
     // Get the selected option
@@ -110,13 +124,7 @@ select.addEventListener('change', function() {  //actions to take on change of s
     
 });
 
-submit.addEventListener('click', function(){ //actions to take when submit button pressed
-    submit.disabled=true;
-    gettable(command.value).then(function(result){
-
-	sqloutput.innerHTML=result;
-	submit.disabled=false;
-   
-    });
-    
+submit.addEventListener('click', submit_query);
+command.addEventListener('keypress', function (e) {
+  if (e.which == 13) submit_query();
 });
