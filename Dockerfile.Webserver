@@ -41,6 +41,9 @@ RUN sudo -u postgres /usr/bin/initdb /var/lib/pgsql/data/; \
     psql -ddaq -c "create table device_config (time timestamp with time zone NOT NULL, device text NOT NULL, version int NOT NULL, author text NOT NULL, data JSON NOT NULL, UNIQUE (device, version) );";\
     psql -ddaq -c "create table configurations (config_id int NOT NULL primary key, time timestamp with time zone NOT NULL, name text NOT NULL, version int NOT NULL, description text NOT NULL, author text NOT NULL, data JSON NOT NULL, UNIQUE (config_id) );";\
     psql -ddaq -c "create table run_info (run int NOT NULL, subrun int NOT NULL, start_time timestamp with time zone NOT NULL, stop_time timestamp with time zone, config_id int NOT NULL, comments text NOT NULL, UNIQUE (run, subrun));";\
+    psql -ddaq -c "create table plots (plot text PRIMARY KEY, mtime timestamp with time zone NOT NULL DEFAULT now(), x float[] NOT NULL DEFAULT '{}', y float[] NOT NULL DEFAULT '{}', xlabel text NOT NULL DEFAULT '', ylabel text NOT NULL DEFAULT '', title text NOT NULL DEFAULT '', info json NOT NULL DEFAULT '{}')"; \
+    psql -ddaq -c 'create function on_plots_update() returns trigger as $$ begin new.mtime = now(); return new; end; $$ language plpgsql'; \
+    psql -ddaq -c "create trigger plots_update before update on plots for row execute procedure on plots_update()"; \
     echo " sudo -u postgres /usr/bin/pg_ctl start -D /var/lib/pgsql/data -s -o \"-p 5432\" -w -t 300;" >> /etc/rc.local
 
 RUN cd /opt; \
@@ -71,7 +74,7 @@ RUN cd /opt; \
 RUN echo "unalias cp" >>  /etc/rc.local ;\
     echo "cp -f /web/httpd.conf /etc/httpd/conf/" >>  /etc/rc.local ;\
     echo "alias cp='cp -i'" >>  /etc/rc.local ;\
-    echo "export LD_LIBRARY_PATH=/opt/ToolDAQFramework/lib:/opt/boost_1_66_0/install/lib:/opt/zeromq-4.0.7/lib:$LD_LIBRARY_PATH" >> /etc/rc.local ;\
+    echo "export LD_LIBRARY_PATH=/opt/ToolDAQFramework/lib:/opt/boost_1_66_0/install/lib:/opt/zeromq-4.0.7/lib:/opt/libpqxx-6.4.5/install/lib:$LD_LIBRARY_PATH" >> /etc/rc.local ;\
     echo "/opt/middleman/run_middleman.sh &> /dev/null &" >> /etc/rc.local ;\
     echo 'disown $!' >> /etc/rc.local ;\
     echo "/web/Win_Mac_translation_server  &> /dev/null &" >> /etc/rc.local ;\

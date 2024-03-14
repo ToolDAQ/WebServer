@@ -20,12 +20,37 @@
       <div align="center" id="output"></div>
       <div id="graph"></div>      
       <br>
+
+      <div id="plots"></div>
       
       <!--#include file="footer.html" -->
       
   </body>
 </html>
 
-<script src="https://cdn.plot.ly/plotly-1.8.0.min.js" async></script>
+<script>
+  function plot_all() {
+    GetPlot().then(
+      function (plots) {
+        let canvas = document.getElementById('plots');
+        for (let plot of plots) {
+          let div = document.createElement('div');
+          Plotly.plot(
+            div,
+            [ { x: plot.x, y: plot.y } ],
+            {
+              title: plot.title,
+              xaxis: { title: plot.xlabel },
+              yaxis: { title: plot.ylabel }
+            }
+          );
+          canvas.appendChild(div);
+        }
+      }
+    );
+  }
+</script>
+
+<script src="https://cdn.plot.ly/plotly-1.8.0.min.js" async onload='plot_all()'></script>
 <script src="./monitoring.js?v=7" async></script>
 <script src="./monitoringtabs.js?v=1" async></script>

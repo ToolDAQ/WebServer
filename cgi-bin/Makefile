@@ -1,4 +1,4 @@
-all:  sendcommand2.cgi sendcommand2nopadding.cgi
+all:  sendcommand2.cgi sendcommand2nopadding.cgi getplot.cgi
 
 
 sendcommand2.cgi: sendcommand2.cpp
@@ -11,7 +11,9 @@ sendcommand2nopadding.cgi: sendcommand2nopadding.cpp
 de/  -I /opt/zeromq-4.0.7/include -L /opt/boost_1_66_0/install/lib  -lboost_date_time -lboost_serialization  -lboost_iostreams  -L /opt/zeromq-4.0.7/lib -lzmq
 	chmod a+x sendcommand2nopadding.cgi
 
+getplot.cgi: getplot.cpp
+	g++ -Wno-attributes -std=c++11 getplot.cpp -o getplot.cgi -I /opt/libpqxx-6.4.5/install/include -L /opt/libpqxx-6.4.5/install/lib -lpqxx -lpq
 
 clean:
 
-	rm  sendcommand2.cgi sendcommand2nopadding.cgi
+	rm -f sendcommand2.cgi sendcommand2nopadding.cgi getplot.cgi
