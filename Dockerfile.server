@@ -42,19 +42,16 @@ RUN cd /opt \
     && cd ../ \
     && rm -rf cgicc-3.2.9
 
-RUN cd /web/cgi-bin \
-    && make clean \
-    && make
-
-RUN cd /web \
-    && make clean \
-    && make
-
 RUN echo "unalias cp" >>  /etc/rc.local ;\
     echo "cp -f /web/httpd.conf /etc/httpd/conf/" >>  /etc/rc.local ;\
     echo "alias cp='cp -i'" >>  /etc/rc.local ;\
-    echo "/web/SetupDatabase.sh" >> /etc/rc.local ;\
-    echo "export LD_LIBRARY_PATH=/opt/ToolFrameworkCore/lib:/opt/ToolDAQFramework/lib:/opt/boost_1_66_0/install/lib:/opt/zeromq-4.0.7/lib:$LD_LIBRARY_PATH" >> /etc/rc.local ;\
+    echo "chmod a+x /web/SetupDatabase.sh" >>  /etc/rc.local ;\
+    echo "chmod a+x /opt/middleman/run_middleman.sh" >>  /etc/rc.local ;\
+    echo "chmod a+x /opt/middleman/Setup.sh" >>  /etc/rc.local ;\
+    echo "export LD_LIBRARY_PATH=/lib/:/opt/ToolFrameworkCore/lib:/opt/ToolDAQFramework/lib:/opt/boost_1_66_0/install/lib:/opt/zeromq-4.0.7/lib:$LD_LIBRARY_PATH" >> /etc/rc.local ;\
+    echo "cd /web && make clean && make" >>  /etc/rc.local ;\
+    echo "cd /web/cgi-bin && make clean && make" >>  /etc/rc.local ;\
+    echo "/web/SetupDatabase.sh" >> /etc/rc.local ;\    
     echo "/opt/middleman/run_middleman.sh &> /dev/null &" >> /etc/rc.local ;\
     echo 'disown $!' >> /etc/rc.local ;\
     echo "/web/Win_Mac_translation_server  &> /dev/null &" >> /etc/rc.local ;\
