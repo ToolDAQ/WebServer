@@ -32,12 +32,10 @@ RUN cd /opt \
     && mv ../tmp/* ./ \
     && rm -rf ../tmp
 
-# skip as bind mounted
-#RUN cd /opt \
-#    && git clone https://github.com/ToolFramework/ToolFrameworkCore.git \
-#    && cd ToolFrameworkCore/ \
-#    && git checkout v3.0 \
-#    && make
+RUN cd /opt \
+    && git clone https://github.com/ToolFramework/ToolFrameworkCore.git \
+    && cd ToolFrameworkCore/ \
+    && make
 
 # change to boost 1.84 ? didn't seem needed...
 RUN cd /opt \
@@ -51,13 +49,10 @@ RUN cd /opt \
     && rm -rf ./* \
     && mv ../install/ ./
 
-# skip as bind mounted
-# change Makefile to point to boost 1.66 if necessary
-#RUN cd /opt \
-#    && git clone https://github.com/ToolDAQ/ToolDAQFramework.git \
-#    && cd ToolDAQFramework/ \
-#    && checkout v3.0 \
-#    && make
+RUN cd /opt \
+    && git clone https://github.com/ToolDAQ/ToolDAQFramework.git \
+    && cd ToolDAQFramework/ \
+    && make
 
 CMD ["/bin/bash"]
 
