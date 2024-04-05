@@ -23,6 +23,7 @@
 
 using namespace std;
 using namespace cgicc;
+using namespace ToolFramework;
 
 int main (){
 
