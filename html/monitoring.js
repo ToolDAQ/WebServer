@@ -18,7 +18,9 @@ function updatedropdown(){ //function for updating dropdown box with monitoring 
     
     //var user ="root";
     //var db="daq";
+  
     var command="SELECT distinct(device) from monitoring"
+
     
     // Set the request method to POST
     //xhr.open("POST", url);
@@ -105,6 +107,7 @@ function makeplot(){ //function to generate plotly plot
     // Get the selected option
     if (select.options.length >0){
 	var selectedOption = select.options[select.selectedIndex];
+
 	var command = "select '*' from monitoring where device=\""+ selectedOption.value + "\" order by time asc";
 	
 	gettable(command).then(function(result){

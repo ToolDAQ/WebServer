@@ -78,7 +78,7 @@ function updateTable() { //this command updates the service discovery table
 		    var cell2 = "<td bgcolor=\"" + colour + "\">" + cells[1] + "</td>";
 		    var cell3 = "<td style=\"display:none\" bgcolor=\"" + colour + "\">" + cells[2] + "</td>";
 		    //var cell4 = "<td bgcolor=\"" + colour + "\"> <a href=\"slowcontrol.html?ip=" + cells[1] +"port="+ cells[2] +"\">" + cells[3] + "</a></td>";
-		    var cell4 = "<td bgcolor=\"" + colour + "\">" + cells[3] + "</td>";
+		    var cell4 = "<td bgcolor=\"" + colour + "\">" + "<a href=\"device.html?$method=post&name=" + cells[3] + "&ip=" + cells[1] + "&port=" + cells[2] +"\" style=\"color: black\">" + cells[3] + "</a>" + "</td>";
 		    var cell5 = "<td bgcolor=\"" + colour + "\">" + cells[4] + "</td>";
 		    newrow.innerHTML = cell1 + cell2 + cell3 + cell4 + cell5;
 		    

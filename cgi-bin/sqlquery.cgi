@@ -24,7 +24,7 @@ eval $POST
 #echo "<br> 1)  $command <br>"
 #echo `psql  -Uroot -ddaq -H -c"select * from monitoring " | sed '0,/table/s/table/table id=table/' `
 # for query string ## command=`echo "$command" | sed s:*:*:g |sed s:'%20':' ':g | sed s:%27:\':g `
- command=`echo "$command" | sed s:*:*:g |sed s:'%20':' ':g | sed s:%27:\':g | sed s:\":\':g`
+ command=`echo "$command" | sed s:*:*:g |sed s:'%20':' ':g | sed s:%27:\':g | sed s:\":\':g | sed s:\|:=:g`
 
 #echo $command
 #command=`echo "select%20*%20from%20monitoring;" | sed s:*:*:g |sed s:'%20':' ':g`
@@ -32,7 +32,7 @@ eval $POST
 #command="select * from monitoring"
 # | sed s:'%20':' ':g`  
 #echo "<br> 3) $command <br>"
-#echo psql  -U$user -d$db -H -c"$command" 
+#echo psql  -U $user -d $db -H -c"$command" 
 #echo `psql  -U$user -d$db -H -c"$command" 2>&1 | sed '0,/table/s/table/table id=table/' `
 echo `psql  -U$user -d$db -H -Tid=table -c"$command" 2>&1 `
 

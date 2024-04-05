@@ -1,11 +1,3 @@
-var layout_timeseries_slider_selector = {
-    title: 'Monitor Time series with range slider and selectors',          
-    xaxis: {
-	rangeselector: selectorOptions,
-	rangeslider: {}
-    }
-};
-
 
 var selectorOptions = { //plot options definitions
     buttons: [ {
@@ -71,4 +63,12 @@ var selectorOptions = { //plot options definitions
     }, {
         step: 'all',
     }],
+};
+
+var layout_timeseries_slider_selector = {
+    title: 'Monitor Time series with range slider and selectors',
+    xaxis: {
+        rangeselector: selectorOptions,
+        rangeslider: {}
+    }
 };

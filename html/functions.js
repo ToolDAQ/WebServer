@@ -1,12 +1,14 @@
 // Functions:
-// HTTPRequest(method, url, async=false, data=null, user=null, password=null) - undertakes HTTP request and returns data
-// GetSDTable(filter=null, async=null) - returns SDTable with filter applied to service name
-// GetIP(service_name, async=false) - returns IP of first service with name given
-// GetPort(service_name, async=false) - returns port of first serivce with anme given
-// Command(ip, port, command, asynx) - Sends command to the serivce specified and returns string response
-// GetSlowCommands(ip, port, async=false) - returns html to produce all slow control buttons of client
-// SendSCCommand(ip, port, command_output, ...incommands) - command used by slow cotnrol buttons to send commands to clients
-// GetPSQLTable(command, user, database, async=false) - get sql table from database
+//   HTTPRequest(method, url, async=false, data=null, user=null, password=null) - undertakes HTTP request and returns data
+//   GetSDTable(filter=null, async=null) - returns SDTable with filter applied to service name
+//   GetIP(service_name, async=false) - returns IP of first service with name given
+//   GetPort(service_name, async=false) - returns port of first serivce with anme given
+//   Command(ip, port, command, asynx) - Sends command to the serivce specified and returns string response
+//   GetSlowCommands(ip, port, async=false) - returns html to produce all slow control buttons of client
+//   SendSCCommand(ip, port, command_output, ...incommands) - command used by slow cotnrol buttons to send commands to clients
+//   GetPSQLTable(command, user, database, async=false) - get sql table from database
+//   MakePlotDataFromPSQL(command, user, databse, output_data_array=null, async=false) - makes data for a plotly plot based on sql table
+//   MakePlot(div, data, layout, update=false) - makes or updates a plot div
 
 /*
 function ResolveVariable(variable){
@@ -290,7 +292,8 @@ function SendSCCommand(ip, port, command_output, ...incommands){
 
 function GetPSQLTable(command, user, database, async=false){
  
-    command = command.replace("*", "'*'");   
+    command = command.replaceAll("*", "'*'");   
+    command = command.replaceAll("=", "|"); 
     var data_string = "user=" + user + "&db=" + database + "&command=" + command;
     
     return HTTPRequest("POST", "./cgi-bin/sqlquery.cgi", async, data_string);
@@ -300,57 +303,58 @@ function GetPSQLTable(command, user, database, async=false){
 
 
 function MakePlotDataFromPSQL(command, user, databse, output_data_array=null, async=false){ //function to generate plotly plot
- 
-     function MakePlotData(table){
+    
+    function MakePlotData(table){
+	
+	var div = document.createElement("div");
+	div.innerHTML=table;
+	var table = div.querySelector("table");
+	table.style.display = "none";
+	var xdata= new Map();
+	var ydata= new Map();
+	
+	for( var i=1; i< table.rows.length; i++){
 	    
-	    var div = document.createElement("div");
-	    div.innerHTML=result;
-	    var table = div.getElementById("table");
-	    table.style.display = "none";
-	    var xdata= new Map();
-	    var ydata= new Map();
+	    var jsondata = JSON.parse(table.rows[i].cells[2].innerText);
 	    
-	    for( var i=1; i< table.rows.length; i++){
-		
-		var jsondata = JSON.parse(table.rows[i].cells[2].innerText);
-		
-		for (let key in jsondata) {
-		    if(!xdata.has(key)){
-			xdata.set(key,[table.rows[i].cells[0].innerText]);
-			ydata.set(key,[jsondata[key]]);
-		    }
-		    else{
-			xdata.get(key).push(table.rows[i].cells[0].innerText);
-			ydata.get(key).push(jsondata[key]);
-			
-		    }
+	    for (let key in jsondata) {
+		if(!xdata.has(key)){
+		    xdata.set(key,[table.rows[i].cells[0].innerText.slice(0,-3)]);
+		    ydata.set(key,[jsondata[key]]);
+		}
+		else{
+		    xdata.get(key).push(table.rows[i].cells[0].innerText.slice(0,-3));
+		    ydata.get(key).push(jsondata[key]);
+		    
 		}
 	    }
-	    
-	    if( output_data_array == null)  output_data_array = [];
-	    for(let [key, value] of xdata){
-		
-		output_data_array.push({
-		    name: selectedOption.value + ":" +key,
-		    mode: 'lines',
-		    x: value,
-		    y: ydata.get(key)
-		});
-		
-	    }
-	    return output_data_array;
 	}
- 
+	
+		    if( output_data_array == null) output_data_array = [];
+	//output_data_array = [];
+	for(let [key, value] of xdata){
+	    
+	    output_data_array.push({
+		name: key,
+		mode: 'lines',
+		x: value,
+		y: ydata.get(key)
+	    });
+	    
+	}
+	return output_data_array;
+    }
     
     
     
-    if(!async) return MakePlotData(GetPSQLTable(ip, port, command, async));
+    
+    if(!async) return MakePlotData(GetPSQLTable(command, "root", "daq", async));
     
     else{
 	
 	return new Promise(function(resolve, reject){	
 	    
-	    GetPSQLTable(ip, port, command, async).then(function(result){
+	    GetPSQLTable(command, "root", "daq", async).then(function(result){
 		
 		resolve(MakePlotData(result));
 		
@@ -365,10 +369,13 @@ function MakePlotDataFromPSQL(command, user, databse, output_data_array=null, as
 
 function MakePlot(div, data, layout, update=false){
 
-    if(!update){
-	Plotly.deleteTraces(div, 0);
-	Plotly.plot(graphDiv, data, layout);
+    if(data.length>0){
+	if(!update){
+	    div.innerHTML="";
+	    //	Plotly.deleteTraces(div, 0);
+	    Plotly.plot(div, data, layout);
+	}
+	else Plotly.redraw(div,data, layout);
     }
-    else Plotly.redraw(graphDiv,data, layout);
 }
    
