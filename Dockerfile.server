@@ -1,5 +1,5 @@
 # server image
-FROM web_base
+FROM tooldaq/web_base
 
 RUN yum install -y                   \
                 httpd                \
@@ -14,7 +14,7 @@ RUN yum install -y                   \
  && rm -rf /var/cache/yum
 
 RUN cd /opt \
-    && wget https://github.com/marc1uk/libpqxx/raw/master/libpqxx-6.4.5_fixed.tar.gz \
+    && wget https://github.com/ToolDAQ/libpqxx/raw/master/libpqxx-6.4.5_fixed.tar.gz \
     && tar zxvf libpqxx-6.4.5_fixed.tar.gz \
     && rm libpqxx-6.4.5_fixed.tar.gz \
     && cd libpqxx-6.4.5 \

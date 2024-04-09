@@ -38,7 +38,7 @@ tablecontent4.cgi: tablecontent4.cpp
 
 clean:
 
-	rm control.cgi controlin.cgi tablecontent.cgi tablecontent2.cgi tablecontent3.cgi sendcommand.cgi sendcommand2.cgi sendcommand2nopadding.cgi tablecontent4.cgi
+	rm -f control.cgi controlin.cgi tablecontent.cgi tablecontent2.cgi tablecontent3.cgi sendcommand.cgi sendcommand2.cgi sendcommand2nopadding.cgi tablecontent4.cgi
 
 #	g++ logbook.cpp -o logbook.cgi -L /usr/local/lib  -lcgicc  -I /usr/local/include
 #	chmod a+x logbook.cgi
