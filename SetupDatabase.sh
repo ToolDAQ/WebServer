@@ -39,8 +39,8 @@ psql -ddaq -c "create table configurations (config_id int NOT NULL primary key, 
 echo "creating run_info table"
 psql -ddaq -c "create table run_info (run int NOT NULL, subrun int NOT NULL, start_time timestamp with time zone NOT NULL, stop_time timestamp with time zone, config_id int NOT NULL, comments text NOT NULL, UNIQUE (run, subrun));"
 
-echo "creating temporary rootplots table"
-psql -ddaq -c "create temporary table rootplots (name text NOT NULL, draw_opts text NOT NULL, time timestamp with time zone NOT NULL, data jsonb NOT NULL, version int NOT NULL, UNIQUE (name, version));"
+echo "creating rootplots table"
+psql -ddaq -c "create table rootplots (name text NOT NULL, draw_options text NOT NULL, time timestamp with time zone NOT NULL, data jsonb NOT NULL, version int NOT NULL, UNIQUE (name, version));"
 
 #echo "registering database to start on boot"
 #echo " sudo -u postgres /usr/bin/pg_ctl start -D /var/lib/pgsql/data -s -o \"-p 5432\" -w -t 300;" >> /etc/rc.local
