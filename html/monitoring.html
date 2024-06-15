@@ -18,8 +18,15 @@
       <label for="same"> Draw on same plot? </label><br>
       <br>      
       <div align="center" id="output"></div>
-      <div id="graph"></div>      
+      <div id="graph"></div>
       <br>
+      
+      <label for="rootplot_dropdown"> Select ROOT plot</label><br>
+      <div align="center"><select id="rootplot_dropdown"></select><br>
+      <div id="jsroot_div" style="height:500px;"></div>
+      <iframe width="700" height="400">
+        <!-- <div id="jsroot_div"></div> -->
+      </iframe>
       
       <!--#include file="footer.html" -->
       
@@ -29,3 +36,4 @@
 <script src="https://cdn.plot.ly/plotly-1.8.0.min.js" async></script>
 <script src="./monitoring.js?v=7" async></script>
 <script src="./monitoringtabs.js?v=1" async></script>
+<script type="module" src="./jsroot.js" async></script>

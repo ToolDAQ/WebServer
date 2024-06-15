@@ -42,6 +42,12 @@ RUN cd /opt \
     && cd ../ \
     && rm -rf cgicc-3.2.9
 
+# testing with singularity containers found cgi scripts not working and messages
+# 'unable to connect to cgi daemon after multiple tries' in /var/log/httpd/errorlog
+# This was fixed by switching the MPM event module to the MPM prefork module...
+RUN sed -e 's/#LoadModule mpm_prefork_module/LoadModule mpm_prefork_module/' -i /etc/httpd/conf.modules.d/00-mpm.conf \
+    && sed -e '/LoadModule mpm_event_module/ s/^#*/#/' -i /etc/httpd/conf.modules.d/00-mpm.conf
+
 RUN echo "unalias cp" >>  /etc/rc.local ;\
     echo "cp -f /web/httpd.conf /etc/httpd/conf/" >>  /etc/rc.local ;\
     echo "alias cp='cp -i'" >>  /etc/rc.local ;\
@@ -51,7 +57,8 @@ RUN echo "unalias cp" >>  /etc/rc.local ;\
     echo "export LD_LIBRARY_PATH=/lib/:/opt/ToolFrameworkCore/lib:/opt/ToolDAQFramework/lib:/opt/boost_1_66_0/install/lib:/opt/zeromq-4.0.7/lib:$LD_LIBRARY_PATH" >> /etc/rc.local ;\
     echo "cd /web && make clean && make" >>  /etc/rc.local ;\
     echo "cd /web/cgi-bin && make clean && make" >>  /etc/rc.local ;\
-    echo "/web/SetupDatabase.sh" >> /etc/rc.local ;\    
+    echo "/web/SetupDatabase.sh" >> /etc/rc.local ;\
+    echo "sudo -u postgres /usr/bin/pg_ctl start -D /var/lib/pgsql/data -s -o \"-p 5432\" -w -t 300;" >> /etc/rc.local;\
     echo "/opt/middleman/run_middleman.sh &> /dev/null &" >> /etc/rc.local ;\
     echo 'disown $!' >> /etc/rc.local ;\
     echo "/web/Win_Mac_translation_server  &> /dev/null &" >> /etc/rc.local ;\
@@ -59,7 +66,6 @@ RUN echo "unalias cp" >>  /etc/rc.local ;\
     echo "/web/Trigger_proxy  &> /dev/null &" >> /etc/rc.local ;\
     echo 'disown $!' >> /etc/rc.local ;\
     echo "httpd" >> /etc/rc.local ;\
-    echo "sudo -u postgres /usr/bin/pg_ctl start -D /var/lib/pgsql/data -s -o \"-p 5432\" -w -t 300;" >> /etc/rc.local;\
     echo "/web/backgroundSD  &> /dev/null " >> /etc/rc.local ;\
     chmod +x /etc/rc.local
 
