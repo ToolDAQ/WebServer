@@ -42,6 +42,12 @@ RUN cd /opt \
     && cd ../ \
     && rm -rf cgicc-3.2.9
 
+# testing with singularity containers found cgi scripts not working and messages
+# 'unable to connect to cgi daemon after multiple tries' in /var/log/httpd/errorlog
+# This was fixed by switching the MPM event module to the MPM prefork module...
+RUN sed -e 's/#LoadModule mpm_prefork_module/LoadModule mpm_prefork_module/' -i /etc/httpd/conf.modules.d/00-mpm.conf \
+    && sed -e '/LoadModule mpm_event_module/ s/^#*/#/' -i /etc/httpd/conf.modules.d/00-mpm.conf
+
 RUN echo "unalias cp" >>  /etc/rc.local ;\
     echo "cp -f /web/httpd.conf /etc/httpd/conf/" >>  /etc/rc.local ;\
     echo "alias cp='cp -i'" >>  /etc/rc.local ;\
