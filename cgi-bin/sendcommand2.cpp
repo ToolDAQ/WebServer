@@ -83,8 +83,8 @@ int main (){
 
 	//	bb.Set("uuid",m_UUID);
 	//	bb.Set("msg_id",msg_id);
-	*bb["msg_time"]=isot.str();
-        *bb["msg_type"]="Command";
+	bb.Set("msg_time", isot.str());
+        bb.Set("msg_type", "Command");
         bb.Set("msg_value",command);
         //bb.Set("var1",var1);
 
@@ -105,7 +105,7 @@ int main (){
         answer=iss.str();
         Store rr;
 	rr.JsonParser(answer);
-        if(*rr["msg_type"]=="Command Reply") response<<"["<<IP<<":"<<port<<"] Reply: "<<*rr["msg_value"];
+        if(rr.Get<std::string>("msg_type")=="Command Reply") response<<"["<<IP<<":"<<port<<"] Reply: "<<rr.Get<std::string>("msg_value");
 
       }
 
