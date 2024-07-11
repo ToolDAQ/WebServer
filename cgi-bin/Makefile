@@ -1,15 +1,24 @@
-all:  sendcommand2.cgi sendcommand2nopadding.cgi
+Dependencies=/opt
 
+libs = ToolFrameworkCore ToolDAQFramework boost_1_66_0/install zeromq-4.0.7 libpqxx-6.4.5/install
 
+include_dirs = $(addprefix -I $(Dependencies)/,$(addsuffix /include,$(libs)))
+lib_dirs     = $(addprefix -L $(Dependencies)/,$(addsuffix /lib,$(libs)))
+
+CXXFLAGS ?= -O3 -pipe
+CXXFLAGS += $(include_dirs) $(lib_dirs)
+
+programs = sendcommand2.cgi sendcommand2nopadding.cgi
+
+.PHONY: all clean
+
+all: $(programs)
 
 sendcommand2.cgi: sendcommand2.cpp
-	g++ -O3  sendcommand2.cpp -o sendcommand2.cgi -L /opt/ToolDAQFramework/lib -L /opt/ToolFrameworkCore/lib -lStore -lServiceDiscovery -lDataModelBase -lDAQDataModelBase -lDAQStore -lcgicc  -I /usr/local/include -I /opt/ToolDAQFramework/include -I /opt/ToolFrameworkCore/include -I /opt/boost_1_66_0/install/include/  -I /opt/zeromq-4.0.7/include -L /opt/boost_1_66_0/install/lib  -lboost_date_time -lboost_serialization  -lboost_iostreams  -L /opt/zeromq-4.0.7/lib -lzmq 
-	chmod a+x sendcommand2.cgi
+	$(CXX) -o $@ $< $(CXXFLAGS) -lzmq -lcgicc -lStore
 
 sendcommand2nopadding.cgi: sendcommand2nopadding.cpp
-	g++ -O3  sendcommand2nopadding.cpp -o sendcommand2nopadding.cgi -L /opt/ToolDAQFramework/lib -L /opt/ToolFrameworkCore/lib -lStore -lServiceDiscovery  -lDataModelBase -lDAQDataModelBase -lDAQStore -lcgicc  -I /usr/local/include -I /opt/ToolDAQFramework/include -I /opt/ToolFrameworkCore/include -I /opt/boost_1_66_0/install/include/  -I /opt/zeromq-4.0.7/include -L /opt/boost_1_66_0/install/lib  -lboost_date_time -lboost_serialization  -lboost_iostreams  -L /opt/zeromq-4.0.7/lib -lzmq 
-	chmod a+x sendcommand2nopadding.cgi
+	$(CXX) -o $@ $< $(CXXFLAGS) -lzmq -lcgicc -lStore
 
 clean:
-
-	rm  -f sendcommand2.cgi sendcommand2nopadding.cgi
+	rm -f $(programs)
