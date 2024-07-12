@@ -109,17 +109,14 @@ select.addEventListener('change', function(){ //actions to take when drobdown ch
 });
 
 function makeplot(){ //function to generate plotly plot
-	
-	clearInterval(updateinterval);
-	
-	
-	// Get the selected option
-	if (select.options.length >0){
-		
-		var selectedOption = select.options[select.selectedIndex];
-		
-		var command = "select '*' from monitoring where device=\""+ selectedOption.value + "\" order by time asc";
-		
+
+    clearInterval(updateinterval);
+              
+    // Get the selected option
+    if (select.options.length >0){
+	var selectedOption = select.options[select.selectedIndex];
+	var command = "select * from monitoring where source='"+ selectedOption.value + "' order by time asc";
+
 		gettable(command).then(function(result){
 			
 			output.innerHTML=result;
@@ -184,7 +181,8 @@ function makeplot(){ //function to generate plotly plot
 
 
 function updateplot(){ //fucntion to update plot
-	if(updating) return;
+
+  if(updating) return;
 	
 	updating=true;
 	// Get the selected option
@@ -196,7 +194,7 @@ function updateplot(){ //fucntion to update plot
 		
 		//var command = "select '*' from monitoring where source=\""+ selectedOption.value + "\" and time>to_timestamp(" + ((last.valueOf())/1000.0) + ");  ";
 		
-		var command = "select '*' from monitoring where device=\""+ selectedOption.value + "\" and time>\"" + last.valueOf() + "\" order by time asc;";
+    var command = "select * from monitoring where source='"+ selectedOption.value + "' and time>'" + last.valueOf() + "' order by time asc;  ";
 		
 		gettable(command).then(function(result){
 			
