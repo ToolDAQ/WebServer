@@ -34,7 +34,7 @@ function CheckAlarms(){
     if(checking_alarm_footer) return;
     checking=true;
 
-    GetPSQLTable("select type from alarms where silenced=0", "root", "daq", true).then(function(result){
+    GetPSQLTable("select device from alarms where silenced=0", "root", "daq", true).then(function(result){
 	var table= document.createElement('table');
 	table.innerHTML=result;
 	

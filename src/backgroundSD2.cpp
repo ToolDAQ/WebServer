@@ -18,6 +18,8 @@
 #include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
 #include <boost/date_time/posix_time/posix_time.hpp>
 
+using namespace ToolFramework;
+
 int main (){
 
   
@@ -73,7 +75,7 @@ int main (){
 	  std::istringstream ss(static_cast<char*>(receive.data()));
 	  service.JsonParser(ss.str());
 	  
-	  myfile<<i<<","<<(*(service["ip"]))<<","<<(*(service["remote_port"]))<<","<<(*(service["msg_value"]))<<","<<(*(service["status"]))<<std::endl;
+	  myfile<<i<<","<<(service.Get<std::string>("ip"))<<","<<(service.Get<std::string>("remote_port"))<<","<<(service.Get<std::string>("msg_value"))<<","<<(service.Get<std::string>("status"))<<std::endl;
 	  
 	  
 	}
