@@ -42,6 +42,15 @@ psql -ddaq -c "create table run_info (run int NOT NULL, subrun int NOT NULL, sta
 echo "creating rootplots table"
 psql -ddaq -c "create table rootplots (name text NOT NULL, draw_options text NOT NULL, time timestamp with time zone NOT NULL, data jsonb NOT NULL, version int NOT NULL, UNIQUE (name, version));"
 
+echo "creating users table"
+psql -ddaq -c "create table users (user_id serial NOT NULL, username text NOT NULL, password text NOT NULL, permissions JSONB, UNIQUE (user_id));"
+
+echo "creating pmt table"
+psql -ddaq -c "create table pmt (id int NOT NULL, x real NOT NULL, y real NOT NULL, z real, type text NOT NULL, size real NOT NULL, UNIQUE (id));"
+
+echo "creating event_display table"
+psql -ddaq -c "create table event_display (evnt bigint NOT NULL, time timestamp with time zone NOT NULL, data JSONB NOT NULL, UNIQUE (evnt));"
+
 #echo "registering database to start on boot"
 #echo " sudo -u postgres /usr/bin/pg_ctl start -D /var/lib/pgsql/data -s -o \"-p 5432\" -w -t 300;" >> /etc/rc.local
 

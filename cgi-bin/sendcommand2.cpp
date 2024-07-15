@@ -60,7 +60,8 @@ int main (){
       if( !ti->isEmpty() && ti != (*formData).end()) {
 	command= **ti;
 	
-	//std::stringstream tmp(command);
+	std::stringstream ss(command);
+	ss >> command>> var1;
 	//tmp >> command>> std::ws;
 	//getline(tmp, var1);
 	
@@ -86,7 +87,7 @@ int main (){
 	bb.Set("msg_time", isot.str());
         bb.Set("msg_type", "Command");
         bb.Set("msg_value",command);
-        //bb.Set("var1",var1);
+        bb.Set("var1",var1);
 
 	std::string tmp="";
         bb>>tmp;
