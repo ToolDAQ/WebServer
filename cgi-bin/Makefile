@@ -21,7 +21,7 @@ sendcommand2nopadding.cgi: sendcommand2nopadding.cpp
 	$(CXX) -o $@ $< $(CXXFLAGS) -lzmq -lcgicc -lStore
 
 getplot.cgi: getplot.cpp
-	g++ -o $@ $< -std=c++11 -Wno-attributes -I /opt/libpqxx-6.4.5/install/include -L /opt/libpqxx-6.4.5/install/lib -lpqxx -lpq
+	$(CXX) -o $@ $< $(CXXFLAGS) -std=c++11 -Wno-attributes -lpqxx -lpq
 
 clean:
 	rm -f $(programs)
