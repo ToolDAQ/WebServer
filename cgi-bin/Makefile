@@ -16,12 +16,15 @@ all: $(programs)
 
 sendcommand2.cgi: sendcommand2.cpp
 	$(CXX) -o $@ $< $(CXXFLAGS) -lzmq -lcgicc -lStore
+	chmod a+x $@
 
 sendcommand2nopadding.cgi: sendcommand2nopadding.cpp
 	$(CXX) -o $@ $< $(CXXFLAGS) -lzmq -lcgicc -lStore
+	chmod a+x $@
 
 getplot.cgi: getplot.cpp
 	$(CXX) -o $@ $< $(CXXFLAGS) -std=c++11 -Wno-attributes -lpqxx -lpq
+	chmod a+x $@
 
 clean:
 	rm -f $(programs)
