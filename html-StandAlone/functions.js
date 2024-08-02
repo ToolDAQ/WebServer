@@ -9,6 +9,8 @@
 //   GetPSQLTable(command, user, database, async=false) - get sql table from database
 //   MakePlotDataFromPSQL(command, user, databse, output_data_array=null, async=false) - makes data for a plotly plot based on sql table
 //   MakePlot(div, data, layout, update=false) - makes or updates a plot div
+//   GetPlot(name) - retrieves a plot from the database
+//   GetPlot() - retrieves an array of all plots from the database
 
 /*
 function ResolveVariable(variable){
@@ -377,3 +379,26 @@ function MakePlot(div, data, layout, update=false){
     }
 }
    
+
+// Fetch a named plot from the database
+// Returns a promise to return an object representing the plot with the following structure:
+// {
+//   plot:   <plot name>,
+//   x:      [ <array of x coordinates> ],
+//   y:      [ <array of y coordinates> ],
+//   xlabel: <x axis label>,
+//   ylabel: <y axis label>,
+//   title:  <title>,
+//   info:   <user supplied data object>
+// }
+// Parameters:
+//   name --- plot name; when undefined returns an array of all plots in the database
+function GetPlot(name) {
+  let url = '/cgi-bin/getplot.cgi';
+  if (name !== undefined) url += '?plot=' + name;
+  return HTTPRequest('GET', url, true).then(
+    function (reply) {
+      return JSON.parse(reply);
+    }
+  );
+};
