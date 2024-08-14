@@ -55,7 +55,7 @@ d3.csv('./event1', function(err2, rows2){
 	    t: 50
 	},
 		      //		  width: 500,
-		      height: 100,
+		      //height: 100,
 		      
 		      //plot_bgcolor: '#000',
 		      //paper_bgcolor: '#000',
