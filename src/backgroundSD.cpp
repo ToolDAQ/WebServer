@@ -81,7 +81,7 @@ int main (){
       service->JsonParser(ss.str());
   
       std::stringstream reply_stream;
-      reply_stream<<i<<","<<(*((*service)["ip"]))<<","<<(*((*service)["remote_port"]))<<","<<(*((*service)["msg_value"]))<<","<<(*((*service)["status"]));
+      reply_stream<<i<<","<<((*service).Get<std::string>("ip"))<<","<<((*service).Get<std::string>("remote_port"))<<","<<((*service).Get<std::string>("msg_value"))<<","<<((*service).Get<std::string>("status"));
 
       zmq::message_t reply(reply_stream.str().length()+1);
       snprintf ((char *) reply.data(), reply_stream.str().length()+1 , "%s" ,reply_stream.str().c_str()) ;

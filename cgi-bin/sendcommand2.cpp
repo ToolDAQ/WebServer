@@ -24,6 +24,8 @@
 
 using namespace std;
 using namespace cgicc;
+using namespace ToolFramework;
+
 
 int main (){
 
@@ -59,7 +61,8 @@ int main (){
       if( !ti->isEmpty() && ti != (*formData).end()) {
 	command= **ti;
 	
-	//std::stringstream tmp(command);
+	std::stringstream ss(command);
+	ss >> command>> var1;
 	//tmp >> command>> std::ws;
 	//getline(tmp, var1);
 	
@@ -82,10 +85,10 @@ int main (){
 
 	//	bb.Set("uuid",m_UUID);
 	//	bb.Set("msg_id",msg_id);
-	*bb["msg_time"]=isot.str();
-        *bb["msg_type"]="Command";
+	bb.Set("msg_time", isot.str());
+        bb.Set("msg_type", "Command");
         bb.Set("msg_value",command);
-        //bb.Set("var1",var1);
+        bb.Set("var1",var1);
 
 	std::string tmp="";
         bb>>tmp;
@@ -104,7 +107,7 @@ int main (){
         answer=iss.str();
         Store rr;
 	rr.JsonParser(answer);
-        if(*rr["msg_type"]=="Command Reply") response<<"["<<IP<<":"<<port<<"] Reply: "<<*rr["msg_value"];
+        if(rr.Get<std::string>("msg_type")=="Command Reply") response<<"["<<IP<<":"<<port<<"] Reply: "<<rr.Get<std::string>("msg_value");
 
       }
 
