@@ -23,7 +23,7 @@ sendcommand2nopadding.cgi: sendcommand2nopadding.cpp
 	chmod a+x $@
 
 getplot.cgi: getplot.cpp
-	$(CXX) -o $@ $< $(CXXFLAGS) -std=c++11 -Wno-attributes -lpqxx -lpq
+	$(CXX) -o $@ $< $(CXXFLAGS) -Wno-attributes -lpqxx -lpq
 	chmod a+x $@
 
 clean:
