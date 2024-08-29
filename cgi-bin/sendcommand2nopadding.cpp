@@ -84,7 +84,7 @@ int main (){
 	//	bb.Set("msg_id",msg_id);
 	bb.Set("msg_time", isot.str());
         bb.Set("msg_type", "Command");
-        bb.Set("msg_value",command);
+        bb.Set("msg_value", command);
         bb.Set("var1",var1);
 
 	std::string tmp="";
@@ -104,7 +104,8 @@ int main (){
         answer=iss.str();
         Store rr;
 	rr.JsonParser(answer);
-        if(rr.Get<std::string>("msg_type")=="Command Reply") response<<rr.Get<std::string>("msg_value"); //response<<"["<<IP<<":"<<port<<"] Reply: "<<*rr["msg_value"];
+	//std::cout<<"answer="<<answer<<"  : ";
+        if(answer!="" && rr.Get<std::string>("msg_type")=="Command Reply") response<<rr.Get<std::string>("msg_value"); //response<<"["<<IP<<":"<<port<<"] Reply: "<<*rr["msg_value"];
 
       }
 
@@ -123,6 +124,7 @@ int main (){
 
   
   
+  //std::cout<<"hi ben";
   std::cout<<response.str()<<endl;
   cout<<"<body/><html/>"; 
   
