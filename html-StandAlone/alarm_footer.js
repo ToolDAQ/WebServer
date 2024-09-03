@@ -32,7 +32,7 @@ async function TestAlarm(){
 function CheckAlarms(){
     
     if(checking_alarm_footer) return;
-    checking=true;
+    checking_alarm_footer=true;
 
     GetPSQLTable("select device from alarms where silenced=0", "root", "daq", true).then(function(result){
 	var table= document.createElement('table');

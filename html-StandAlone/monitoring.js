@@ -180,7 +180,7 @@ function makeplot(){ //function to generate plotly plot
 };
 
 
-function updateplot(){ //fucntion to update plot
+function updateplot(){ //function to update plot
 
   if(updating) return;
 	
