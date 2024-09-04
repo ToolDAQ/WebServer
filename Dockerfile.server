@@ -19,7 +19,7 @@ RUN cd /opt \
     && rm libpqxx-6.4.5_fixed.tar.gz \
     && cd libpqxx-6.4.5 \
     && mkdir install \
-    && CXXFLAGS=-std=c++11 ./configure --disable-documentation --enable-shared --prefix=/opt/libpqxx-6.4.5/install \
+    && ./configure --disable-documentation --enable-shared --prefix=/opt/libpqxx-6.4.5/install \
     && make -j`nproc --all` \
     && make install
 
