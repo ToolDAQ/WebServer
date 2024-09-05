@@ -1,0 +1,282 @@
+/* Re-define basic styles that were cleared by the reset.css.
+This ensures that formatting is consistent across browsers. */
+body {font: 12pt "Helvetica Neue", "Helvetica", "Arial", sans-serif;}
+h1 { font-size: 2em; }
+h2 { font-size: 1.5em; }
+h3 { font-size: 1.17em; }
+h1, h2, h3, h4 { font-weight: bold; }
+h1, h2, h3, h4, p, ol, ul, caption {
+    margin-block-start: 0.25em;
+    margin-block-end: 0.25em;
+}
+ol, ul { padding-left: 2em; }
+ol { list-style-type: decimal; }
+ul { list-style-type: disc; }
+pre {font-family: 'Courier New', Courier, monospace;}
+
+
+/* Basic styles */
+:root {
+    /* Can define CSS variables here, e.g. for common colours. */
+    --blue: #4352af;
+    --green: #70bf41;
+    --lightgrey: #ddd;
+    --yellow: #f5d428;
+    --darkyellow: #997700;
+    --shadow: 0 5px 8px 2px rgba(0, 0, 0, 0.5);
+}
+
+.debug { border: 2px solid blue; }
+.hidden {display: none;}
+.speech-only {display: none;}
+
+@media speech {
+    .speech-only {display: inline;}
+}
+
+.green {background-color: green;}
+.yellow {background-color: var(--darkyellow);}
+.red {background-color: red;}
+.black {background-color: black;}
+
+
+/* Basic page layout */
+header, footer {
+    display: flex;
+    position: fixed;
+    box-sizing: border-box;
+    padding: 8px;
+    height: 4em;
+    width: 100%;
+    align-items: center;
+    color: #fff;
+    background: var(--blue);
+    z-index: 1;
+}
+
+header {top: 0px;}
+footer {bottom: 0px;}
+main {padding: calc(8px + 4em) 8px; /* don’t overlap header/footer */ }
+
+
+/* Header */
+#page-title { flex: 1 auto; }
+
+header > nav a {
+    padding: 0 4px; /* make clickable area a little wider than the text itself */
+    margin: 0 4px;
+    color: inherit;
+}
+
+#alerts {position: relative;}
+
+#alerts-icon {
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
+    width: 4rem;
+    height: 4rem;
+    font-size: 1.5em;
+}
+
+#alerts:hover #alerts-icon {background-color: rgba(0, 0, 0, 0.25);}
+
+#alerts-badge {
+    position: absolute;
+    top: 0.75rem;
+    left: 2.1rem;
+    padding: 0 0.3em;
+    border: 1px solid #fff;
+    border-radius: 0.6em;
+    color: #fff;
+    background: #f00;
+    font: bold 0.8em sans-serif;
+}
+
+
+/* Footer */
+footer>div {flex: 1;}
+/* #current-time { } */
+#current-run { text-align: center; }
+#current-run-number { font-weight: bold; }
+#current-run-number::before { content: "#"; }
+#current-run > p:nth-child(2) { font-size: smaller; }
+
+#settings { text-align: right; }
+
+
+/* Main */
+
+#tabbar {
+    height: 48px;
+    margin: 0;
+    display: flex;
+    background-color: var(--blue);
+    overflow-y: hidden;
+    overflow-x: scroll
+}
+
+#tabbar a {
+    margin: 0;
+    padding: 0 24px;
+    float: left;
+    position: relative;
+    display: block;
+    flex-grow: 0;
+    flex-shrink: 0;
+    text-decoration: none;
+    height: 48px;
+    line-height: 48px;
+    text-align: center;
+    font-weight: 500;
+    font-size: 14px;
+    text-transform: uppercase;
+    color: var(--lightgrey);
+    overflow: hidden
+}
+
+/* Main > Common elements */
+.plot-div {
+    border: 5px solid rebeccapurple;
+    margin-bottom: 20px;
+}
+
+summary > h2 {
+    display: inline-block;
+}
+
+.details-link { float: right; }
+.details-link::after { content: " »"; }
+
+.box-wrapper {
+    break-inside: avoid; /* in multi-column contexts */
+    padding-bottom: 10px;
+}
+
+.box {
+    padding: 8px;
+    border-radius: 8px;
+    background-color: var(--lightgrey);
+}
+
+.box .title {margin-bottom: 1em;}
+.box .title h2, .box .title h3 {display: inline;}
+
+span.ok {color: green;}
+span.warning {color: var(--darkyellow);}
+span.error {color: red;}
+span.warning::after, .popover span.error::after {content: '⚠️';}
+
+.dropdown-host {position: relative;}
+
+.dropdown-host .dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    width: 12em;
+    background-color: var(--lightgrey);
+    color: black;
+    box-shadow: var(--shadow);
+    z-index: 1;
+}
+.dropdown-host:hover .dropdown {display: block;}
+
+.dropdown-entries div {
+    padding: 0.5em 0;
+    margin: 0 0.5em;
+    border-bottom: 1px solid var(--blue);
+}
+
+.dropdown-entries p.time {
+    font-size: 0.8em;
+}
+
+.dropdown-footer {padding: 0.5em;}
+
+
+/* Status display (e.g. for DAQ overview page) */
+.statusboard {
+    line-height: 0; /* avoid vertical margin between .statusindicator boxes */
+    max-width: 800px;
+}
+.statusboard * { line-height: initial; } /* Don’t inherit this to children! */
+
+.statusindicator {
+    display: inline-block;
+    box-sizing: border-box;
+    width: 25px;
+    height: 25px;
+    border: 0.5px solid black;
+}
+.statusindicator:hover {border: 2px solid white;}
+.statusindicator.ok {background-color: var(--green);}
+.statusindicator.warning {background-color: var(--yellow);}
+.statusindicator.error {background-color: black;}
+
+.popover {
+    width: 14em;
+    background: var(--lightgrey);
+    padding: 10px;
+    border: 1px solid #999; /* TODO: use shadow instead? */
+    box-shadow: var(--shadow);
+    z-index: 1;
+}
+
+.popover .po-arrow, .popover .po-arrow::before {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    z-index: -1;
+}
+
+.popover .po-arrow::before {
+    content: '';
+    transform: rotate(45deg);
+    background: var(--lightgrey);
+}
+
+.popover[data-popper-placement^='top'] > .po-arrow {bottom: -4px;}
+.popover[data-popper-placement^='bottom'] > .po-arrow {top: -4px;}
+.popover[data-popper-placement^='left'] > .po-arrow {right: -4px; }
+.popover[data-popper-placement^='right'] > .po-arrow { left: -4px; }
+
+
+/* Main detector status page */
+#wrapper {
+    column-width: 18em;
+}
+
+.status-table {width: 100%;}
+.status-table th, .status-table td {padding: 0.1em 0.5em;}
+.status-table tbody tr:nth-of-type(odd) {background-color: rgba(255, 255, 255, 0.3);}
+.status-table thead {color: white;}
+.status-table tbody {text-align: right;}
+.status-table tbody td {font-family: sans-serif;}
+.status-table tbody td:nth-of-type(1) {color: green;}
+.status-table tbody td:nth-of-type(2) {color: var(--darkyellow);}
+.status-table tbody td:nth-of-type(3) {color: red;}
+.status-table tbody td[data-null] {color: #333;}
+
+li.status-good, li.status-warn, li.status-bad {
+    list-style-type: none;
+    margin-left: -2em;
+}
+li.status-good::before {content: "✅ ";}
+li.status-warn::before {content: "⚠️ ";}
+li.status-bad::before {content: "❌ ";}
+
+
+/* Single device details page */
+.log {
+    border: 1px solid black;
+    padding: 0.5em;
+    margin-bottom: 1em;
+}
+
+.log h4 {
+    display: inline-block;
+    position: relative;
+    top: -1.4em;
+    padding: 0 0.5em;
+    background-color: white;
+}
