@@ -1,6 +1,6 @@
 # WebServer
 
-to create docker container with webserver in use:
+To create Docker container with `WebServer` in use:
 
 **Linux**:
 
@@ -26,7 +26,7 @@ To subsequently start and stop web server use:
       docker stop WebServer
 
 
-Note: be aware that rapid stop and start may not allow the container to run as the system may have not released the port binding. To check if the web server really is running, use:
+Note: rapid stop and start may not allow the container to run as the system may have not released the port binding. To check if the web server really is running, use:
 
       docker ps 
 
