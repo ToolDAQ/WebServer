@@ -1,0 +1,37 @@
+<html>
+
+<head>
+    <title>ToolDAQ | Add Configuration</title>
+</head>
+
+<body>
+    <!--#include virtual="/includes/header.html" -->
+    <!--#include virtual="subheader.html" -->
+    <!--#include virtual="/includes/drawer.html" -->
+
+    <h1 align="center">Add New Configuration</h1>
+    <form id="configForm" method="POST">
+        <label for="name">Configuration Name:</label><br>
+        <input type="text" id="name" name="name" required><br><br>
+
+        <label for="description">Description:</label><br>
+        <textarea id="description" name="description" rows="4" cols="50" required></textarea><br><br>
+
+        <label for="author">Author:</label><br>
+        <input type="text" id="author" name="author" required><br><br>
+
+        <label for="data">Configuration Data (JSON):</label><br>
+        <textarea id="data" name="data" rows="8" cols="50" required></textarea><br><br>
+
+        <button type="button" onclick="addConfiguration()">Add Configuration</button>
+    </form>
+
+    <h1 align="center">Existing Configurations</h1>
+    <p> </p>
+    <div id="configTable" style="padding: 20px"> </div>
+</body>
+<!--#include virtual="/includes/footer.html" -->
+
+</html>
+<script src="/includes/functions.js?v=1" async></script>
+<script src="/Config/configurations.js?v=1" async></script>
