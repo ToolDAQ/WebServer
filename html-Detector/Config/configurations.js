@@ -24,7 +24,6 @@ function addConfiguration() {
     const description = document.getElementById("description").value;
     const author = document.getElementById("author").value;
 	const data = document.getElementById("data").value;
-	const version = 1;
 
 	// Ensure data is in valid JSON format
 	let parsedData;
@@ -35,17 +34,27 @@ function addConfiguration() {
         return;
 	}
 
-	// First, fetch the highest version number for the given device
-    // const queryGetVersion = `SELECT MAX(version) as max_version FROM configurations WHERE name = '${name}'`;
+	// First, fetch the highest version number for the given configuration name
+    const queryGetVersion = `SELECT MAX(version) as max_version FROM configurations WHERE name = '${name}'`;
 
-    // SQL query to insert new configuration into the database
-    const query = `
-        INSERT INTO configurations (time, name, version, description, author, data)
-        VALUES (now(), '${name}', '${version}', '${description}', '${author}', '${JSON.stringify(parsedData)}'::jsonb)
-    `;
+    GetPSQLTable(queryGetVersion, "root", "daq", true).then(function (result) {
+        let version = 1; // Default version
 
-    // Execute query to insert the new configuration
-    GetPSQLTable(query, "root", "daq", true).then(() => {
+        // Check if a version already exists, increment it
+        if (result && result[0].max_version) {
+            version = result[0].max_version + 1;
+        }
+
+        // SQL query to insert the new configuration with the new version
+        const queryInsert = `
+            INSERT INTO configurations (time, name, version, description, author, data)
+            VALUES (now(), '${name}', ${version}, '${description}', '${author}', '${JSON.stringify(parsedData)}'::jsonb)
+        `;
+
+        // Execute query to insert the new configuration
+        return GetPSQLTable(queryInsert, "root", "daq", true);
+
+    }).then(() => {
         // Clear the form after successful submission
         document.getElementById("configForm").reset();
 
