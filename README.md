@@ -1,6 +1,6 @@
 # WebServer
 
-To create Docker container with `WebServer` in use:
+To create a Docker container with `WebServer` in use:
 
 **Linux**:
 

@@ -15,7 +15,7 @@ function gettable(command){ //generic get sql table command
     return new Promise(function(resolve, reject){
 	var xhr = new XMLHttpRequest();
 	
-	var url = "./cgi-bin/sqlquery.cgi";
+	var url = "/cgi-bin/sqlquery.cgi";
 	
 	var user ="root";
 	var db="daq";
@@ -49,7 +49,7 @@ function updatedropdown(){ //function to get SQL tables and populate dropdown
 
     //var xhr = new XMLHttpRequest();
     
-    //var url = "./cgi-bin/sqltable.cgi";
+    //var url = "/cgi-bin/sqltable.cgi";
     
     //var user ="root";
     //var db="daq";

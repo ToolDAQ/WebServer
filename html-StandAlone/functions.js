@@ -87,7 +87,7 @@ function GetSDTable(filter=null, async=false) {
 	
 	return new Promise(function(resolve, reject){
 	    
-	    HTTPRequest("GET", "./cgi-bin/tablecontent5.cgi", true).then(function(result){
+	    HTTPRequest("GET", "/cgi-bin/tablecontent5.cgi", true).then(function(result){
 		
 		resolve(ProcessTable(result));
 		
@@ -95,7 +95,7 @@ function GetSDTable(filter=null, async=false) {
 	});
     }
     
-    else return ProcessTable(HTTPRequest("GET", "./cgi-bin/tablecontent5.cgi", false));
+    else return ProcessTable(HTTPRequest("GET", "/cgi-bin/tablecontent5.cgi", false));
     
     
     
@@ -153,13 +153,13 @@ function Command(ip, port, command, async=false){ //this command sends messages 
     var data_string = "ip=" + ip + "&port=" + port + "&command=" + command;
     
     
-    if(!async) return HTTPRequest("POST", "./cgi-bin/sendcommand2nopadding.cgi", false, data_string).split("\n")[1];
+    if(!async) return HTTPRequest("POST", "/cgi-bin/sendcommand2nopadding.cgi", false, data_string).split("\n")[1];
     
     else{
 	
 	return new Promise(function(resolve, reject){
 	    
-	    HTTPRequest("POST", "./cgi-bin/sendcommand2nopadding.cgi", true, data_string).then(function(result){
+	    HTTPRequest("POST", "/cgi-bin/sendcommand2nopadding.cgi", true, data_string).then(function(result){
 		
 		resolve(result.split("\n")[1]);
 		
@@ -296,7 +296,7 @@ function GetPSQLTable(command, user, database, async=false){
  
     var data_string = "user=" + user + "&db=" + database + "&command=" + command;
     
-    return HTTPRequest("POST", "./cgi-bin/sqlquery.cgi", async, data_string);
+    return HTTPRequest("POST", "/cgi-bin/sqlquery.cgi", async, data_string);
 
 
 }

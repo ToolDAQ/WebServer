@@ -10,7 +10,7 @@ function GetLogFiles(){ //command to retreild all log files
     if(updating) return;  
     updating=true;
     
-    var csvFile = "./cgi-bin/logs2.cgi";
+    var csvFile = "/cgi-bin/logs2.cgi";
     
     // Use XMLHttpRequest to get the CSV content from the file
     var xhr = new XMLHttpRequest();

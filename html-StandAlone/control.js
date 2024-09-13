@@ -31,7 +31,7 @@ function updateTable() { //this command updates the service discovery table
     if(updating || pause_updating) return;  
     updating=true;
     
-    var csvFile = "./cgi-bin/tablecontent5.cgi";
+    var csvFile = "/cgi-bin/tablecontent5.cgi";
     
     // Use XMLHttpRequest to get the CSV content from the file
     var xhr = new XMLHttpRequest();
@@ -305,7 +305,7 @@ function command(ip, port, command){ //this command sends messages to services
 	var xhr = new XMLHttpRequest();
 	
 	// Set the URL of the webpage you want to send data to
-	var url = "./cgi-bin/sendcommand2nopadding.cgi";
+	var url = "/cgi-bin/sendcommand2nopadding.cgi";
 	
 	
 	// Set the request method to POST
@@ -533,7 +533,7 @@ function sendcommand(){
     var xhr = new XMLHttpRequest();
     
     // Set the URL of the webpage you want to send data to
-    var url = "./cgi-bin/sendcommand2.cgi";
+    var url = "/cgi-bin/sendcommand2.cgi";
     
     var ip = document.getElementById("ip");
     var commands = document.getElementById("command");    

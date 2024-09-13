@@ -1,4 +1,9 @@
-
+<!--#if expr='-z v("TITLE")' -->
+  <!--#set var="TITLE" value="ToolDAQ Webpage" -->
+<!--#endif -->
+<html>
+<head>
+  <title><!--#echo var="TITLE" --></title>
 
 <link rel="preload" href="/stylesheets/icon?family=Material+Icons" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="/stylesheets/icon?family=Material+Icons"></noscript>
@@ -9,18 +14,10 @@
 <link rel="preload" href="/styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="/styles.css"></noscript>
 
-
-<!-- <link rel="stylesheet" href="/stylesheets/icon?family=Material+Icons">  -->
-<!-- <link rel="stylesheet" href="/stylesheets/material.indigo-pink.min.css">  -->
-<!-- <link rel="stylesheet" href="/stylesheets/material.indigo-teal.min.css" />   -->
-
 <script defer src="/stylesheets/material.min.js" async></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-
-<!-- <link rel="stylesheet" href="/styles.css">   -->
-
-
+</head>
 <body>
   
   <!-- Always shows a header, even in smaller screens. -->
@@ -30,14 +27,12 @@
       
       <div class="mdl-layout__header-row">
 	<!-- Title -->
-	<span class="mdl-layout-title">
-	  ToolDAQ Webpage</span>
-	<!-- Add spacer, to align navigation to the right -->
+	<span class="mdl-layout-title"><!--#echo var="TITLE" --></span>
 	<div class="mdl-layout-spacer"></div>
 	<!-- Navigation. We hide it in small screens. -->
 	<nav class="mdl-navigation mdl-layout--large-screen-only">
 	  <a class="mdl-navigation__link" href="/index.html">Home</a>
-	  <a class="mdl-navigation__link" href="/control4.html">Control</a>
+	  <a class="mdl-navigation__link" href="/control.html">Control</a>
           <a class="mdl-navigation__link" href="/logs.html">Logs</a>
           <a class="mdl-navigation__link" href="/monitoring.html">Monitoring</a>
           <a class="mdl-navigation__link" href="/sql.html">SQL</a>
@@ -62,7 +57,7 @@
       <div class="android-drawer-separator"></div>
       <nav class="mdl-navigation">
 	<a class="mdl-navigation__link" href="/index.html">Home</a>
-	<a class="mdl-navigation__link" href="/control4.html">Control</a>
+	<a class="mdl-navigation__link" href="/control.html">Control</a>
         <a class="mdl-navigation__link" href="/logs.html">Logs</a>
 	<a class="mdl-navigation__link" href="/monitoring.html">Monitoring</a>
         <a class="mdl-navigation__link" href="/sql.html">SQL</a>
