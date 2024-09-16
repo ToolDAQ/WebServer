@@ -1,13 +1,10 @@
 // html/DeviceConfig/deviceConfig.js
 // Description: JavaScript for the device configuration page.
 
-// Initial load of device configs
 document.addEventListener("DOMContentLoaded", function () {
-    // Fetch and display the existing device configurations on page load
     GetDeviceConfigs();
 });
 
-// Function to fetch and display device configurations from the database
 function GetDeviceConfigs() {
     const query = "SELECT * FROM device_config ORDER BY time DESC LIMIT 10";
     GetPSQLTable(query, "root", "daq", true).then(function (result) {
@@ -18,7 +15,6 @@ function GetDeviceConfigs() {
     });
 }
 
-// Function to add a new device configuration
 function addDeviceConfig() {
     const device = document.getElementById("device").value;
     const author = document.getElementById("author").value;
