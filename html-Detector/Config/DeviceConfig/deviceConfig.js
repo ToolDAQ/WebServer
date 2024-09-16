@@ -36,7 +36,6 @@ function addDeviceConfig() {
         // Get the current highest version
         const highestVersion = result[0].max_version || 0;  // Default to 0 if no version exists
         const newVersion = highestVersion + 1;
-        // Now, insert the new device configuration with the auto-incremented version
         const query = `
             INSERT INTO device_config (time, device, version, author, description, data)
             VALUES (now(), '${device}', ${newVersion}, '${author}', '${description}', '${data}'::jsonb)
