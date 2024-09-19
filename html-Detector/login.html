@@ -1,74 +1,61 @@
+<!DOCTYPE html>
 <html>
 <head>
-  <title>Login</title>
-  <style>
-    .container {
-    margin-bottom: 20px; 
-    }
-  </style>
-</head>
+    <title>HyperK SSO Login</title>
+    <meta http-equiv="expires" content="0" />
+    <style type="text/css">
+BODY
+{
+	background-color : White;	
+	margin-left: 0;
+	margin-top: 0;
+	margin-right: 0;
+	margin-bottom: 0;	
+}
 
+H1
+{	
+	color : black;
+	font-family : Segoe UI, Trebuchet MS, Verdana, Helvetica, Arial;
+	font-size : 28px;
+	line-height : 28px;
+}
+
+H5
+{	
+	color : black;
+	font-family : Segoe UI, Trebuchet MS, Verdana, Helvetica, Arial;
+	font-size : 14px;
+	line-height : 14px;
+}
+
+TABLE
+{
+    border-width: 1px;
+    border-color: navy;
+    border-style: solid;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+    </style>    
+    <script>
+        function login()
+        {
+            document.getElementById("submitbtn").disabled = true;
+            document.loginform.submit();
+        }
+    </script>
+</head>
 <body>
-  <div class="imgcontainer">
-    <img src="images/hyperklogo.png" alt="logo" class="logo">
-  </div>
-  <p> </p> 
-  <h1 align="left">Hyper-K SSO Login</h1>
-  <p> </p>  
-  <div class="container">
-    <label for="uname"><b>Username</b></label>
-    <input id="uname" type="text" placeholder="Enter Username" name="uname" required>
-    &nbsp;
-    <label for="psw"><b>Password</b></label>
-    <input id="password" type="password" placeholder="Enter Password" name="psw" required>
-    <button id="submit" type="submit">Login</button>
-    <label>
-    <input type="checkbox" checked="checked" name="remember"> Remember me
-    </label>
-  </div>
-  <div class="container" style="background-color:#f1f1f1">
-    <button type="button" class="cancelbtn">Cancel</button>
-    <span class="psw">Forgot <a href="#">password?</a></span>
-  </div>
+    <form action="?" method="POST" name="loginform">
+        <input type="hidden" name="SAMLRand" value="63862337181178"/>
+        <table>
+            <tr><td><img src="images/hyperklogo.png" /></td><td><h1>HyperK SSO Login</h1></td></tr>
+            <tr><td><h5>Username</h5></td><td><input type="text" name="usr" id="usr" /></td></tr>
+            <tr><td><h5>Password</h5></td><td><input type="password" name="pwd" id="pwd" /></td></tr>
+            <tr><td colspan="2" align="center"><input id="submitbtn" type="button" onclick="login();" value="Login" /></td></tr>
+        </table>
+    </form>
 </body>
 </html>
-
-<script src="/includes/functions.js?v=3"></script>
-
-<script>
-// Function to delete all cookies
-function deleteAllCookies() {
-var cookies = document.cookie.split(";"); // Get all cookies as an array of strings
-
-// Iterate through each cookie
-for (var i = 0; i < cookies.length; i++) {
-  var cookie = cookies[i];
-  var eqPos = cookie.indexOf("="); // Find the position of '=' in the cookie string
-  var name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie; // Get the cookie name
-
-  // Set the expiration date of the cookie to a time in the past
-  document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;";
-  }
-}
-  
-// Call the function to delete all cookies
-deleteAllCookies();
-
-let button=document.getElementById("submit");
-let uname= document.getElementById('uname');
-let password= document.getElementById('password');
-
-button.onclick = function(){
-  var data='uname=' + uname.value + ' password=' + password.value;
-  var out=HTTPRequest("POST", "/cgi-bin/login.cgi", false, data);
-  //    var div = document.createElement("div");
-  //   div.innerHTML=bob;      
-  // let unameout= div.innerText;
-  //console.log(unameout);
-  if (out!="") {
-    document.cookie = out;
-    window.location.href = "/index.html";
-    }
-    //console.log(bob);
-};
-</script>

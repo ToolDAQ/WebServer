@@ -1,13 +1,22 @@
 <html>
-<head>
-  <link rel="preload" href="/stylesheets/icon?family=Material+Icons" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="/stylesheets/icon?family=Material+Icons"></noscript>
 
-  <link rel="preload" href="/stylesheets/material.indigo-teal.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="/stylesheets/material.indigo-teal.min.css"></noscript>
+<head>
+  <link rel="preload" href="/stylesheets/icon?family=Material+Icons" as="style"
+    onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="/stylesheets/icon?family=Material+Icons">
+  </noscript>
+
+  <link rel="preload" href="/stylesheets/material.indigo-teal.min.css" as="style"
+    onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="/stylesheets/material.indigo-teal.min.css">
+  </noscript>
 
   <link rel="preload" href="/stylesheets/styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="/stylesheets/styles.css"></noscript>
+  <noscript>
+    <link rel="stylesheet" href="/stylesheets/styles.css">
+  </noscript>
 
   <!-- <link rel="stylesheet" href="/stylesheets/icon?family=Material+Icons">  -->
   <!-- <link rel="stylesheet" href="/stylesheets/material.indigo-pink.min.css">  -->
@@ -35,21 +44,33 @@
   <!-- Always shows a header, even in smaller screens. -->
   <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
     <header class="mdl-layout__header">
-    <div class="mdl-layout__header-row">
-      <!-- Title -->
-      <span class="mdl-layout-title">
-        Hyper-K Online Monitoring
-      </span>&nbsp;<i class="material-icons">chevron_right</i><span class="mdl-layout-title"><!--#echo var="TITLE" --></span>
-      <!-- Add spacer, to align navigation to the right -->
-      <div class="mdl-layout-spacer"></div>
+      <div class="mdl-layout__header-row">
+        <!-- Title -->
+        <span class="mdl-layout-title"><!--#echo var="TITLE" -->
+        </span>&nbsp; <i class="material-icons">chevron_right</i><span
+          class="mdl-layout-title"><!--#echo var="SUBTITLE" --></span>
+        <!-- Add spacer, to align navigation to the right -->
+        <div class="mdl-layout-spacer"></div>
         <!-- Navigation. We hide it in small screens. -->
         <nav class="mdl-navigation mdl-layout--large-screen-only">
           <a class="mdl-navigation__link" href="/index.html">Home</a>
           <a class="mdl-navigation__link" href="/Shift">Shift</a>
           <a class="mdl-navigation__link" href="/Alarms">Alarms</a>
           <a class="mdl-navigation__link" href="/DAQ">DAQ</a>
-          <a class="mdl-navigation__link" href="/SubSystemExample">Subsystem Example</a>
+          <!-- Subsystems Dropdown with Clickable Text -->
+          <a id="dropdown-menu" class="mdl-navigation__link" href="javascript:void(0);">
+            Subsystems
+          </a>
+          <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="dropdown-menu">
+            <li class="mdl-menu__item"><a href="/Subsystems/Water">Water</a></li>
+            <li class="mdl-menu__item"><a href="/Subsystems/Calibration">Calibration</a></li>
+            <li class="mdl-menu__item"><a href="/Subsystems/Electronics">Electronics</a></li>
+            <li class="mdl-menu__item"><a href="/Subsystems/SNWatch">Supernova Watch</a></li>
+          </ul>
+          <a class="mdl-navigation__link" href="/instructions.html">Instructions</a>
         </nav>
-  </div>
+        </nav>
+      </div>
 </body>
+
 </html>

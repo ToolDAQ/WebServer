@@ -10,7 +10,7 @@ function getTimeInTimezones() {
 
     // Get the time in the defined timezone
     exptime.innerText = new Date().toLocaleTimeString(undefined, {
-        timeZone: "Europe/London"
+        timeZone: "Asia/Tokyo"
     });
 
 }
