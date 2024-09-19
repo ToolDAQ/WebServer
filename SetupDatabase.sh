@@ -34,7 +34,7 @@ echo "creating calibration table"
 psql -ddaq -c "create table calibration (time timestamp with time zone NOT NULL, device text NOT NULL, version int NOT NULL, description text NOT NULL, data JSONB NOT NULL, UNIQUE (device, version) );"
 
 echo "creating configurations table"
-psql -ddaq -c "create table configurations (config_id int NOT NULL primary key, time timestamp with time zone NOT NULL, name text NOT NULL, version int NOT NULL, description text NOT NULL, author text NOT NULL, data JSONB NOT NULL, UNIQUE (config_id) );"
+psql -ddaq -c "create table configurations (config_id serial NOT NULL primary key, time timestamp with time zone NOT NULL, name text NOT NULL, version int NOT NULL, description text NOT NULL, author text NOT NULL, data JSONB NOT NULL, UNIQUE (name, version) );"
 
 echo "creating run_info table"
 psql -ddaq -c "create table run_info (run int NOT NULL, subrun int NOT NULL, start_time timestamp with time zone NOT NULL, stop_time timestamp with time zone, config_id int NOT NULL, comments text NOT NULL, UNIQUE (run, subrun));"
