@@ -20,7 +20,8 @@ else
 fi
 
 #THISDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-DEBUGFILE="/tmp/last_json_query.txt"
+#DEBUGFILE="/tmp/last_json_query.txt"
+DEBUGFILE=/dev/null
 echo "DATA is '${DATA}'" > ${DEBUGFILE}
 
 # parse $DATA into environment variables
