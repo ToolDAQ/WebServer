@@ -8,9 +8,49 @@ h1 { font-size: 2em; }
 h2 { font-size: 1.5em; }
 h3 { font-size: 1.17em; }
 
-/* Disable ugly boxes around images in IE10 */
+/* Colours */
+:root {
+  /* Can define CSS variables here, e.g. for common colours. */
+  --blue: #4352af;
+  --green: #70bf41;
+  --lightgrey: #ddd;
+  --yellow: #f5d428;
+  --darkyellow: #997700;
+  --grey: #424242;
+  --lightgrey: #555;
+  --shadow: 0 5px 8px 2px rgba(0, 0, 0, 0.5);
+}
+
+.mdl-layout__header, .mdl-layout__tab, .mdl-layout__tab-bar, .mdl-layout__tab-bar-button
+{
+  background-color : var(--blue); /* Default primary colour */
+}
+
+.mdl-mega-footer
+{
+  background-color : var(--grey); /* Default secondary colour */
+}
+
+.mdl-layout__tab:hover, .mdl-navigation__link:hover {
+  background-color: #4e5fb0; /* Hover effect for tab bars */
+}
+
+.mdl-menu, .mdl-menu__item {
+  background-color: var(--grey); /* Grey background for dropdown menu */
+  color: white; /* White text for dropdown menu */
+}
+
+.mdl-menu__item:hover {
+  background-color: var(--lightgrey); /* Lighter gray when hovered */
+}
+
+.mdl-menu__item a {
+  color: white; /* Dropdown menu link text is white */
+  text-decoration: none; /* Remove underline */
+}
+
 a img{
-  border: 0px;
+  border: 0px; /* Disable ugly boxes around images in IE10 */
 }
 
 ::-moz-selection {
