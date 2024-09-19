@@ -1,3 +1,4 @@
+import { GetPSQLTable } from '/includes/functions.js';
 var audio = new Audio('/includes/jump.ogg');
 var alarm_message = document.getElementById("alarm_message");
 var updateinterval = setInterval(CheckAlarms, 5000);
@@ -32,7 +33,7 @@ async function TestAlarm(){
 function CheckAlarms(){
     
     if(checking_alarm_footer) return;
-    checking=true;
+    let checking=true;
 
     GetPSQLTable("select device from alarms where silenced=0", "root", "daq", true).then(function(result){
 	var table= document.createElement('table');

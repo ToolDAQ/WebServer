@@ -30,7 +30,7 @@
         <label for="data">Data (JSON format):</label>
         <textarea id="data" name="data" required></textarea><br><br>
 
-        <button type="button" onclick="addDeviceConfig()">Add Device Configuration</button>
+        <button type="button" id="addDeviceConfigBtn" >Add Device Configuration</button>
     </form>
 
     <h2 align="center">Existing Device Configurations</h2>
@@ -39,6 +39,6 @@
     <!-- Include common footer -->
     <!--#include virtual="/includes/footer.html" -->
 
-    <script src="/includes/functions.js?v=1" async></script>
-    <script src="/DeviceConfig/deviceConfig.js?v=1" async></script>
+    <script type="module" src="/includes/functions.js?v=1" async></script>
+    <script type="module" src="/Config/DeviceConfig/deviceConfig.js?v=1" async></script>
 </body>
