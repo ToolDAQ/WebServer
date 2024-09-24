@@ -1,0 +1,40 @@
+<html>
+
+<head>
+  <title>SQL</title>
+  <!--#set var="TITLE" value="DAQ" -->
+  <!--#set var="SUBTITLE" value="SQL" -->
+</head>
+
+<body>
+  <!--#include virtual="/includes/header.html" -->
+  <!--#include virtual="../subheader.html" -->
+  <!--#include virtual="/includes/drawer.html" -->
+  <h1 align="center">SQL database</h1>
+  <div align="center" id="sqldirect">
+    <p>
+      <label for="command">SQL Command:</label>
+      <input type="text" id="command" name="command" placeholder="type command here">
+      <input type="button" id="submit" value="Submit">
+    </p>
+    <p>
+    <table border="1" align="center">
+      <td id="sqloutput"> Command output </td>
+    </table>
+    <p>
+  </div>
+  <br>
+  <div align="center">
+    <label for="tableselect">Select SQL table to display </label><br>
+    <select id="tableselect"></select>
+    <input type="text" id="limit" name="limit" value="100">
+    <br>
+    <br>
+    <div align="center" id="output"></div>
+    <br>
+    <!--#include virtual="/includes/footer.html" -->
+</body>
+
+</html>
+
+<script src="/DAQ/SQL/sql.js?v=11" async></script>

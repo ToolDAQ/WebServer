@@ -13,9 +13,9 @@
     <link rel="stylesheet" href="/stylesheets/material.indigo-teal.min.css">
   </noscript>
 
-  <link rel="preload" href="/stylesheets/styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="/stylesheets/stylesheet.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
   <noscript>
-    <link rel="stylesheet" href="/stylesheets/styles.css">
+    <link rel="stylesheet" href="/stylesheets/stylesheet.css">
   </noscript>
 
   <!-- <link rel="stylesheet" href="/stylesheets/icon?family=Material+Icons">  -->
@@ -27,7 +27,7 @@
 </head>
 <!-- <link rel="stylesheet" href="/styles.css">   -->
 
-<table class = "mdl-mega-footer" style="border-collapse: collapse; width: 100%; color: white;">
+<table class="mdl-mega-footer" style="border-collapse: collapse; width: 100%; color: white;">
   <tr>
     <td style="border: none; padding: 10px; width: 15%; text-align: right;">Experiment time:</td>
     <td style="border: none; padding: 10px; width: 15%; text-align: left;" id="exptime"></td>
@@ -46,31 +46,58 @@
     <header class="mdl-layout__header">
       <div class="mdl-layout__header-row">
         <!-- Title -->
-        <span class="mdl-layout-title"><!--#echo var="TITLE" -->
-        </span>&nbsp; <i class="material-icons">chevron_right</i><span
-          class="mdl-layout-title"><!--#echo var="SUBTITLE" --></span>
+        <span class="mdl-layout-title" id="title-container">
+          <a href="/pages/<!--#echo var="TITLE" -->" id="title-link"><!--#echo var="TITLE"--></a>
+        </span>
+        <span id="subtitle-container">
+          &nbsp; <i class="material-icons">chevron_right</i>
+          <span class="mdl-layout-title" id="subtitle"><!--#echo var="SUBTITLE" --></span>
+        </span>
         <!-- Add spacer, to align navigation to the right -->
         <div class="mdl-layout-spacer"></div>
         <!-- Navigation. We hide it in small screens. -->
         <nav class="mdl-navigation mdl-layout--large-screen-only">
           <a class="mdl-navigation__link" href="/index.html">Home</a>
-          <a class="mdl-navigation__link" href="/Shift">Shift</a>
-          <a class="mdl-navigation__link" href="/Alarms">Alarms</a>
-          <a class="mdl-navigation__link" href="/DAQ">DAQ</a>
+          <a class="mdl-navigation__link" href="/pages/Shift">Shift</a>
+          <a class="mdl-navigation__link" href="/pages/Alarms">Alarms</a>
+          <a class="mdl-navigation__link" href="/pages/DAQ">DAQ</a>
           <!-- Subsystems Dropdown with Clickable Text -->
-          <a id="dropdown-menu" class="mdl-navigation__link" href="javascript:void(0);">
-            Subsystems
+          <a id="dropdown-menu" class="mdl-navigation__link">
+            Subsystems &#8942;
           </a>
-          <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="dropdown-menu">
-            <li class="mdl-menu__item"><a href="/Subsystems/Water">Water</a></li>
-            <li class="mdl-menu__item"><a href="/Subsystems/Calibration">Calibration</a></li>
-            <li class="mdl-menu__item"><a href="/Subsystems/Electronics">Electronics</a></li>
-            <li class="mdl-menu__item"><a href="/Subsystems/SNWatch">SNWatch</a></li>
+          <ul class="mdl-menu mdl-js-menu mdl-js-ripple-effect" for="dropdown-menu">
+            <li class="mdl-menu__item"><a href="/pages/Water">Water</a></li>
+            <li class="mdl-menu__item"><a href="/pages/Calibration">Calibration</a></li>
+            <li class="mdl-menu__item"><a href="/pages/Electronics">Electronics</a></li>
+            <li class="mdl-menu__item"><a href="/pages/SNWatch">SNWatch</a></li>
           </ul>
-          <a class="mdl-navigation__link" href="/instructions.html">Instructions</a>
+          <a class="mdl-navigation__link" href="/pages/Instructions">Instructions</a>
         </nav>
         </nav>
       </div>
+
+
+      <!-- Scripts -->
+
+      <!-- Only display the Chevron right if subtitle exists -->
+      <script>
+        const subtitleElement = document.getElementById('subtitle');
+        const subtitleText = subtitleElement.textContent.trim();
+        if (!subtitleText) {
+          document.getElementById('subtitle-container').style.display = 'none';
+        }
+      </script>
+
+      <script>
+        const currentPath = window.location.pathname;
+        const nonClickablePages = ["/index.html"];
+        if (nonClickablePages.includes(currentPath)) {
+          const titleContainer = document.getElementById('title-container');
+          const titleText = document.getElementById('title-link').textContent;
+          titleContainer.innerHTML = titleText;
+        }
+      </script>
+
 </body>
 
 </html>
