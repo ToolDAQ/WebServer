@@ -136,7 +136,7 @@ d3.csv('/cgi-bin/get-event.cgi?event=0', function(err2, rows2){
 				    {
 					buttons: [
 					    {
-						args: ['type', 'surface'],
+						args: ['type', 'scatter3d'],
 						label: '3D Surface',
 						method: 'restyle'
 					    },
