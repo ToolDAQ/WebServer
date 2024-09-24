@@ -1,11 +1,11 @@
 
-d3.csv('./event1', function(err2, rows2){
+d3.csv('/cgi-bin/get-event.cgi?event=0', function(err2, rows2){
     function unpack2(rows2, key2) {
 	return rows2.map(function(row2)
 			 { return row2[key2]; });}
     
     
-    d3.csv('./locations', function(err, rows){
+    d3.csv('/cgi-bin/locations.cgi', function(err, rows){
 	function unpack(rows, key) {
 	    return rows.map(function(row)
 			    { return row[key]; });}

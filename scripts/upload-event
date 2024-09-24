@@ -1,0 +1,54 @@
+#!/usr/bin/perl
+
+use v5.30;
+
+use DBI;
+use Getopt::Long;
+use JSON::XS;
+
+sub maphash(&@) {
+  my $function = shift;
+  return {} unless @_;
+  my %result;
+  my @args;
+  for (my $i = 0; ; ++$i) {
+    for (my $j = 0; $j < @_; ++$j) {
+      return \%result if $i >= @{$_[$j]};
+      $args[$j] = $_[$j][$i];
+    };
+    my ($key, $value) = $function->(@args);
+    $result{$key} = $value;
+  };
+};
+
+Getopt::Long::Configure('gnu_getopt');
+
+my $host   = 'localhost';
+my $port   = 5432;
+my $dbname = 'daq';
+my $event  = 0;
+my $time   = 'now()';
+GetOptions(
+  'host|h=s'     => \$host,
+  'port|p=i'     => \$port,
+  'database|d=s' => \$dbname,
+  'event|e=i'    => \$event,
+  'time|t=s'     => \$time
+) or die;
+
+my @fields = split /,/, <>;
+chomp $fields[-1];
+
+my @data;
+while (<>) {
+  chomp;
+  push @data, maphash { $_[1] += 0; $_[0] => $_[1] } \@fields, [ split /,/ ]
+};
+
+my $json = new JSON::XS;
+$json = $json->canonical;
+
+my $db = DBI->connect("dbi:Pg:dbname=$dbname;host=$host;port=$port") or exit 1;
+$db->do(<<~'END', undef, $event, $time, $json->encode(\@data));
+  insert into event_display (evnt, time, data) values ($1, $2, $3);
+END
