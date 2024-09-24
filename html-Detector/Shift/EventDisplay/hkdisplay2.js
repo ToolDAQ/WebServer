@@ -16,7 +16,6 @@ d3.csv('/cgi-bin/get-event.cgi?event=0', function(err2, rows2){
 	    if(t[i]>250) t[i]=250;
 	    
 	}
-	console.log(c);
 	var trace1 = {
 	    x:unpack2(rows2, 'x'), y: unpack2(rows2, 'y'), z: unpack2(rows2, 'z'),
 	    mode: 'markers',
