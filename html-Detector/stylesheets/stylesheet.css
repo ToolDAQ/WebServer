@@ -1,0 +1,203 @@
+/* Body */
+body {
+  margin: 0;
+  font: 14px "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+}
+
+/* Text */
+p {
+  font-size: 1.5em;
+  margin-left: 1.5em;
+}
+
+h1 {
+  font-size: 2em;
+}
+
+h2 {
+  font-size: 1.5em;
+}
+
+a {
+  color: var(--red-pink);
+}
+a, button {
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+a:hover {
+  color: #00bfa5;
+}
+
+/* Colours */
+:root {
+  --blue-grey: #3D5A80;
+  --light-blue-grey: #98C1D9;
+  --cyan: #E0FBFC;
+  --dark-blue-grey: #293241;
+  --blue: #4352af;
+  --light-blue: #4e5fb0;
+  --green: #70bf41;
+  --red-pink: #f83c64;
+  --orange: #EE6C4D;
+  --whitegrey: #ddd;
+  --yellow: #f5d428;
+  --darkyellow: #997700;
+  --grey: #424242;
+  --light-grey: #555;
+  --shadow: 0 5px 8px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Default primary colour */
+.mdl-layout__header,
+.mdl-layout__tab,
+.mdl-layout__tab-bar,
+.mdl-layout__tab-bar-button {
+  background-color: var(--blue);
+}
+
+/* Default secondary colour */
+.mdl-mega-footer {
+  background-color: var(--grey);
+}
+
+/* Hover effect for tab bars */
+.mdl-layout__tab:hover,
+.mdl-navigation__link:hover {
+  background-color: var(--light-blue);
+  color: white;
+}
+
+/* Grey background and white text for dropdown menu */
+.mdl-menu, .mdl-menu__item {
+  background-color: var(--blue);
+  color: white;
+}
+
+/* Lighter gray when hovered */
+.mdl-menu__item:hover {
+  background-color: var(--light-blue);
+  color: white;
+}
+
+/* Dropdown menu link text is white without underline */
+.mdl-menu__item a {
+  color: white;
+  text-decoration: none;
+  font-weight: normal;
+}
+
+#title-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+#title-link:hover {
+  text-decoration: underline;
+}
+
+#subtitle-container {
+  display: inline-flex;
+  align-items: center;
+}
+
+#subtitle-container .material-icons {
+  margin-right: 5px;
+}
+
+a img {
+  border: 0px; /* Disable ugly boxes around images in IE10 */
+}
+
+::-moz-selection {
+  background-color: #6ab344;
+  color: #fff;
+}
+
+::selection {
+  background-color: #6ab344;
+  color: #fff;
+}
+
+.mdl-textfield--expandable {
+  width: auto;
+}
+
+.drawer {
+  border-right: none;
+}
+
+.drawer-separator {
+  height: 1px;
+  background-color: #dcdcdc;
+  margin: 8px 0;
+}
+
+.drawer .mdl-navigation__link.mdl-navigation__link {
+  font-size: 14px;
+  color: #757575;
+}
+
+.drawer span.mdl-navigation__link.mdl-navigation__link {
+  color: #8bc34a;
+}
+
+.drawer .mdl-layout-title {
+  position: relative;
+  background: #6ab344;
+  height: 160px;
+}
+
+.drawer .logo-image {
+  position: absolute;
+  bottom: 16px;
+}
+
+.logo-font {
+  font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  line-height: 1;
+  color: #767777;
+  font-weight: 500;
+}
+
+.annie-picture-section {
+  position: relative;
+  background: url('../images/background.jpg') center top no-repeat;
+  background-size: cover;
+  height: 600px;
+}
+
+.wear-band {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+  background-color: #37474f;
+}
+
+.wear-band-text {
+  max-width: 800px;
+  margin-left: 25%;
+  padding: 24px;
+  text-align: left;
+  color: white;
+}
+
+.wear-band-text p {
+  padding-top: 8px;
+}
+
+.alt-link {
+  text-decoration: none;
+  color: var(--red-pink) !important;
+  font-size: 16px;
+}
+
+.alt-link:hover {
+  color: #00bfa5 !important;
+}
+
+.alt-link .material-icons {
+  position: relative;
+  top: 6px;
+}

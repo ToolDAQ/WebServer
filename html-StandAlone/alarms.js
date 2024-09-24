@@ -7,7 +7,7 @@ GetAlarms();
 function GetAlarms(){
     
     if(checking_alarm_table) return;
-    checking=true;
+    checking_alarm_footer=true;
 
     GetPSQLTable("select * from alarms order by time desc limit 50", "root", "daq", true).then(function(result){
 	

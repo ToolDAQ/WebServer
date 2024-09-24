@@ -1,4 +1,4 @@
-var audio = new Audio('./jump.ogg');
+var audio = new Audio('/jump.ogg');
 var alarm_message = document.getElementById("alarm_message");
 var updateinterval = setInterval(CheckAlarms, 5000);
 var alarminterval = "";
@@ -16,8 +16,8 @@ async function TestAlarm(){
         await sleep(1000);
 	audio.play();
 	if(document.body.style.backgroundColor == "red"){
-	    document.body.style.backgroundColor = "white";
-	    alarm_message.style.backgroundColor = "white";
+	    document.body.style.backgroundColor = null;
+	    alarm_message.style.backgroundColor = null;
         }
 	else{
 	    document.body.style.backgroundColor = "red"
@@ -32,7 +32,7 @@ async function TestAlarm(){
 function CheckAlarms(){
     
     if(checking_alarm_footer) return;
-    checking=true;
+    checking_alarm_footer=true;
 
     GetPSQLTable("select device from alarms where silenced=0", "root", "daq", true).then(function(result){
 	var table= document.createElement('table');
@@ -54,8 +54,8 @@ function CheckAlarms(){
 function AlarmOn(){
     audio.play();
     if(document.body.style.backgroundColor == "red"){
-	document.body.style.backgroundColor = "white";
-	alarm_message.style.backgroundColor = "white";
+	document.body.style.backgroundColor = null;
+	alarm_message.style.backgroundColor = null;
     }
     else{
 	document.body.style.backgroundColor = "red"
@@ -67,8 +67,8 @@ function AlarmOn(){
 function AlarmOff(){
     clearInterval(alarminterval);
     alarminterval = "";        
-    document.body.style.backgroundColor = "white";
-    alarm_message.style.backgroundColor = "white";
+    document.body.style.backgroundColor = null;
+    alarm_message.style.backgroundColor = null;
     alarm_message.value =  "no current alarm";
  
 }

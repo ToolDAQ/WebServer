@@ -10,7 +10,7 @@ function GetPlotFiles(){ //command to retreive all plot files
     if(updating) return;  
     updating=true;
     
-    var csvFile = "./cgi-bin/monitoringplots.cgi";
+    var csvFile = "/cgi-bin/monitoringplots.cgi";
     
     // Use XMLHttpRequest to get the CSV content from the file
     var xhr = new XMLHttpRequest();

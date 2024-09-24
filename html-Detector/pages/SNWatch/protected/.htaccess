@@ -1,0 +1,7 @@
+RewriteEngine On
+RewriteBase /
+
+# Check if the cookie is not set
+RewriteCond %{HTTP_COOKIE} !^.*SubSystemTemplate.*$ [NC]
+# If the cookie match fails, redirect to login.html
+RewriteRule .* /SubSystemTemplate/index.html [L]

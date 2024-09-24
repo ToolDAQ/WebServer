@@ -14,7 +14,7 @@ function updatedropdown(){ //function for updating dropdown box with monitoring 
 	
 	//var xhr = new XMLHttpRequest();
 	
-	//var url = "./cgi-bin/sqltable.cgi";
+	//var url = "/cgi-bin/sqltable.cgi";
 	
 	//var user ="root";
 	//var db="daq";
@@ -70,7 +70,7 @@ function gettable(command){
 	return new Promise(function(resolve, reject){
 		var xhr = new XMLHttpRequest();
 		
-		var url = "./cgi-bin/sqlquery.cgi";
+		var url = "/cgi-bin/sqlquery.cgi";
 		
 		var user ="root";
 		var db="daq";
@@ -180,7 +180,7 @@ function makeplot(){ //function to generate plotly plot
 };
 
 
-function updateplot(){ //fucntion to update plot
+function updateplot(){ //function to update plot
 
   if(updating) return;
 	
