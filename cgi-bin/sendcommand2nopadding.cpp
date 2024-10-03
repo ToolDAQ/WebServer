@@ -59,7 +59,14 @@ int main (){
 	command= **ti;
 	
 	std::stringstream ss(command);
-	ss >> command >> var1;
+	//ss >> command >> var1;
+
+	ss >> command;
+	getline(ss, var1);
+	if(var1.length()>0){
+	  while(var1.at(0)==' ') var1=var1.substr(1,var1.length());
+	}
+	//	std::cout<<"comand="<<command<<" : var1="<<var1<<std::endl;
 	//tmp >> command>> std::ws;
 	//getline(tmp, var1);
 	

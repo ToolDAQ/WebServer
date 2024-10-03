@@ -1,0 +1,13 @@
+RewriteEngine On
+RewriteBase /
+
+# Exclude a specific address from the rewrite rule
+RewriteCond %{REQUEST_URI} !^/login.html [NC]
+RewriteCond %{REQUEST_URI} !^/cgi-gin/login.cgi [NC]
+RewriteCond %{REQUEST_URI} !^/includes/functions.js [NC]
+
+
+# Check if the cookie is not set
+RewriteCond %{HTTP_COOKIE} !^.*user.*$ [NC]
+# If the cookie match fails, redirect to login.html
+RewriteRule .* /login.html [L]
