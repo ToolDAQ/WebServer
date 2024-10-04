@@ -1,0 +1,24 @@
+<head>
+<title>ToolDAQ Webpage</title>
+
+</head>
+
+<!--#include virtual="/includes/header.html" -->
+<!--#include virtual="../subheader.html" -->
+<!--#include virtual="/includes/drawer.html" -->
+
+<div id="RunControl">
+  <br>
+  configuration <select id="config"></select>
+  <input type="text" id="description" placeholder="<Run Description>">
+  <button id="RunStart">Run Start</button>
+  <br>
+  <button id="RunStop">Run Stop</button>
+  <br>
+  <button id="SubRun">New Sub Run</button>
+  <br>
+</div>
+
+<!--#include virtual="/includes/footer.html" -->
+
+<script src="/DAQ/RunControl/RunControl.js?v=1" async></script>
