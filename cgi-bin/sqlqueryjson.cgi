@@ -41,7 +41,7 @@ command=`echo "$command" | sed s:*:*:g |sed s:'%20':' ':g | sed s:%27:\':g | sed
 echo "query is '${command}'" >> ${DEBUGFILE}
 
 # run the query returning results as a JSON array
-RET=$(echo `psql  -U$user -d$db -At -c "SELECT json_agg(t) FROM ($command) as t" 2>&1 `)
+RET=$(echo `psql ${user:+-U "$user"} ${db:+-d "$db"} -At -c "SELECT json_agg(t) FROM ($command) as t" 2>&1 `)
 echo "return is '${RET}'" >> ${DEBUGFILE}
 echo "${RET}"
 
