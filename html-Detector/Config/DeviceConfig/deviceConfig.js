@@ -1,9 +1,24 @@
 // html/DeviceConfig/deviceConfig.js
 // Description: JavaScript for the device configuration page.
 
-document.addEventListener("DOMContentLoaded", function () {
-    GetDeviceConfigs();
-});
+import { GetPSQLTable, GetPSQL } from '/includes/functions.js';
+
+if (document.readyState !== 'loading'){
+        //console.log("already loaded, initing");
+        Init();
+} else {
+        //console.log("page still loading, waiting to finish...");
+        document.addEventListener("DOMContentLoaded", function () {
+                //console.log("page loaded, initing");
+                Init();
+        });
+}
+
+function Init(){
+        //console.log("Initialising page");
+        GetDeviceConfigs();
+        document.getElementById("addDeviceConfigBtn").addEventListener("click", addDeviceConfig);
+}
 
 function GetDeviceConfigs() {
     const query = "SELECT * FROM device_config ORDER BY time DESC LIMIT 10";
@@ -29,25 +44,16 @@ function addDeviceConfig() {
         return;
     }
 
-    // First, fetch the highest version number for the given device
-    const queryGetVersion = `SELECT MAX(version) as max_version FROM device_config WHERE device = '${device}'`;
+    const query = `
+        INSERT INTO device_config (time, device, version, author, description, data)
+        VALUES (now(), '${device}', (select COALESCE(MAX(version)+1,0) FROM device_config WHERE device='${device}'),
+        '${author}', '${description}', '${data}'::jsonb)
+    `;
 
-    GetPSQLTable(queryGetVersion, "root", "daq", true).then(function (result) {
-        // Get the current highest version
-        const highestVersion = result[0].max_version || 0;  // Default to 0 if no version exists
-        const newVersion = highestVersion + 1;
-        const query = `
-            INSERT INTO device_config (time, device, version, author, description, data)
-            VALUES (now(), '${device}', ${newVersion}, '${author}', '${description}', '${data}'::jsonb)
-        `;
-
-        GetPSQLTable(query, "root", "daq", true).then(() => {
-            // Refresh the table after adding a new config
-            GetDeviceConfigs();
-        }).catch(function (error) {
-            console.error("Error adding device configuration:", error);
-        });
-        }).catch(function (error) {
-        console.error("Error fetching version:", error);
+    GetPSQLTable(query, "root", "daq", true).then(() => {
+        // Refresh the table after adding a new config
+        GetDeviceConfigs();
+    }).catch(function (error) {
+        console.error("Error adding device configuration:", error);
     });
 }

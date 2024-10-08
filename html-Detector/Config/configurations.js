@@ -1,24 +1,32 @@
 // html/Config/configuration.js
 // Description: JavaScript for adding and displaying configurations.
+import { GetPSQLTable, GetPSQL } from '/includes/functions.js';
 
-document.addEventListener("DOMContentLoaded", function () {
-    GetConfigurations();
+if (document.readyState !== 'loading'){
+	//console.log("already loaded, initing");
+	Init();
+} else {
+	//console.log("page still loading, waiting to finish...");
+	document.addEventListener("DOMContentLoaded", function () {
+		//console.log("page loaded, initing");
+		Init();
+	});
+}
 
-    loadDeviceConfigurations();
-
-    const addDeviceConfigBtn = document.getElementById("addDeviceConfigBtn");
-    addDeviceConfigBtn.addEventListener("click", function() {
-        openModal(); // Open modal
-        loadDeviceConfigurations(); // Fetch and display device configurations when modal opens
-    });
-});
+function Init(){
+	//console.log("Initialising page");
+	GetConfigurations();
+	//loadDeviceConfigurations(); // unused
+        
+        document.getElementById("addConfigBtn").addEventListener("click", addConfiguration);
+}
 
 function GetConfigurations() {
-	const query = "SELECT * FROM configurations ORDER BY time DESC LIMIT 10";
-	console.log("query"+query);
+    const query = "SELECT * FROM configurations ORDER BY time DESC LIMIT 10";
+    //console.log("query: "+query);
     GetPSQLTable(query, "root", "daq", true).then(function (result) {
 		const configTable = document.getElementById('configTable');
-		console.log("Configurations result"+result);
+		//console.log("Configurations result"+result);
         configTable.innerHTML = result;
     }).catch(function (error) {
         console.error("Error fetching configurations:", error);
@@ -26,7 +34,6 @@ function GetConfigurations() {
 }
 
 function addConfiguration() {
-	const config_id = document.getElementById("id").value;
     const name = document.getElementById("name").value;
     const description = document.getElementById("description").value;
     const author = document.getElementById("author").value;
@@ -40,52 +47,39 @@ function addConfiguration() {
         return;
     }
 
-    // First, fetch the highest config_id for auto-increment
-    const queryGetConfigId = `SELECT MAX(config_id) as max_config_id FROM configurations`;
+    const queryInsert = `
+        INSERT INTO configurations (time, name, version, description, author, data)
+        VALUES ( now(), '${name}', (select COALESCE(MAX(version)+1,0) FROM configurations WHERE name='${name}'),
+                 '${description}', '${author}', '${data}'::jsonb)
+    `;
 
-    GetPSQLTable(queryGetConfigId, "root", "daq", true).then(function (resultConfigId) {
-        const highestConfigId = resultConfigId[0].max_config_id || 0;  // Default to 0 if no config exists
-        const newConfigId = highestConfigId + 1;
+    GetPSQLTable(queryInsert, "root", "daq", true).then(() => {
+        // Clear the form after successful submission
+        document.getElementById("configForm").reset();
 
-        const queryGetVersion = `SELECT MAX(version) as max_version FROM configurations WHERE name = '${name}'`;
-
-        GetPSQLTable(queryGetVersion, "root", "daq", true).then(function (resultVersion) {
-            const highestVersion = resultVersion[0].max_version || 0;  // Default to 0 if no version exists
-            const newVersion = highestVersion + 1;
-
-            const queryInsert = `
-                INSERT INTO configurations (config_id, time, name, version, description, author, data)
-                VALUES (${config_id}, now(), '${name}', ${newVersion}, '${description}', '${author}', '${data}'::jsonb)
-            `;
-
-            GetPSQLTable(queryInsert, "root", "daq", true).then(() => {
-                // Clear the form after successful submission
-                document.getElementById("configForm").reset();
-
-                // Refresh the table to display the new configuration
-                GetConfigurations();
-            }).catch(function (error) {
-                console.error("Error adding configuration:", error);
-            });
-
-        }).catch(function (error) {
-            console.error("Error fetching version:", error);
-        });
-
+        // Refresh the table to display the new configuration
+        GetConfigurations();
     }).catch(function (error) {
-        console.error("Error fetching config_id:", error);
+        console.error("Error adding configuration:", error);
     });
+    
+
 }
+
+///////////////////////////////////
+// functions below here not used //
+///////////////////////////////////
 
 let selectedConfigs = []; // Array to store selected device configs
 
 // Function to fetch and display device configurations in the modal
 function loadDeviceConfigurations() {
     const query = "SELECT device, version FROM device_config ORDER BY time DESC LIMIT 10";
-    GetPSQLTable(query, "root", "daq", true).then(function (result) {
+    GetPSQL(query, "root", "daq", true).then(function (result) {
         const deviceConfigList = document.getElementById('deviceConfigList');
         deviceConfigList.innerHTML = ""; // Clear previous content
-
+        //console.log("loadDeviceConfigurations result: ",result);
+        
         result.forEach(row => {
             const configHTML = `
                 <label>
