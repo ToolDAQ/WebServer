@@ -2,14 +2,13 @@
 
 query() {
   psql -h localhost -U root -d daq --csv "$@" 2>&1 |
-  sed '
-    1{
-      /^ERROR/{
-        iStatus: 400
-      }
-      i
-    }
-  '
+  {
+    read line
+    [[ $line =~ ^ERROR: ]] && echo 'Status: 400'
+    echo
+    [[ -n $line ]] && echo "$line"
+    exec cat
+  }
 }
 
 if ! [[ $REQUEST_URI =~ [\&?]event=([^\&])+ ]]; then
@@ -27,8 +26,5 @@ if ! [[ $event =~ ^[0-9]+$ ]]; then
 fi
 
 echo 'Content-type: text/csv'
-query -c "
-  select r->'x' x, r->'y' y, r->'z' z, r->'c' c, r->'t' t
-    from event_display, jsonb_array_elements(data) r
-    where evnt = $event
-"
+
+query -c "select * from event_display where evnt = $event"

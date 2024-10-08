@@ -1,0 +1,43 @@
+#!/usr/bin/perl
+
+use v5.30;
+
+use Getopt::Long;
+use DBI;
+use JSON::XS;
+
+use Data::Dumper;
+
+Getopt::Long::Configure('gnu_getopt');
+
+my $host   = 'localhost';
+my $port   = 5432;
+my $dbname = 'daq';
+GetOptions(
+  'host|h=s'     => \$host,
+  'port|p=i'     => \$port,
+  'database|d=s' => \$dbname
+) or die;
+
+my $db = DBI->connect(
+  "dbi:Pg:dbname=$dbname;host=$host;port=$port", undef, undef, { RaiseError => 1 }
+) or exit 1;
+
+my $event_number = $db->selectall_arrayref('select max(evnt) from event_display')->[0][0];
+if (defined $event_number) {
+  ++$event_number;
+} else {
+  $event_number = 0;
+};
+
+my @event = map {
+  {
+    pmt => $_->[0],
+    c   => 10 * rand(),
+    t   => 100 + rand() * 150
+  }
+} $db->selectall_array('select id from pmt');
+
+$db->do(<<~'END', {}, $event_number, JSON::XS->new->canonical->encode(\@event));
+  insert into event_display (evnt, time, data) values ($1, now(), $2)
+  END

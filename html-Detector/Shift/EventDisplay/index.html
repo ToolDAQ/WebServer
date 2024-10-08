@@ -1,33 +1,30 @@
+<!DOCTYPE html>
 <head>
 <title>Event Display</title>
-<!-- #include <script src="https://cdn.plot.ly/plotly-2.3.0.min.js"></script>  -->
-<script src='https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js'></script>
-</hread>
-
+</head>
 <!--#include virtual="/includes/header.html" -->
 <!--#include virtual="../subheader.html" -->
 <!--#include virtual="/includes/drawer.html" -->
 
-<p>
-<p>
-<p>
-<p>
-<p>
-<p>
-<select id='events-list' onchange="events_list_change()">
-  <option value="update">Update</option>
-</select>
-<div id='myDiv'  style="width: 100%; height: 100%; position: relative; top: 20px; left: 30px;"></div>
+<div id='event-display-controls' style='display: block'>
+  <select id='event-display-plot-mode' onchange='update_plot_mode()'>
+    <option name='2d' selected>2D</option>
+    <option name='3d'>3D</option>
+  </select>
+  <select id='event-display-plot-data' onchange='update_plot_data()'>
+    <option name='c' selected>Charge</option>
+    <option name='t'>Time</option>
+  </select>
+  <select></select>
+  <button onclick="pause(this)">Pause</button>
+  Event <span id='event-display-number'></span>,
+  from <span id='event-display-time'></span>.
+</div>
+<div id='event-display-error' style='display: none'></div>
+<div id='event-display' style='width: 100%; height: 900px; position: relative'></div>
 
-<p>
-<p>
-<p>
-<p>
-<p>
-<p>
-
+<script src='https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js'></script>
 <script src="https://cdn.plot.ly/plotly-2.3.0.min.js"></script>
-<script src="hkdisplay2.js?version=59" async></script>
-<script src="/includes/functions.js?version=1">  </script>
+<script src="event-display.js"></script>
 
 <!--#include virtual="/includes/footer.html" -->

@@ -46,7 +46,8 @@ echo "creating users table"
 psql -ddaq -c "create table users (user_id serial NOT NULL, username text NOT NULL, password text NOT NULL, permissions JSONB, UNIQUE (user_id));"
 
 echo "creating pmt table"
-psql -ddaq -c "create table pmt (id int NOT NULL, x real NOT NULL, y real NOT NULL, z real, type text NOT NULL, size real NOT NULL, UNIQUE (id));"
+psql -ddaq -c "create type pmt_location as enum ('bottom', 'barrel', 'top');"
+psql -ddaq -c "create table pmt (id int NOT NULL, x real NOT NULL, y real NOT NULL, z real, type text NOT NULL, size real NOT NULL, location pmt_location NOT NULL, UNIQUE (id));"
 
 echo "creating event_display table"
 psql -ddaq -c "create table event_display (evnt bigint NOT NULL, time timestamp with time zone NOT NULL, data JSONB NOT NULL, UNIQUE (evnt));"
