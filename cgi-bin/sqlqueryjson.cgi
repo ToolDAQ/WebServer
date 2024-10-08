@@ -13,7 +13,7 @@ if [ "$REQUEST_METHOD" = "POST" ]; then
     if [ "$CONTENT_LENGTH" -gt 0 ]; then
         read -n $CONTENT_LENGTH POST_DATA <&0
     fi
-    DATA=POST_DATA
+    DATA=$POST_DATA
 else
     # QUERY data gets passed via the QUERY_STRING env var
     DATA="${QUERY_STRING}"
