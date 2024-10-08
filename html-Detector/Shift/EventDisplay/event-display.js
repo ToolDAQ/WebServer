@@ -1,9 +1,22 @@
-var display = {};
+{
+  let gui = {
+    update_interval: 1000 * 5 // ms
+  };
+  for (let field of [ 'error', 'events', 'info' ])
+    gui[field] = document.getElementById(field);
+  gui.controls = {};
+  for (let button of [ 'first', 'previous', 'pause', 'next', 'last' ])
+    gui.controls[button] = document.getElementById(button);
+  var display = { gui };
+};
 
 function report_error(message) {
-  let div = document.getElementById('event-display-error');
-  div.innerText = message;
-  div.style.display = 'block';
+  display.gui.error.innerText = message;
+  display.gui.error.style.display = 'block';
+};
+
+function hide_error() {
+  display.gui.error.style.display = 'none';
 };
 
 function selected_name(id) {
@@ -12,11 +25,112 @@ function selected_name(id) {
 };
 
 function selected_plot_mode() {
-  return selected_name('event-display-plot-mode');
+  return selected_name('mode');
 };
 
 function selected_plot_data() {
-  return selected_name('event-display-plot-data');
+  return selected_name('data');
+};
+
+function button_enable(button, enabled = true) {
+  if (enabled)
+    button.removeAttribute('disabled');
+  else
+    button.setAttribute('disabled', '');
+};
+
+function button_disable(button) {
+  button_enable(button, false);
+};
+
+function toggle_controls(event_index) {
+  let pause    = display.events;
+  let previous = display.events && event_index > 0;
+  let controls = display.gui.controls;
+  button_enable(controls.first,    previous);
+  button_enable(controls.previous, previous);
+  button_enable(controls.pause,    pause);
+};
+
+function cancel_next_frame() {
+  if (display.update && display.update !== true) clearTimeout(display.update);
+};
+
+function pause(pause) {
+  if (!pause) {
+    display.gui.controls.pause.innerText = 'Pause';
+    display.update = true;
+    load_events();
+  } else if (display.update) {
+    if (display.update !== true) clearTimeout(display.update);
+    display.update = null;
+    display.gui.controls.pause.innerText = 'Resume';
+  };
+};
+
+function first_click() {
+  cancel_next_frame();
+  load_event(0);
+};
+
+function previous_click() {
+  pause(true);
+  load_event(display.event.evnt - 1);
+};
+
+function pause_click() {
+  pause(display.update);
+};
+
+function next_click() {
+  cancel_next_frame();
+
+  if (display.event) {
+    let index = display.event.evnt + 1;
+    if (index < display.events.length) {
+      load_event(index);
+      return;
+    };
+  };
+
+  load_events();
+};
+
+function last_click() {
+  cancel_next_frame();
+
+  if (display.event) {
+    let index = display.events.length - 1;
+    if (index > display.event.evnt) {
+      load_event(index);
+      return;
+    };
+  };
+
+  load_events(true);
+};
+
+function plot_mode_changed() {
+  display.mode = selected_plot_mode();
+  update_hits();
+  Plotly.newPlot('event-display', display[display.mode].traces, display.layout);
+};
+
+function plot_data_changed() {
+  display.data = selected_plot_data();
+  let marker = display[display.mode].hits.marker;
+  for (let i = 0; i < display.event.data.length; ++i)
+    marker.color[i] = display.event.data[i][display.data];
+  Plotly.restyle('event-display', { marker: marker });
+};
+
+function event_selected(select) {
+  pause(true);
+  load_event(select[select.selectedIndex].getAttribute('name'));
+};
+
+function update_info() {
+  display.gui.info.innerText = Date().toString();
 };
 
 function update_hits() {
@@ -43,21 +157,83 @@ function update_hits() {
   data.hits.hoverinfo = 'text';
 };
 
-function load_event(nevent) {
-  d3.csv(
-    '/cgi-bin/get-event.cgi?event=' + nevent,
-    function (error, event) {
-      if (error) {
-        report_error('Error while loading event ' + nevent + ': ' + error) ;
-        return;
-      };
+function get_csv(api, args, callback) {
+  if (typeof(args) == 'function' && callback === undefined) {
+    callback = args;
+    args = {};
+  };
 
+  let url = '/cgi-bin/' + api + '.cgi';
+  let d = '?';
+  for (let key in args) url += d + key + '=' + args[key];
+
+  d3.csv(
+    url,
+    function (error, reply) {
+      if (error) {
+        report_error(url + ': ' + error.responseText);
+        return;
+      } else
+        hide_error();
+
+      callback(reply);
+    }
+  );
+};
+
+function load_events(last = false) {
+  get_csv(
+    'get-event',
+    function (events) {
+      for (let event of events) event.evnt = Number(event.evnt);
+
+      let index;
+      if (last) {
+        index = events.length - 1;
+        if (display.event.evnt >= events[index].evnt) index = -1;
+      } else if (display.event)
+        index = events.findIndex(e => e.evnt > display.event.evnt);
+      else if (events.length > 0)
+        index = 0;
+      else
+        index = -1;
+
+      if (index >= 0) {
+        display.events = events;
+
+        display.gui.events.length = 0;
+        for (let [i, event] of events.entries()) {
+          let option = new Option();
+          option.setAttribute('name', event.evnt);
+          option.innerText = event.evnt + '\t' + event.time;
+          display.gui.events.appendChild(option);
+          event.option = i;
+          if (display.event && display.event.evnt == event.evnt)
+            display.gui.events.selectedIndex = i;
+        };
+
+        load_event(index);
+      } else {
+        report_error('No new events!');
+        update_info();
+        if (display.update)
+          display.update = setTimeout(load_events, display.gui.update_interval);
+      };
+    }
+  );
+};
+
+function load_event(index) {
+  get_csv(
+    'get-event',
+    { event: display.events[index].evnt },
+    function (event) {
       event = event[0];
+      event.evnt = Number(event.evnt);
       event.data = JSON.parse(event.data);
 
       display.event = event;
-      display.number.innerText = nevent;
-      display.time.innerText = event.time;
+      display.gui.events.selectedIndex = display.events[index].option;
 
       update_hits();
 
@@ -67,32 +243,27 @@ function load_event(nevent) {
         display['3d'].traces.push(display['3d'].hits);
       };
       Plotly.react('event-display', data.traces, display.layout);
+
+      toggle_controls(index);
+      update_info();
+
+      if (display.update)
+        display.update = setTimeout(
+          function (){
+            if (++index < display.events.length)
+              load_event(index);
+            else
+              load_events();
+          },
+          display.gui.update_interval
+        );
     }
   );
 };
 
-function update_plot_mode() {
-  display.mode = selected_plot_mode();
-  update_hits();
-  Plotly.newPlot('event-display', display[display.mode].traces, display.layout);
-};
-
-function update_plot_data() {
-  display.data = selected_plot_data();
-  let marker = display[display.mode].hits.marker;
-  for (let i = 0; i < display.event.data.length; ++i)
-    marker.color[i] = display.event.data[i][display.data];
-  Plotly.restyle('event-display', { marker: marker });
-};
-
-d3.csv(
-  '/cgi-bin/pmt-locations.cgi',
-  function (error, pmts) {
-    if (error) {
-      report_error('Error while getting PMT locations: ' + error);
-      return;
-    };
-
+get_csv(
+  'pmt-locations',
+  function (pmts) {
     for (let pmt of pmts)
       for (let i of [ 'id', 'x', 'y', 'z' ])
         pmt[i] = Number(pmt[i]);
@@ -175,9 +346,6 @@ d3.csv(
     display.mode   = selected_plot_mode();
     display.data   = selected_plot_data();
     display.event  = null;
-
-    display.number = document.getElementById('event-display-number');
-    display.time   = document.getElementById('event-display-time');
 
     // A hack to tie marker color and marker size arrays when the "Dynamic"
     // button below is clicked. See update_hits(). How to bind to
@@ -292,6 +460,7 @@ d3.csv(
       display.layout
     );
 
-    load_event(0);
+    display.update = true;
+    load_events();
   }
 );

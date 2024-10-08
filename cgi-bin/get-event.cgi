@@ -1,7 +1,7 @@
 #!/bin/bash
 
 query() {
-  psql -h localhost -U root -d daq --csv "$@" 2>&1 |
+  psql -h localhost -U root -d daq --csv -c "$@" 2>&1 |
   {
     read line
     [[ $line =~ ^ERROR: ]] && echo 'Status: 400'
@@ -11,9 +11,9 @@ query() {
   }
 }
 
-if ! [[ $REQUEST_URI =~ [\&?]event=([^\&])+ ]]; then
+if ! [[ $REQUEST_URI =~ [\&?]event=([^\&]+) ]]; then
   echo 'Content-type: text/plain'
-  query -tc 'select evnt from event_display'
+  query 'select evnt, time from event_display order by time'
   exit 0
 fi
 
@@ -27,4 +27,4 @@ fi
 
 echo 'Content-type: text/csv'
 
-query -c "select * from event_display where evnt = $event"
+query "select * from event_display where evnt = $event"

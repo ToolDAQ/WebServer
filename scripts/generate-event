@@ -13,31 +13,45 @@ Getopt::Long::Configure('gnu_getopt');
 my $host   = 'localhost';
 my $port   = 5432;
 my $dbname = 'daq';
+my $number = 1;
 GetOptions(
   'host|h=s'     => \$host,
   'port|p=i'     => \$port,
-  'database|d=s' => \$dbname
+  'database|d=s' => \$dbname,
+  'n=i',         => \$number
 ) or die;
 
 my $db = DBI->connect(
-  "dbi:Pg:dbname=$dbname;host=$host;port=$port", undef, undef, { RaiseError => 1 }
+  "dbi:Pg:dbname=$dbname;host=$host;port=$port",
+  undef,
+  undef,
+  { RaiseError => 1 }
 ) or exit 1;
 
-my $event_number = $db->selectall_arrayref('select max(evnt) from event_display')->[0][0];
+my $event_number = $db->selectall_arrayref(
+  'select max(evnt) from event_display'
+)->[0][0];
 if (defined $event_number) {
   ++$event_number;
 } else {
   $event_number = 0;
 };
 
-my @event = map {
-  {
-    pmt => $_->[0],
-    c   => 10 * rand(),
-    t   => 100 + rand() * 150
-  }
-} $db->selectall_array('select id from pmt');
+my $json = JSON::XS->new->canonical;
 
-$db->do(<<~'END', {}, $event_number, JSON::XS->new->canonical->encode(\@event));
+my $pmts = $db->selectall_arrayref('select id from pmt');
+
+my @event = map { { pmt => $_->[0] } } @$pmts;
+$#event = $#{$pmts};
+
+my $q = $db->prepare(<<~'END');
   insert into event_display (evnt, time, data) values ($1, now(), $2)
-  END
+END
+
+while ($number-- > 0) {
+  for (@event) {
+    $_->{c} = 10 * rand();
+    $_->{t} = 100 + rand() * 150;
+  };
+  $q->execute($event_number++, $json->encode(\@event));
+};
