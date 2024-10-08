@@ -7,8 +7,10 @@
 //   GetSlowCommands(ip, port, async=false) - returns html to produce all slow control buttons of client
 //   SendSCCommand(ip, port, command_output, ...incommands) - command used by slow cotnrol buttons to send commands to clients
 //   GetPSQLTable(command, user, database, async=false) - get sql table from database
+//   GetPSQL(command, user, database, async=false) - query sql database, response returned as json object
 //   MakePlotDataFromPSQL(command, user, databse, output_data_array=null, async=false) - makes data for a plotly plot based on sql table
 //   MakePlot(div, data, layout, update=false) - makes or updates a plot div
+"use strict";
 
 /*
 function ResolveVariable(variable){
@@ -23,6 +25,8 @@ function ResolveVariable(variable){
 }
 */
 
+let hostIP=""; //127.0.0.1";
+
 function HTTPRequest(method, url, async=false, data=null, user=null, password=null){
     
     var xhr = new XMLHttpRequest();
@@ -32,6 +36,7 @@ function HTTPRequest(method, url, async=false, data=null, user=null, password=nu
     // Set the request header to indicate that the request body contains form data   
     if(method=="POST")  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     
+    console.log("HTTPRequest with post data: "+data);
     xhr.send(data);
     
     if(!async) return xhr.responseText
@@ -100,35 +105,45 @@ function GetSDTable(filter=null, async=false) {
 }
 
 
-function GetIP(service_name, async=false){
+export function GetIP(service_name, async=false){
   //service_name= ResolveVariable(service_name);    
 
     if(async){
 	return new Promise(function(resolve, reject){
 	    
 	    GetSDTable(service_name, true).then(function(result){
-		
+	    if(result.rows === 'undefined' || !result.rows.length){
+	    	reject("GetIP empty or invalid services table!")
+	    }
 		resolve(result.rows[0].cells[1].innerText);
 	    });
 	});
     }
     
     else{
-
-	return GetSDTable(service_name).rows[0].cells[1].innerText;
-	
+		let sdtable = GetSDTable(service_name); // html table object
+		//console.log("GetIP got sdtable: ");   // stdable.rows is a htmlcollection
+		//console.log(sdtable);
+		if(sdtable.rows === 'undefined' || !sdtable.rows.length ){
+			console.log("GetIP empty or invalid services table!");
+			return "";
+		}
+		return sdtable.rows[0].cells[1].innerText;
+		
     }
 }
 
 
-function GetPort(service_name, async=false){
+export function GetPort(service_name, async=false){
     //service_name= ResolveVariable(service_name);
 
     if(async){
 	return new Promise(function(resolve, reject){
 	    
 	    GetSDTable(service_name, true).then(function(result){
-		
+		if(result.rows === 'undefined' || !result.rows.length){
+			reject("GetPort empty or invalid services table!")
+		}
 		resolve(result.rows[0].cells[2].innerText);
 	    });
 	});
@@ -136,7 +151,14 @@ function GetPort(service_name, async=false){
     
     else{
 
-	return GetSDTable(service_name).rows[0].cells[2].innerText;
+		let sdtable = GetSDTable(service_name); // html table object
+		//console.log("GetIP got sdtable: ");   // stdable.rows is a htmlcollection
+		//console.log(sdtable);
+		if(sdtable.rows === 'undefined' || !sdtable.rows.length ){
+			console.log("GetPort empty or invalid services table!");
+			return "";
+		}
+		return sdtable.rows[0].cells[2].innerText;
 	
     }
 }
@@ -290,7 +312,7 @@ function SendSCCommand(ip, port, command_output, ...incommands){
 }
 
 
-function GetPSQLTable(command, user, database, async=false){
+export function GetPSQLTable(command, user, database, async=false){
  
     var data_string = "user=" + user + "&db=" + database + "&command=" + command;
     
@@ -299,6 +321,38 @@ function GetPSQLTable(command, user, database, async=false){
 
 }
 
+export async function GetPSQL(command, user, database, async=false){
+    
+    let dataUrl =  "/cgi-bin/sqlqueryjson.cgi";
+    var data_string = "user=" + user + "&db=" + database + "&command=" + command;
+    console.log("GetPSQL with data string "+data_string);
+    //console.log("GetPSQL got query: ",command);
+    
+    // version using HTTPRequest
+    console.log("calling HTTPRequest with POST data "+data_string);
+    return HTTPRequest("POST", dataUrl, async, data_string);
+    
+    // version using getDataFetchRequest, which uses the fetch API rather than XMLHttpRequest
+    // see https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API
+    // in fact firefox reports:
+    // 'Synchronous XMLHttpRequest on the main thread is deprecated
+    //  because of its detrimental effects to the end user’s experience'
+    /*
+    dataUrl = dataUrl+"?"+data_string;
+    if(async){
+        // return promise
+        return getDataFetchRequest(dataUrl, "text");
+    } else {
+        // await promise and return json object
+        let responsepromise = getDataFetchRequest(dataUrl, "json");
+        //console.log("GetPSQL got promise: ",responsepromise);
+        let response = await responsepromise;
+        //console.log("GetPSQL got response: ",response);
+        return response;
+    }
+    */
+    
+}
 
 function MakePlotDataFromPSQL(command, user, databse, output_data_array=null, async=false){ //function to generate plotly plot
     

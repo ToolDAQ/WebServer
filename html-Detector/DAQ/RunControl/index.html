@@ -8,17 +8,29 @@
 <!--#include virtual="/includes/drawer.html" -->
 
 <div id="RunControl">
+
   <br>
-  configuration <select id="config"></select>
-  <input type="text" id="description" placeholder="<Run Description>">
-  <button id="RunStart">Run Start</button>
+  <label>Slow Control Service IP: </label>
+  <input type="text" name="ServiceIP" 
+   value="<searching...>" disabled>
+   <label> Port: </label>
+   <input type="text" name="ServicePort" 
+    value="<searching...>" disabled>
   <br>
-  <button id="RunStop">Run Stop</button>
   <br>
-  <button id="SubRun">New Sub Run</button>
+  <h4> Run Control </h4>
+  <button id="RunStop">Stop Current Run</button>
+  <br>
+  <br>
+  <button id="SubRun">Start New Sub Run</button>
+  <br>
+  <br>
+  <button id="RunStart">Start New Run</button>: Run configuration <select id="config"></select>
+     Run notes: <input type="text" id="description" placeholder="<Run Description>">
+  <br>
   <br>
 </div>
 
 <!--#include virtual="/includes/footer.html" -->
 
-<script src="/DAQ/RunControl/RunControl.js?v=1" async></script>
+<script type="module", src="/DAQ/RunControl/RunControl.js?v=1" async></script>
