@@ -57,6 +57,29 @@ function HTTPRequest(method, url, async=false, data=null, user=null, password=nu
     
 }
 
+// a general asynchronous getter for fetching data from a url
+async function getDataFetchRequest(url, json_or_text="text"){
+	//console.log("getDataFetchRequest(",url,")");
+	try {
+		console.log("getDataFetchRequest fetching ",url," and waiting on response");
+		let response = await fetch(url);
+		console.log("getDataFetchRequest received response for ",url);
+		let thetext = "";
+		if(json_or_text=="json"){
+			console.log("getDataFetchRequest awaiting on conversion to text for ",url);
+			thetext = await response.text();
+		} else {
+			console.log("getDataFetchRequest awaiting on conversion to json for ",url);
+			thetext = await response.json();
+		}
+		console.log("getDataFetchRequest returning ",url," conversion result"); //,thetext);
+		return thetext;
+	} catch (err) {
+		console.log("Failed to get data from "+url, err);
+		return null;
+	}
+}
+
 function GetSDTable(filter=null, async=false) { 
   //  filter= ResolveVariable(filter); 
    
@@ -318,7 +341,20 @@ export function GetPSQLTable(command, user, database, async=false){
     
     return HTTPRequest("POST", "/cgi-bin/sqlquery.cgi", async, data_string);
 
+}
 
+export async function GetPSQL(command, user, database, async=false){
+    
+    var data_string = "user=" + user + "&db=" + database + "&command=" + command;
+    let dataUrl =  hostIP + "/cgi-bin/sqlqueryjson.cgi?" + data_string;
+    return getDataFetchRequest(dataUrl, "text");
+    
+    let responsepromise = getDataFetchRequest(dataUrl, "json");
+    console.log("GetPSQL got: ",responsepromise);
+    let response = await responsepromise;
+    console.log("Got response: ",response);
+    return response;
+    
 }
 
 export async function GetPSQL(command, user, database, async=false){

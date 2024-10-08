@@ -1,7 +1,7 @@
 <html>
 
 <head>
-    <title>ToolDAQ | Add Configuration</title>
+    <title>ToolDAQ | Add Run Configuration</title>
 </head>
 
 <body>
@@ -11,9 +11,6 @@
 
     <h1 align="center">Add New Configuration</h1>
     <form id="configForm" method="POST">
-        <label for="type">Configuration Id:</label><br>
-        <input type="number" id="id" name="id" required><br><br>
-
         <label for="name">Configuration Name:</label><br>
         <input type="text" id="name" name="name" required><br><br>
 
@@ -26,7 +23,7 @@
         <label for="data">Configuration Data (JSON):</label><br>
         <textarea id="data" name="data" rows="8" cols="50" required></textarea><br><br>
 
-        <button type="button" onclick="addConfiguration()">Add Configuration</button>
+        <button type="button" id="addConfigBtn"">Add Configuration</button>
     </form>
 
     <!-- Modal for selecting device configurations -->
@@ -54,4 +51,4 @@
 
 </html>
 <script type="module" src="/includes/functions.js?v=1" async></script>
-<script src="/Config/configurations.js?v=1" async></script>
+<script type="module" src="/Config/configurations.js?v=1" async></script>

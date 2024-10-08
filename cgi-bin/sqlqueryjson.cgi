@@ -54,18 +54,17 @@ if [ "${user}" == "undefined" ]; then unset user; fi
 if [ "${db}" == "undefined" ]; then unset db; fi
 if [ "${host}" == "undefined" ]; then unset host; fi
 
-
-#FIXME don't hard-code!
-host="192.168.10.17"
-export host=${host:-localhost}
-export user=${user:-root}
-export db=${db:-daq}
+export host=${host:+-h $host}
+export user=${user:+-U $user}
+export db=${db:+-d $db}
 
 echo "after fix: user: '${user}', db: '${db}', host: '${host}'" >> ${DEBUGFILE}
 
+#FIXME don't hard-code!
+PGHOST="192.168.10.17"
+
 # run the query returning results as a JSON array
-RET=$(echo `psql -h${host} -U${user} -d${db} -At -c "SELECT json_agg(t) FROM ($command) as t" 2>&1 `)
+RET=$(echo `psql ${host} ${user} ${db} -At -c "SELECT json_agg(t) FROM ($command) as t" 2>&1 `)
 echo "return is '${RET}'" >> ${DEBUGFILE}
 echo "${RET}"
-
 

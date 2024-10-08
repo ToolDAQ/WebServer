@@ -13,14 +13,21 @@ command=${post[command]}
 # TODO make an argument?
 PGHOST=192.168.10.17
 
+#DEBUGFILE=/tmp/sqlquery.cgi.log
+DEBUGFILE=/dev/null
+echo "got request with user: '${user}', db: '${db}', '${command}'" >> ${DEBUGFILE}
+
 echo 'Content-type: text/html'
 
-psql -h ${PGHOST} ${user+-U "$user"} \
+RET=$(psql -h ${PGHOST} ${user:+-U "$user"} \
      ${db:+-d "$db"} \
      -H \
      -T id=table \
      -c "$(echo -e "${command//%/\\x}")" \
-     2>&1 |
+     2>&1)
+echo "query return: '${RET}'" >> ${DEBUGFILE}
+
+echo ${RET} |
 #FIXME better error
 exec sed '
   1{
