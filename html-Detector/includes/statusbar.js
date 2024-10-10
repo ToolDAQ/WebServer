@@ -1,6 +1,6 @@
-let usertime=document.getElementById("usertime")
-let exptime=document.getElementById("exptime")
-let user=document.getElementById("user")
+let usertime=document.getElementById("usertime");
+let exptime=document.getElementById("exptime");
+let user=document.getElementById("user");
 
 function getTimeInTimezones() {
     // Get the current time in the user's timezone

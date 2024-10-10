@@ -51,7 +51,7 @@ function CheckAlarms(){
 	checking_alarm_footer=false;
     });
 
-}										       
+}
 
 function AlarmOn(){
     audio.play();

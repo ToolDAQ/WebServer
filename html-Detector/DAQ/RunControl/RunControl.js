@@ -2,7 +2,7 @@
 // Description: JavaScript for controlling start/stop of runs & subruns
 "use strict";
 
-import { GetPSQLTable, GetPSQL, GetIP, GetPort } from '/includes/functions.js';
+import { GetPSQLTable, GetPSQL, GetIP, GetPort, Command } from '/includes/functions.js';
 
 if (document.readyState !== 'loading'){
 	//console.log("already loaded, initing");
@@ -15,23 +15,24 @@ if (document.readyState !== 'loading'){
 	});
 }
 
+var servicePromise;
 function Init(){
 	console.log("Initialising page");
 	
-	// load run configurations once on page load
-	//FindRunControlService();  // actually we'll do the first call with a promise...
-	// but keep it updated by in the background
+	// create a promise that will immediately fire off FindRunControlService as an executor function
+	// to start the search for the service (this lets us access the result as soon as it's available)
+	servicePromise = new Promise(FindRunControlService);
+	// we don't strictly need the result right now, but this will silence any errors
+	servicePromise.then(null,(reason)=>{});
+	// keep it updated by in the background
 	// (the first fire of setInterval is after an initial delay interval)
-	setInterval(FindRunControlService, 10000);
+	setInterval(FindRunControlService, 20000); // every 20s
 	
 	// load run configurations from the database to populate the drop-downs
 	// first fire
 	GetRunConfigurations();
 	// keep it updated in the background
-	setInterval(GetRunConfigurations, 10000);
-	
-	// load run configurations each time drop-down is clicked, to load any newly added ones
-	document.getElementById("config").addEventListener("click", GetRunConfigurations);
+	setInterval(GetRunConfigurations, 20000); // every 20s
 	
 	// TODO add a button to switch from 'simple' to 'advanced'
 	// simple: one dropdown of run configurations by name, version (maybe not even version, just use the latest?)
@@ -40,11 +41,15 @@ function Init(){
 	document.getElementById("RunStart").addEventListener("click", StartNewRun);
 	document.getElementById("RunStop").addEventListener("click", StopRun);
 	document.getElementById("SubRun").addEventListener("click", StartNewSubrun);
+	
+	document.getElementById("configname").addEventListener("change", PopulateVersions);
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 var configs;  // raw json of run configurations to monitor for changes, and only alter page elements when necessary
+var configMap = new Map();
+var versionMap = new Map();
 var getting_configs=false;
 
 // query the database for available run configurations
@@ -54,15 +59,16 @@ async function GetRunConfigurations(){
 	if(getting_configs) return;
 	getting_configs = true;
 	
-	console.log("getting run configurations from database...");
+	//console.log("getting run configurations from database...");
 	
 	try {
 		
 		// get dropdown to populate
-		const configdropdown = document.getElementById('config');
+		const namedropdown = document.getElementById('configname');
+		const verdropdown = document.getElementById('configver');
 		
 		// run a query to get run configurations from DB
-		let querystring = "SELECT name,version,description FROM configurations";
+		let querystring = "SELECT config_id,name,version,description FROM configurations";
 		
 		let newconfigs;
 		try {
@@ -71,65 +77,135 @@ async function GetRunConfigurations(){
 			// FIXME GetPQSL can return just an error string rather than an SQL result
 			// but it doesn't reject in such cases! crude validity check below, but better upstream
 			// e.g. check return value of psql command?
-			console.log(error);
+			console.error(error);
 			return;
 		}
-		console.log("run configurations: "+newconfigs);
+		//console.log("run configurations: '"+newconfigs+"'");
 		
 		// skip update if no change
 		if(configs === newconfigs){
-			console.log("no new run configurations; done");
+			//console.log("no new run configurations; done");
 			return;
 		}
 		
 		// GetPSQL returns its results as a json array... in theory. Crude validity check.
 		//newconfigs = JSON.parse("[{\"name\":\"one\"}, {\"name\":\"two\"}]"); // seems to pass as expected
+		newconfigs = JSON.parse(newconfigs);
 		if(newconfigs === 'undefined' || !Array.isArray(newconfigs) || !newconfigs.length){
-			console.log("invalid run configuration array:");
-			console.log(newconfigs);
+			console.error("invalid run configuration array:");
+			console.error(newconfigs);
 			return;
 		}
 		configs = newconfigs;
 		
-		// update the dropdown menu options
+		// update the dropdown menus
 		// it's annoying (at best) if these background refreshes keep changing user selections
 		// (at worst it could change the run type just as the user clicks 'start run')
-		let selectedIndex = configdropdown.selectedIndex;  // may be undefined if no selection or no options yet
-		let selectedConfig = ""; // just in case ordering changes, preserve selection by name not index
-		if(selectedIndex>=0){
-			selectedConfig = configdropdown.options[selectedIndex].text;
-			console.log("preserving selected run configuration: "+selectedConfig);
-		} else {
-			console.log("no run config selected");
+		let selectedNameIndex = namedropdown.selectedIndex;  // may be undefined if no selection or no options yet
+		let selectedName = ""; // just in case ordering changes, preserve selection by name not index
+		let selectedVerIndex = verdropdown.selectedIndex;
+		let selectedVer = -1;
+		
+		if(selectedNameIndex>=0){
+			selectedName = namedropdown.options[selectedNameIndex].text;
+		}
+		if(selectedVerIndex>=0){
+			selectedVer = verdropdown.options[selectedVerIndex].value;
 		}
 		
 		// clear current options before rebuilding
-		configdropdown.innerHTML="";
-		configs.forEach((row, index) => {
+		namedropdown.innerHTML="";
+		verdropdown.innerHTML="";
+		versionMap.clear();
+		configMap.clear();
+		let rowindex=0; // index of config name in the configMap
+		configs.forEach((row) => {
+			configMap.set(row.config_id,[row.name,row.version]);
 			// each element is a row, each row is a json object of field:value keys
 			// note that these can be accessed as properties of the JSON object
-			let option = document.createElement('option');
-			option.text = option.value = row.name;
-			// note the new index when we encounter the previously selected run configuration
-			if(selectedConfig !== '' && selectedConfig === row.name){
-				selectedIndex = index;
+			if(!versionMap.has(row.name)){
+				versionMap.set(row.name, new Array());
+				let option = document.createElement('option');
+				option.text = option.value = row.name;
+				// note the new index when we encounter the previously selected run configuration
+				if(selectedName === row.name){
+					selectedNameIndex = rowindex;
+				}
+				//console.log("appending option: "+option.text);
+				namedropdown.appendChild(option);
+				++rowindex;
 			}
-			console.log("adding run configuration: "+row.name);
-			configdropdown.appendChild(option);
+			versionMap.get(row.name).push(row.version);
+			//console.log("adding run configuration: "+row.name+" v"+row.version);
 		});
-		// restore user selection
-		if(selectedIndex >=0) dd.selectedIndex=selectedIndex;
 		
-		console.log("added "+configs.length+" run configurations");
+		// restore user selection
+		if(selectedNameIndex >=0){
+			namedropdown.selectedIndex=selectedNameIndex;
+		}
+		// if the drop-down was empty but now has values, it'll select the first entry
+		//selectedNameIndex = namedropdown.selectedIndex;
+		
+		// load corresponding version numbers
+		PopulateVersions(selectedVer);
 		
 	}
 	
 	// ALWAYS reset this when we're done
 	finally {
 		
-		console.log("done getting run configurations from database");
+		//console.log("done getting run configurations from database");
 		
 		getting_configs = false;
+	}
+}
+
+function PopulateVersions(selectedVer=-1){
+	
+	//console.log(`populate ver called with selectedVer ${selectedVer} of type `+typeof(selectedVer));
+	
+	// populate the dropdown of versions associated with a given run configuration name
+	const namedropdown = document.getElementById('configname');
+	const verdropdown = document.getElementById('configver');
+	
+	if(typeof(selectedVer) == "object"){
+		// run config name change event trigger, reset version
+		selectedVer=-1;
+		verdropdown.selectedIndex = -1;
+	}
+	
+	let selectedNameIndex = namedropdown.selectedIndex;  // may be undefined if no selection or no options yet
+	if(selectedNameIndex<0) return;
+	let selectedName = namedropdown.options[selectedNameIndex].text;
+	
+	let selectedVerIndex=-1;
+	let versionarr = versionMap.get(selectedName);
+	// sort descending
+	versionarr.sort();
+	versionarr.reverse();
+	
+	// if not told what version to select, look it up (to preserve user selection)
+	if(selectedVer<0){
+		selectedVerIndex = verdropdown.selectedIndex;
+		if(selectedVerIndex>=0){
+			selectedVer = verdropdown.options[selectedVerIndex].value;
+		} else {
+			// if no currently active user selection, by default select the maximum
+			selectedVer = versionarr[0];
+		}
+	}
+	
+	verdropdown.innerHTML="";
+	versionarr.forEach((ver, index) => {
+		let option = document.createElement('option');
+		option.text = option.value = ver;
+		verdropdown.appendChild(option);
+		if(selectedVer == ver){
+			selectedVerIndex = index;
+		}
+	});
+	if(selectedVerIndex >=0){
+		verdropdown.selectedIndex=selectedVerIndex;
 	}
 }
 
@@ -141,83 +217,65 @@ var getting_service = false;
 
 // we use the following signature so we can pass it as executor to a promise
 // this doesn't affect the background searching
-function FindRunControlService(resolve, reject){
+async function FindRunControlService(resolve, reject){
 	
 	// don't overlap calls
 	if(getting_service) return;
 	getting_service=true;
 	
-	console.log("searching for RunControl slow control service...");
+	//console.log("searching for RunControl slow control service...");
 	
-	const service_name = "RunControl";
+	const daq_service_name = document.getElementById('ServiceName').innerHTML;
+	const slow_service_name = "SlowControlReceiver";  // should always be this...
 	
 	try {
 		
 		// get promises that will eventually return IP and port
-		let ip_promise = GetIP(service_name,true);
-		let port_promise = GetPort(service_name,true);
+		let ip_promise = GetIP(daq_service_name,true);
+		let port_promise = GetPort(slow_service_name,true);
+		//let port_promise = new Promise( (resolve, reject) => { resolve(60000); }); // it's always going to be 60000 says ben
 		
-		// attach a callback to be invoked when ip is found
-		ip_promise.then(function(result){
-			console.log("GetIP returned: "+result);
-			if(result==""){
-				let reason="empty runcontrol service IP!";
-				console.log(reason);
-				reject(reason);
-			}
-			runcontrol_ip = result;
-			document.getElementById("ServiceIP").InnerHTML = result;
-		},
-		function(error){
-			let reason="error getting runcontrol service IP: "+error;
-			console.log(reason);
-			reject(reason);
-		});
+		// produce a combined promise that will wait for both promises to be fulfilled
+		// (or for either of them to be rejected)
+		const combinedPromise = Promise.all([ip_promise, port_promise]);
 		
-		// attach a callback to be invoked when port is found
-		port_promise.then(function(result){
-			console.log("GetPort returned: "+result);
-			if(result=="" || result==0){
-				let reason="invalid service port '"+result+"'!";
-				console.log(reason);
-				reject(reason);
-			}
-			runcontrol_port = result;
-			document.getElementById("ServicePort").InnerHTML = result;
-		},
-		function(error){
-			let reason="error getting runcontrol service port: "+error;
-			console.log(reason);
-			reject(reason);
-		});
+		// await will throw a reason if either promise rejects,
+		// otherwise it will return an array of promised values; i.e. [ip, port]
+		let [ip, port] = await combinedPromise;
 		
-		// wait for those promises to be fulfilled
-		// we produce a combined promise that will wait for both promises to be fulfilled
-		// (or for either of them to be rejected), and attach another thenable
-		// that resolves FindRunControlService as an executor based on the combined value
-		const combinedPromise = Promise.all([ip_promise, port_promise]).then((values) => {
-			// 'values' will be an array of returns from each promise; i.e. [ip, port]
-			console.log("RunControl service at: "+values[0]+"::"+values[1]);
-			resolve(values);
-		});
+		// sanity checks
+		if(ip==""){
+			let reason="empty runcontrol service IP!";
+			//console.error(reason);
+			if(typeof reject === 'function') reject(reason);
+		}
+		document.getElementById("ServiceIP").value = ip;
+		runcontrol_ip = ip;
+		
+		if(port=="" || port==0){
+			let reason="invalid service port '"+port+"'!";
+			//console.error(reason);
+			if(typeof reject === 'function') reject(reason);
+		}
+		document.getElementById("ServicePort").value = port;
+		runcontrol_port = port;
+		
+		console.log("RunControl service at: "+ip+"::"+port);
+		if(typeof resolve === 'function') resolve([ip,port]);
 		
 	} catch(error){
-		console.log(error);
-		reject(error);
+		console.error("FindRunControlService error: "+error);
+		if(typeof reject === 'function') reject(error);
 	}
 	
 	// ALWAYS reset when we're done
 	finally {
 		
-		console.log("done searching for RunControl service");
+		//console.log("done searching for RunControl service");
 		
 		getting_service=false;
 	}
 }
-
-// create a promise that will immediately fire off FindRunControlService as an executor function
-// to start the search for the service
-const servicePromise = new Promise(FindRunControlService);
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
@@ -237,49 +295,80 @@ async function StartNewRun(){
 		buttons[i].disabled = true;
 	}
 	
+	const responsediv = document.getElementById('response');
+	
 	try {
 		
 		// get user description and configuration
-		const description = document.getElementById('response').value;
-		const configdropdown = document.getElementById('config');
-		const runconfig = configdropdown.options[configdropdown.selectedIndex].text; // or .value, which may be different
-		console.log("run type: "+runconfig+", description: '"+description+"'");
+		const description = document.getElementById('description').value;
+		const namedropdown = document.getElementById('configname');
+		const verdropdown = document.getElementById('configver');
+		const configname = namedropdown.options[namedropdown.selectedIndex].text;
+		const configver = verdropdown.options[verdropdown.selectedIndex].text;
+		
+		//console.log("run type: "+configname+", v"+configver+", description: '"+description+"'");
+		
+		// sanity check
+		if(configname === 'undefined' || configver === 'undefined'){
+			console.error("run requested with undefined run config name or version?");
+			return;
+		}
+		
+		// map name and version to a config_id
+		let runconfig;
+		for (const [key, [name,ver]] of configMap) {
+			// need to use == not === because map stores num but dropdown stores string
+			if(name === configname && ver == configver){
+				runconfig = key;
+			}
+		}
+		if(typeof runconfig === 'undefined'){
+			console.error("could not find config_id for configuration "+configname+" v"+configver);
+			return;
+		}
+		//console.log("will start a new run with runconfig "+runconfig);
 		
 		// command function from functions.js for sending slow control command to a Service
-		// function command(ip, port, command) -> promise
+		// function Command(ip, port, command) -> promise
 		// sends ip, port, command via a POST request to "cgi-bin/sendcommand2nopadding.cgi"
 		// returning promise to response
 		
-		const responsediv = document.getElementById('response');
-		
-		responsediv.innerHTML='Locating RunControl Service...';
+		responsediv.value='Locating RunControl Service...';
 		
 		// if we do not yet have both IP and port, wait on the promise
-		if(runcontrol_ip === '' ||  runcontrol_port === 0){
+		if(runcontrol_ip === "" ||  runcontrol_port === 0){
 			try {
 				// we don't technically need to get the returned values from the promise
 				// because by the time it resolves it'll have populated the globals
 				let [ip, port] = await servicePromise;
 			} catch(error){
-				console.log("Error locating Run Control slow control service! "+error);
+				console.error(`Error locating Run Control slow control service: ${error}`);
+				responsediv.value=`Error locating Run Control slow control service: ${error}`;
 				return;
 			}
 		}
 		// in theory at this point we should have valid IP and port
 		
-		responsediv.innerHTML='Sending Start Run command...';
-		let runstart_command = "{\"run_description\":\""+description+"\", \"run_configuration\":"+runconfig+"}";
-		console.log("Sending run start command '"+runstart_command+"' to "+runcontrol_ip+"::"+runcontrol_port);
-		let responsepromise = command(runcontrol_ip, runcontrol_port, runstart_command);
-		let response = await responsepromise;
-		responsediv.innerHTML=string("Start Run response: '${response}'");
+		responsediv.value='Sending Start Run command...';
 		
+		let runstart_command = "RunStart {\"run_description\":\""+description+"\", \"run_configuration\":"+runconfig+"}";
+		console.log("Sending run start command '"+runstart_command+"' to "+runcontrol_ip+"::"+runcontrol_port);
+		
+		let response = await Command(runcontrol_ip, runcontrol_port, runstart_command, true);
+		//let response = Command(runcontrol_ip, runcontrol_port, runstart_command);
+		
+		responsediv.value=`Start Run response: '${response}'`;
+		
+	} catch (error){
+		console.error("RunStart Command error: "+error);
+		responsediv.value=`Error starting new run: '${error}'`;
+		return false;
 	}
 	
 	// ALWAYS reset when we're done
 	finally {
 		
-		console.log("Done sending new run request");
+		//console.log("Done sending new run request");
 		
 		// re-enable buttons
 		for (let i = 0; i < buttons.length; i++) {
@@ -290,6 +379,131 @@ async function StartNewRun(){
 	}
 }
 
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-async function StopRun(){}
-async function StartNewSubrun(){}
+async function StopRun(){
+	
+	if(working) return;
+	working=true;
+	
+	console.log("End of run requested!"); 
+	
+	// disable controls while we process this command
+	let buttons = document.getElementsByTagName('button');
+	for (let i = 0; i < buttons.length; i++) {
+		buttons[i].disabled = true;
+	}
+	
+	const responsediv = document.getElementById('response');
+	
+	try {
+		
+		responsediv.value='Locating RunControl Service...';
+		
+		// if we do not yet have both IP and port, wait on the promise
+		if(runcontrol_ip === "" ||  runcontrol_port === 0){
+			try {
+				// we don't technically need to get the returned values from the promise
+				// because by the time it resolves it'll have populated the globals
+				let [ip, port] = await servicePromise;
+			} catch(error){
+				console.error(`Error locating Run Control slow control service! ${error}`);
+				responsediv.value = `Error locating Run Control slow control service! ${error}`;
+				return;
+			}
+		}
+		// in theory at this point we should have valid IP and port
+		
+		responsediv.value='Sending Stop Run command...';
+		
+		let runstop_command = "RunStop";
+		console.log("Sending run stop command '"+runstop_command+"' to "+runcontrol_ip+"::"+runcontrol_port);
+		
+		let responsepromise = Command(runcontrol_ip, runcontrol_port, runstop_command);
+		let response = await responsepromise;
+		responsediv.value=`Stop Run response: '${response}'`;
+		
+	} catch (error){
+		console.error("RunStop Command error: "+error);
+		responsediv.value=`Error stopping run: '${error}'`;
+		return false;
+	}
+	
+	// ALWAYS reset when we're done
+	finally {
+		
+		//console.log("Done sending end of run request");
+		
+		// re-enable buttons
+		for (let i = 0; i < buttons.length; i++) {
+			buttons[i].disabled = false;
+		}
+		
+		working=false;
+	}
+}
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+async function StartNewSubrun(){
+	
+	if(working) return;
+	working=true;
+	
+	console.log("New subrun requested!"); 
+	
+	// disable controls while we process this command
+	let buttons = document.getElementsByTagName('button');
+	for (let i = 0; i < buttons.length; i++) {
+		buttons[i].disabled = true;
+	}
+	
+	const responsediv = document.getElementById('response');
+	
+	try {
+		
+		responsediv.value='Locating RunControl Service...';
+		
+		// if we do not yet have both IP and port, wait on the promise
+		if(runcontrol_ip === "" ||  runcontrol_port === 0){
+			try {
+				// we don't technically need to get the returned values from the promise
+				// because by the time it resolves it'll have populated the globals
+				let [ip, port] = await servicePromise;
+			} catch(error){
+				console.error(`Error starting new subrun: '${error}'`);
+				responsediv.value=`Error starting new subrun: '${error}'`;
+				return;
+			}
+		}
+		// in theory at this point we should have valid IP and port
+		
+		responsediv.value='Sending New Subrun command...';
+		
+		let subrunstart_command = "SubRunStart";
+		console.log("Sending subrun start command '"+subrunstart_command+"' to "+runcontrol_ip+"::"+runcontrol_port);
+		
+		let responsepromise = Command(runcontrol_ip, runcontrol_port, subrunstart_command);
+		let response = await responsepromise;
+		responsediv.value=`New Subrun response: '${response}'`;
+		
+	} catch (error){
+		console.error("Start New Subrun Command error: "+error);
+		responsediv.value=`Error starting new subrun: '${error}'`;
+		return false;
+	}
+	
+	// ALWAYS reset when we're done
+	finally {
+		
+		//console.log("Done sending new subrun request");
+		
+		// re-enable buttons
+		for (let i = 0; i < buttons.length; i++) {
+			buttons[i].disabled = false;
+		}
+		
+		working=false;
+	}
+}
+

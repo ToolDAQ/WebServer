@@ -9,12 +9,16 @@
 
 <div id="RunControl">
 
+  
   <br>
+  <label>DAQ Service Name: </label>
+  <input type="text" name="ServiceName"  id="ServiceName"
+   value="WCTE_RBU" disabled> <!-- FIXME experiment-specific hard-coded value! -->
   <label>Slow Control Service IP: </label>
-  <input type="text" name="ServiceIP" 
+  <input type="text" name="ServiceIP"  id="ServiceIP"
    value="<searching...>" disabled>
    <label> Port: </label>
-   <input type="text" name="ServicePort" 
+   <input type="text" name="ServicePort" id="ServicePort"
     value="<searching...>" disabled>
   <br>
   <br>
@@ -25,10 +29,17 @@
   <button id="SubRun">Start New Sub Run</button>
   <br>
   <br>
-  <button id="RunStart">Start New Run</button>: Run configuration <select id="config"></select>
-     Run notes: <input type="text" id="description" placeholder="<Run Description>">
+  <button id="RunStart">Start New Run</button>
+  <br>
+  Run configuration name: <select id="configname"></select>
+  Configuration version: <select id="configver"></select>
+  Run notes: <input type="text" id="description" placeholder="<Run Description>">
   <br>
   <br>
+  <label>response:</label><input type="text" id="response" value="" size="100" disabled>
+  <br>
+  <br>
+
 </div>
 
 <!--#include virtual="/includes/footer.html" -->
