@@ -26,7 +26,6 @@ using namespace std;
 using namespace cgicc;
 using namespace ToolFramework;
 
-
 int main (){
 
   //  boost::uuids::uuid m_UUID=boost::uuids::random_generator()();

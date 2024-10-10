@@ -103,9 +103,10 @@ int main (){
 					
 					if(debugf) *debugf << "setting socket options" << std::endl;
 					int a=5000;
+					int b=1;
 					ServiceSend.setsockopt(ZMQ_RCVTIMEO, a);
 					ServiceSend.setsockopt(ZMQ_SNDTIMEO, a);
-					ServiceSend.setsockopt(ZMQ_IMMEDIATE, a);
+					ServiceSend.setsockopt(ZMQ_IMMEDIATE, b);
 					
 					if(debugf) *debugf << "connecting to socket" << std::endl;
 					std::stringstream connection;
