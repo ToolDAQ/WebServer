@@ -1,13 +1,18 @@
 {
-  let gui = {
-    update_interval: 1000 * 5 // ms
-  };
-  for (let field of [ 'error', 'events', 'info' ])
+  let gui = {};
+  for (let field of [ 'error', 'events', 'info', 'interval' ])
     gui[field] = document.getElementById(field);
+
   gui.controls = {};
   for (let button of [ 'first', 'previous', 'pause', 'next', 'last' ])
     gui.controls[button] = document.getElementById(button);
-  var display = { gui };
+
+  var display = {
+    gui,
+    interval: 5 * 1000 // ms
+  };
+
+  gui.interval.value = display.interval / 1000;
 };
 
 function report_error(message) {
@@ -52,17 +57,27 @@ function toggle_controls(event_index) {
   button_enable(controls.pause,    pause);
 };
 
+function set_next_frame(render) {
+  if (!display.update) return;
+  display.update.handle = setTimeout(render, display.interval);
+  display.update.time   = Date.now() + display.interval;
+  display.update.render = render;
+};
+
 function cancel_next_frame() {
-  if (display.update && display.update !== true) clearTimeout(display.update);
+  let update = display.update;
+  if (!update || !update.handle) return;
+  clearTimeout(update.handle);
+  update.handle = null;
 };
 
 function pause(pause) {
   if (!pause) {
     display.gui.controls.pause.innerText = 'Pause';
-    display.update = true;
+    display.update = {};
     load_events();
   } else if (display.update) {
-    if (display.update !== true) clearTimeout(display.update);
+    cancel_next_frame();
     display.update = null;
     display.gui.controls.pause.innerText = 'Resume';
   };
@@ -127,6 +142,23 @@ function plot_data_changed() {
 function event_selected(select) {
   pause(true);
   load_event(select[select.selectedIndex].getAttribute('name'));
+};
+
+function set_update_interval() {
+  let value = display.gui.interval.value * 1000;
+  let update = display.update;
+  if (update) {
+    clearTimeout(update.handle);
+    let time = update.time - (display.interval - value);
+    display.interval = value;
+    update.time = time;
+    time = time - Date.now();
+    console.log(time);
+    if (time < 0) time = 0;
+    update.handle = setTimeout(update.render, time);
+    console.log(update);
+  } else
+    display.interval = value;
 };
 
 function update_info() {
@@ -216,8 +248,7 @@ function load_events(last = false) {
       } else {
         report_error('No new events!');
         update_info();
-        if (display.update)
-          display.update = setTimeout(load_events, display.gui.update_interval);
+        set_next_frame(load_events);
       };
     }
   );
@@ -247,16 +278,14 @@ function load_event(index) {
       toggle_controls(index);
       update_info();
 
-      if (display.update)
-        display.update = setTimeout(
-          function (){
-            if (++index < display.events.length)
-              load_event(index);
-            else
-              load_events();
-          },
-          display.gui.update_interval
-        );
+      set_next_frame(
+        function () {
+          if (++index < display.events.length)
+            load_event(index);
+          else
+            load_events();
+        }
+      );
     }
   );
 };
@@ -460,7 +489,7 @@ get_csv(
       display.layout
     );
 
-    display.update = true;
+    display.update = {};
     load_events();
   }
 );

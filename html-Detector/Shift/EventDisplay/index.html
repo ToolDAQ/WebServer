@@ -25,7 +25,10 @@
 
   <select id='events' onchange="event_selected(this)"></select>
 
-  Last update: <span id='info'></span>
+  Last update: <span id='info'></span>.
+  Update interval:
+  <input id='interval' type='number' min='1' style='width: 12ex' onchange="set_update_interval()"/>
+  seconds.
 </div>
 <div id='error' style='display: none; color: red'></div>
 <div id='event-display' style='width: 100%; height: 900px; position: relative'></div>
