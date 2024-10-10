@@ -1,0 +1,93 @@
+### Created by Dr. Benjamin Richards (b.richards@qmul.ac.uk) 
+
+### Download base image from cern repo on docker hub
+FROM tooldaq/core:latest
+
+### Run the following commands as super user (root):
+USER root
+
+RUN yum install -y \
+    httpd \
+    postgresql-server \
+    postgresql-devel \
+    sudo \
+    autoconf \
+    automake \
+    libtool \
+    tree \
+    gzip \
+    && yum clean all \
+    && rm -rf /var/cache/yum
+
+RUN cd /opt; \
+    wget https://github.com/marc1uk/libpqxx/raw/master/libpqxx-6.4.5_fixed.tar.gz; \
+    tar zxvf libpqxx-6.4.5_fixed.tar.gz; \
+    rm libpqxx-6.4.5_fixed.tar.gz; \
+    cd libpqxx-6.4.5; \
+    mkdir install; \
+    ./configure --disable-documentation --enable-shared --prefix=/opt/libpqxx-6.4.5/install; \
+    make -j`nproc --all`; \
+    make install
+    
+#RUN Setup.sh
+
+RUN sudo -u postgres /usr/bin/initdb /var/lib/pgsql/data/; \
+    sudo -u postgres /usr/bin/pg_ctl start -D /var/lib/pgsql/data -s -o "-p 5432" -w -t 300; \
+    sudo -u postgres createuser -s root ;\
+    sudo -u postgres psql -c "create database daq with owner=root;"; \
+    psql -ddaq -c "create table monitoring (time timestamp with time zone NOT NULL, source text NOT NULL, data JSON NOT NULL);";\
+    psql -ddaq -c "create table logging (time timestamp with time zone NOT NULL, source text NOT NULL, severity integer NOT NULL, message text NOT NULL);";\
+    psql -ddaq -c "create table alarms (time timestamp with time zone NOT NULL,  source text NOT NULL, type text NOT NULL, alarm text NOT NULL, silenced integer DEFAULT 0 );";\
+    psql -ddaq -c "create table device_config (time timestamp with time zone NOT NULL, device text NOT NULL, version int NOT NULL, author text NOT NULL, data JSON NOT NULL, UNIQUE (device, version) );";\
+    psql -ddaq -c "create table configurations (config_id int NOT NULL primary key, time timestamp with time zone NOT NULL, name text NOT NULL, version int NOT NULL, description text NOT NULL, author text NOT NULL, data JSON NOT NULL, UNIQUE (config_id) );";\
+    psql -ddaq -c "create table run_info (run int NOT NULL, subrun int NOT NULL, start_time timestamp with time zone NOT NULL, stop_time timestamp with time zone, config_id int NOT NULL, comments text NOT NULL, UNIQUE (run, subrun));";\
+    echo " sudo -u postgres /usr/bin/pg_ctl start -D /var/lib/pgsql/data -s -o \"-p 5432\" -w -t 300;" >> /etc/rc.local
+
+RUN cd /opt; \
+    git clone --depth 1 --single-branch -b hkexample https://github.com/marc1uk/middleman.git; \
+    cd middleman; \
+    ./Setup.sh; \
+    make -j`nproc --all`; \
+    chmod a+x  run_middleman.sh; 
+
+RUN cd /opt; \
+    git clone https://github.com/ToolDAQ/cgicc-3.2.9.git; \
+    cd cgicc-3.2.9; \
+    ./configure;\
+    make -j`nproc --all`;\
+    make install;\
+    cd ../ ;\
+    rm -rf cgicc-3.2.9;
+
+RUN cd /opt; \
+    git clone https://github.com/google/brotli.git; \
+    cd brotli; \
+    ./bootstrap; \
+    ./configure;\
+    make -j`nproc --all`;\
+    make install;\
+    cd ../ ;
+
+RUN echo "unalias cp" >>  /etc/rc.local ;\
+    echo "cp -f /web/httpd.conf /etc/httpd/conf/" >>  /etc/rc.local ;\
+    echo "alias cp='cp -i'" >>  /etc/rc.local ;\
+    echo "export LD_LIBRARY_PATH=/opt/ToolDAQFramework/lib:/opt/boost_1_66_0/install/lib:/opt/zeromq-4.0.7/lib:$LD_LIBRARY_PATH" >> /etc/rc.local ;\
+    echo "/opt/middleman/run_middleman.sh &> /dev/null &" >> /etc/rc.local ;\
+    echo 'disown $!' >> /etc/rc.local ;\
+    echo "/web/Win_Mac_translation_server  &> /dev/null &" >> /etc/rc.local ;\
+    echo 'disown $!' >> /etc/rc.local ;\
+    echo "/web/Trigger_proxy  &> /dev/null &" >> /etc/rc.local ;\
+    echo 'disown $!' >> /etc/rc.local ;\
+    echo "httpd" >> /etc/rc.local ; \
+    echo "/web/backgroundSD  &> /dev/null " >> /etc/rc.local ;
+
+
+RUN yum install -y \
+    emacs \
+    && yum clean all \
+    && rm -rf /var/cache/yum
+
+
+### Open terminal
+#CMD ["/bin/bash"]
+CMD /bin/bash -c 'cd /web/cgi-bin/; make clean; make -j `nproc --all`; cd /web ; make clean ; make -j `nproc --all`; source /etc/rc.local'

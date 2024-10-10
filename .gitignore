@@ -6,10 +6,13 @@
 include
 lib
 */a.out
+# build products
 main
 NodeDaemon
 RemoteControl
 Trigger_proxy
 Win_Mac_translation_server
 backgroundSD
-	
+cgi-bin/sendcommand2.cgi
+cgi-bin/sendcommand2nopadding.cgi
+cgi-bin/getplot.cgi

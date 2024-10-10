@@ -9,6 +9,8 @@ echo -e "<html><body>"
 #echo -e "<br>"
 query=`echo $QUERY_STRING | sed "s/=/='/g; s/&/';/g; s/$/'/" |  sed "s/%22/\"/g; s/'\"/\"/  " ;`
 eval $query
+# TODO make an argument?
+PGHOST=192.168.10.17
 #echo $query "<br>"
 
 #echo $POST_DATA "<br>"
@@ -34,7 +36,7 @@ eval $query
 #echo "<br> 3) $command <br>"
 #echo psql  -U$user -d$db -H -c"$command" 
 #echo `psql  -U$user -d$db -H -c"$command" 2>&1 | sed '0,/table/s/table/table id=table/' `
-echo `psql  -U$user -d$db -H -Tid=table -c"$command" 2>&1 `
+echo `psql -h ${PGHOST} -U$user -d$db -H -Tid=table -c"$command" 2>&1 `
 
 #2>&1
 echo -e "</html></body>"

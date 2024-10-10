@@ -1,4 +1,5 @@
 import { GetPSQLTable } from '/includes/functions.js';
+
 var audio = new Audio('/includes/jump.ogg');
 var alarm_message = document.getElementById("alarm_message");
 var updateinterval = setInterval(CheckAlarms, 5000);
@@ -50,7 +51,7 @@ function CheckAlarms(){
 	checking_alarm_footer=false;
     });
 
-}										       
+}
 
 function AlarmOn(){
     audio.play();
