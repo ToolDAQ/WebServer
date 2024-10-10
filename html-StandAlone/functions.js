@@ -54,53 +54,28 @@ function HTTPRequest(method, url, async=false, data=null, user=null, password=nu
     
 }
 
-function GetSDTable(filter=null, async=false) { 
-  //  filter= ResolveVariable(filter); 
-   
-    function ProcessTable(csvData){
-	var table= document.createElement('table');
-	table.id="SDTable";
-	
-	var rows = csvData.split("\n");
-	rows.map(function(row) {
-	    var cells = row.split(",");
-	    
-	    if(cells.length == 5){
-		
-		var newrow = table.insertRow(table.rows.length);
-		var cell1 = "<td>[" + cells[0] + "]</td>";
-		var cell2 = "<td>" + cells[1] + "</td>";
-		var cell3 = "<td>" + cells[2] + "</td>";
-		var cell4 = "<td>" + cells[3] + "</td>";
-		var cell5 = "<td>" + cells[4] + "</td>";
-		if(filter=="")  newrow.innerHTML = cell1 + cell2 + cell3 + cell4 + cell5;
-		else if(cells[3]==filter) newrow.innerHTML = cell1 + cell2 + cell3 + cell4 + cell5;
-		
-	    }
-	});
-	
-	return table;    
-    }
-    
-    
-    if(async){ 
-	
-	return new Promise(function(resolve, reject){
-	    
-	    HTTPRequest("GET", "./cgi-bin/tablecontent5.cgi", true).then(function(result){
-		
-		resolve(ProcessTable(result));
-		
-	    });
-	});
-    }
-    
-    else return ProcessTable(HTTPRequest("GET", "./cgi-bin/tablecontent5.cgi", false));
-    
-    
-    
-}
+function GetSDTable(filter = null, async = false) {
+  function ProcessTable(csv) {
+    let table = document.createElement('table');
+    table.id = 'SDTable';
 
+    for (let row of csv.split('\n')) {
+      let cells = row.split(',');
+      if (cells.length != 5
+          || (filter !== null && filter != '' && filter != cells[3]))
+        continue;
+      let newrow = table.insertRow();
+      cells[0] = '[' + cells[0] + ']';
+      for (let cell of cells) newrow.insertCell().innerText = cell;
+    };
+
+    return table;
+  };
+
+  let request = HTTPRequest('GET', '/cgi-bin/tablecontent5.cgi', async);
+  if (async) return request.then(ProcessTable);
+  return ProcessTable(request);
+};
 
 function GetIP(service_name, async=false){
   //service_name= ResolveVariable(service_name);    
