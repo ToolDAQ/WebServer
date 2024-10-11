@@ -73,7 +73,7 @@ export db=${db:+-d $db}
 echo "after fix: user: '${user}', db: '${db}', host: '${host}'" >> ${DEBUGFILE}
 
 # fallbacks if not specified FIXME don't hard-code!
-export PGHOST="192.168.10.17"
+export PGHOST="127.0.0.1"
 export PGUSER="root"
 export PGDATABASE="daq"
 
