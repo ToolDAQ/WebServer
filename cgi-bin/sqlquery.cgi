@@ -11,7 +11,7 @@ user=${post[user]}
 db=${post[db]}
 command=${post[command]}
 # TODO make an argument?
-PGHOST=192.168.10.17
+PGHOST=127.0.0.1
 
 #DEBUGFILE=/tmp/sqlquery.cgi.log
 DEBUGFILE=/dev/null
