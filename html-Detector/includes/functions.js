@@ -7,8 +7,10 @@
 //   GetSlowCommands(ip, port, async=false) - returns html to produce all slow control buttons of client
 //   SendSCCommand(ip, port, command_output, ...incommands) - command used by slow cotnrol buttons to send commands to clients
 //   GetPSQLTable(command, user, database, async=false) - get sql table from database
+//   GetPSQL(command, user, database, async=false) - query sql database, response returned as json object
 //   MakePlotDataFromPSQL(command, user, databse, output_data_array=null, async=false) - makes data for a plotly plot based on sql table
 //   MakePlot(div, data, layout, update=false) - makes or updates a plot div
+"use strict";
 
 /*
 function ResolveVariable(variable){
@@ -25,7 +27,7 @@ function ResolveVariable(variable){
 
 let hostIP=""; //127.0.0.1";
 
-function HTTPRequest(method, url, async=false, data=null, user=null, password=null){
+export function HTTPRequest(method, url, async=false, data=null, user=null, password=null){
     
     var xhr = new XMLHttpRequest();
     
@@ -34,6 +36,7 @@ function HTTPRequest(method, url, async=false, data=null, user=null, password=nu
     // Set the request header to indicate that the request body contains form data   
     if(method=="POST")  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     
+    //console.log("HTTPRequest with post data: "+data);
     xhr.send(data);
     
     if(!async) return xhr.responseText
@@ -43,9 +46,21 @@ function HTTPRequest(method, url, async=false, data=null, user=null, password=nu
 	return new Promise(function(resolve, reject){
 	    
 	    xhr.onreadystatechange = function() {
-		if(this.readyState == 4 && this.status == 200) {		
-		    resolve(xhr.responseText);
-		}
+	    	// once the request is 'DONE' (ignore other status changes)
+	    	if(this.readyState == 4){
+	    		// resolve if status was OK (https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
+	    		// i am unclear on whether some 300 status codes would also be acceptable, for example, 304 seems fine
+	    		// but what about 302, 307, etc? do we need to catch and handle the required redirects in such cases?
+				if((this.status > 199 && this.status <300) || this.status==304) {
+					resolve(xhr.responseText);
+				} else {
+					// else reject
+					//console.log("HTTPRequest FAILURE:");
+					//console.log(xhr);
+					reject("Request failed with status code "+xhr.status+": "+xhr.statusText);
+				}
+			}
+			return;
 	    }
 	    
 	});
@@ -125,35 +140,57 @@ function GetSDTable(filter=null, async=false) {
 }
 
 
-function GetIP(service_name, async=false){
+export function GetIP(service_name, async=false){
   //service_name= ResolveVariable(service_name);    
 
     if(async){
 	return new Promise(function(resolve, reject){
 	    
 	    GetSDTable(service_name, true).then(function(result){
-		
-		resolve(result.rows[0].cells[1].innerText);
+			if(result.rows === 'undefined' || !result.rows.length || 
+			   result.rows[0].cells === 'undefined' || !result.rows[0].cells.length){
+				reject("GetIP no matching services found!")
+				return "";
+			}
+			resolve(result.rows[0].cells[1].innerText);
 	    });
 	});
     }
     
     else{
-
-	return GetSDTable(service_name).rows[0].cells[1].innerText;
-	
+		let result = GetSDTable(service_name); // html table object
+		//console.log("GetIP got: ");   // result.rows is a htmlcollection
+		//console.log(result);
+		if(result.rows === 'undefined' || !result.rows.length || 
+		   result.rows[0].cells === 'undefined' || !result.rows[0].cells.length){
+			/*
+			console.log("GetIP no matching services found!");
+			console.log(result);
+			console.log(result.rows);
+			console.log(result.rows[0]);
+			console.log(result.rows[0].cells);
+			console.log(result.rows[0].cells[1]);
+			*/
+			return "";
+		}
+		return result.rows[0].cells[1].innerText;
+		
     }
 }
 
 
-function GetPort(service_name, async=false){
+export function GetPort(service_name, async=false){
     //service_name= ResolveVariable(service_name);
 
     if(async){
 	return new Promise(function(resolve, reject){
 	    
 	    GetSDTable(service_name, true).then(function(result){
-		
+		if(result.rows === 'undefined' || !result.rows.length || 
+		   result.rows[0].cells === 'undefined' || !result.rows[0].cells.length){
+			reject("GetPort no matching services found!")
+			return 0;
+		}
 		resolve(result.rows[0].cells[2].innerText);
 	    });
 	});
@@ -161,13 +198,21 @@ function GetPort(service_name, async=false){
     
     else{
 
-	return GetSDTable(service_name).rows[0].cells[2].innerText;
+		let result = GetSDTable(service_name); // html table object
+		//console.log("GetIP got: ");   // result.rows is a htmlcollection
+		//console.log(result);
+		if(result.rows === 'undefined' || !result.rows.length || 
+		   result.rows[0].cells === 'undefined' || !result.rows[0].cells.length){
+			//console.log("GetPort no matching services found!");
+			return 0;
+		}
+		return result.rows[0].cells[2].innerText;
 	
     }
 }
 
 
-function Command(ip, port, command, async=false){ //this command sends messages to services
+export function Command(ip, port, command, async=false){ //this command sends messages to services
     //ip= ResolveVariable(ip);
     //port= ResolveVariable(port);
     //command= ResolveVariable(command);
@@ -182,10 +227,12 @@ function Command(ip, port, command, async=false){ //this command sends messages 
 	
 	return new Promise(function(resolve, reject){
 	    
-	    HTTPRequest("POST", "/cgi-bin/sendcommand2nopadding.cgi", true, data_string).then(function(result){
-		
-		resolve(result.split("\n")[1]);
-		
+	    HTTPRequest("POST", "/cgi-bin/sendcommand2nopadding.cgi", true, data_string).then(
+	    function(result){
+			resolve(result.split("\n")[1]);
+	    }, 
+	    function(reason){
+	    	reject(reason);
 	    });
 	});
     }
@@ -325,18 +372,34 @@ export function GetPSQLTable(command, user, database, async=false){
 
 export async function GetPSQL(command, user, database, async=false){
     
+    let dataUrl = "/cgi-bin/sqlqueryjson.cgi";
     var data_string = "user=" + user + "&db=" + database + "&command=" + command;
-    let dataUrl =  hostIP + "/cgi-bin/sqlqueryjson.cgi?" + data_string;
-    return getDataFetchRequest(dataUrl, "text");
+    //console.log("GetPSQL got query: "+command+", data_string: "+data_string);
     
-    let responsepromise = getDataFetchRequest(dataUrl, "json");
-    console.log("GetPSQL got: ",responsepromise);
-    let response = await responsepromise;
-    console.log("Got response: ",response);
-    return response;
+    // version using HTTPRequest
+    return HTTPRequest("POST", dataUrl, async, data_string);
+    
+    // version using getDataFetchRequest, which uses the fetch API rather than XMLHttpRequest
+    // see https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API
+    // in fact firefox reports:
+    // 'Synchronous XMLHttpRequest on the main thread is deprecated
+    //  because of its detrimental effects to the end user’s experience'
+    /*
+    dataUrl = dataUrl+"?"+data_string;
+    if(async){
+        // return promise
+        return getDataFetchRequest(dataUrl, "text");
+    } else {
+        // await promise and return json object
+        let responsepromise = getDataFetchRequest(dataUrl, "json");
+        //console.log("GetPSQL got promise: ",responsepromise);
+        let response = await responsepromise;
+        //console.log("GetPSQL got response: ",response);
+        return response;
+    }
+    */
     
 }
-
 
 function MakePlotDataFromPSQL(command, user, databse, output_data_array=null, async=false){ //function to generate plotly plot
     

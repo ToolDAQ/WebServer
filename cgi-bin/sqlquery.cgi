@@ -10,6 +10,8 @@ done
 user=${post[user]}
 db=${post[db]}
 command=${post[command]}
+# TODO make an argument?
+PGHOST=127.0.0.1
 
 #DEBUGFILE=/tmp/sqlquery.cgi.log
 DEBUGFILE=/dev/null
@@ -17,7 +19,7 @@ echo "got request with user: '${user}', db: '${db}', '${command}'" >> ${DEBUGFIL
 
 echo 'Content-type: text/html'
 
-RET=$(psql -h localhost ${user+-U "$user"} \
+RET=$(psql -h ${PGHOST} ${user:+-U "$user"} \
      ${db:+-d "$db"} \
      -H \
      -T id=table \
@@ -25,8 +27,8 @@ RET=$(psql -h localhost ${user+-U "$user"} \
      2>&1)
 echo "query return: '${RET}'" >> ${DEBUGFILE}
 
-# now who wrote this rubbish? Better error returns please!
 echo ${RET} |
+#FIXME better error
 exec sed '
   1{
     /^ERROR/{
