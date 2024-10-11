@@ -10,7 +10,7 @@ echo -e "<html><body>"
 query=`echo $QUERY_STRING | sed "s/=/='/g; s/&/';/g; s/$/'/" |  sed "s/%22/\"/g; s/'\"/\"/  " ;`
 eval $query
 # TODO make an argument?
-PGHOST=192.168.10.17
+PGHOST=127.0.0.1
 #echo $query "<br>"
 
 #echo $POST_DATA "<br>"
