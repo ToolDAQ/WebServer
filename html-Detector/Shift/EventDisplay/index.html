@@ -1,30 +1,40 @@
+<!DOCTYPE html>
 <head>
 <title>Event Display</title>
-<!-- #include <script src="https://cdn.plot.ly/plotly-2.3.0.min.js"></script>  -->
-<script src='https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js'></script>
-</hread>
-
+</head>
 <!--#include virtual="/includes/header.html" -->
 <!--#include virtual="../subheader.html" -->
 <!--#include virtual="/includes/drawer.html" -->
 
-<p>
-<p>
-<p>
-<p>
-<p>
-<p>
-<div id='myDiv'  style="width: 100%; height: 100%; position: relative; top: 20px; left: 30px;"></div>
+<div id='controls' style='display: block'>
+  <select id='mode' onchange='plot_mode_changed()'>
+    <option name='2d' selected>2D</option>
+    <option name='3d'>3D</option>
+  </select>
 
-<p>
-<p>
-<p>
-<p>
-<p>
-<p>
+  <select id='data' onchange='plot_data_changed()'>
+    <option name='c' selected>Charge</option>
+    <option name='t'>Time</option>
+  </select>
 
+  <button id='first' disabled onclick="first_click()">&lt;&lt;</button>
+  <button id='previous' disabled onclick="previous_click()">&lt;</button>
+  <button id='pause' disabled onclick="pause_click()">Pause</button>
+  <button id='next' onclick="next_click()">&gt;</button>
+  <button id='last' onclick="last_click()">&gt;&gt;</button>
+
+  <select id='events' onchange="event_selected(this)"></select>
+
+  Last update: <span id='info'></span>.
+  Update interval:
+  <input id='interval' type='number' min='1' style='width: 12ex' onchange="set_update_interval()"/>
+  seconds.
+</div>
+<div id='error' style='display: none; color: red'></div>
+<div id='event-display' style='width: 100%; height: 900px; position: relative'></div>
+
+<script src='https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js'></script>
 <script src="https://cdn.plot.ly/plotly-2.3.0.min.js"></script>
-<script src="hkdisplay2.js?version=59" async></script>
-<script src="/includes/functions.js?version=1">  </script>
+<script src="event-display.js"></script>
 
 <!--#include virtual="/includes/footer.html" -->
