@@ -1,43 +1,33 @@
 "use strict;"
-import { GetPlot } from "/includes/functions.js";
 
-var plots_div = document.getElementById('plots');
+import { GetPlotlyPlots, MakePlotlyPlot } from "/includes/functions.js";
 
-function plots_dropdown_update(select) {
-  if (select.value == '__update')
-    GetPlot().then(
-      function (plots) {
+var div    = document.getElementById('plots');
+var select = document.getElementById('plots_dropdown');
+var plots  = [];
+
+function plots_dropdown_update() {
+  if (select.selectedIndex > 1) {
+    let plot = plots[select.selectedIndex - 2];
+    MakePlotlyPlot(div, plot.name, plot.version);
+  } else if (select.selectedIndex == 1) {
+    Plotly.purge(div);
+  } else if (select.selectedIndex == 0) {
+    GetPlotlyPlots(undefined, undefined, true).then(
+      function (db_plots) {
+        plots = db_plots;
         select.length = 2;
-        for (let plot of plots) {
+        for (let i = 0; i < db_plots.length; ++i) {
           let option = document.createElement('option');
-          option.value = plot.name;
-          option.text  = plot.name;
+          option.text = db_plots[i].name + ' ' + db_plots[i].version;
           select.add(option);
         };
-        select.value = '__none';
+        select.selectedIndex = 1;
       }
     );
-  else if (select.value == '__none')
-    Plotly.purge(plots_div);
-  else
-    GetPlot(select.value).then(
-      function (plot) {
-        if (!plot) return;
-        Plotly.newPlot(
-          plots_div,
-          [ { x: plot.x, y: plot.y } ],
-          {
-            title: plot.title,
-            xaxis: { title: plot.xlabel },
-            yaxis: { title: plot.ylabel }
-          }
-        );
-      }
-    );
+  };
 };
 
-{
-  let select = document.getElementById('plots_dropdown');
-  select.value = '__update';
-  plots_dropdown_update(select);
-}
+select.addEventListener('change', plots_dropdown_update);
+select.selectedIndex = 0;
+plots_dropdown_update();
