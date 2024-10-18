@@ -443,7 +443,7 @@ function GetPSQLJSON(command, user, database, async = false) {
 //   name:    <plot name>,
 //   time:    <string with the timestamp>,
 //   version: <plot version>,
-//   trace:   <Plotly trace object>,
+//   traces:  <Plotly traces object>,
 //   layout:  <Plotly layout object>
 // }
 // See Plotly documentation for details on what data is supported.
@@ -487,7 +487,7 @@ function MakePlotlyPlot(div, name, version, user, database) {
   GetPlotlyPlot(name, version, user, database, true).then(
     function (plot) {
       if (!plot) Plotly.purge(div);
-      Plotly.newPlot(div, [ plot.trace ], plot.layout);
+      Plotly.newPlot(div, plot.traces, plot.layout);
     }
   );
 };
