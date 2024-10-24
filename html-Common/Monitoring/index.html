@@ -1,0 +1,57 @@
+<head>
+  <title>ToolDAQ Webpage</title>
+  
+</head>
+
+
+<!--#include virtual="/includes/header.html" -->
+<!--#include virtual="../subheader.html" -->
+
+<div id="montabbar" class="mdl-layout__tab-bar mdl-js-ripple-effect is-casting-shadow mdl-js-ripple-effect--ignore-events" data-upgraded=",MaterialRipple">  <!--class="mdl-layout__tab-bar mdl-js-ripple-effect" >-->
+</div>  
+
+<!--#include virtual="/includes/drawer.html" -->    
+
+
+<h1 align="center">Monitoring</h1>
+
+<div align="center">
+  <select id="tableselect"></select>
+  <label for="table select"> Select device data to plot </label><br>
+  <input type="checkbox" id="same" name="same" value="same">
+  <label for="same"> Draw on same plot? </label><br>
+  <br>      
+  <div align="center" id="output"></div>
+  <div id="graph"></div>
+  <br>
+  
+  <!-- <div id="plots"></div> -->
+  <div id="plots_frame" align="center">
+    <label for="plots_dropdown">Select plot</label><br>
+    <select id="plots_dropdown" onchange='plots_dropdown_update(this)'>
+      <option value="__update">Update</option>
+      <option value="__none" selected></option>
+    </select>
+    <div id="plots"></div>
+  </div>
+  
+  <label for="rootplot_dropdown"> Select ROOT plot</label><br>
+  <div align="center"><select id="rootplot_dropdown"></select><br>
+    <div id="jsroot_div" style="height:500px;"></div>
+    <iframe width="700" height="400">
+      <!-- <div id="jsroot_div"></div> -->
+    </iframe>
+    
+  </div>
+</div>
+
+<!--#include virtual="/includes/footer.html" -->
+
+<script src="/includes/functions.js"></script>
+
+<script src="https://cdn.plot.ly/plotly-1.8.0.min.js" async></script>
+<script src="./monitoring.js?v=7" async></script>
+<script src="./monitoringtabs.js?v=1" async></script>
+<script type="module" src="./jsroot.js" async></script>
+<script src="./plots.js" async></script>
+    

@@ -1,0 +1,54 @@
+<html>
+
+<head>
+    <title>ToolDAQ | Add Run Configuration</title>
+</head>
+
+<body>
+    <!--#include virtual="/includes/header.html" -->
+    <!--#include virtual="subheader.html" -->
+    <!--#include virtual="/includes/drawer.html" -->
+
+    <h1 align="center">Add New Configuration</h1>
+    <form id="configForm" method="POST">
+        <label for="name">Configuration Name:</label><br>
+        <input type="text" id="name" name="name" required><br><br>
+
+        <label for="description">Description:</label><br>
+        <textarea id="description" name="description" rows="4" cols="50" required></textarea><br><br>
+
+        <label for="author">Author:</label><br>
+        <input type="text" id="author" name="author" required><br><br>
+
+        <label for="data">Configuration Data (JSON):</label><br>
+        <textarea id="data" name="data" rows="8" cols="50" required></textarea><br><br>
+
+        <button type="button" id="addConfigBtn"">Add Configuration</button>
+    </form>
+
+    <!-- Modal for selecting device configurations -->
+    <dialog id="deviceConfigModal" class="mdl-dialog">
+        <h4>Select Device Configurations</h4>
+        <div id="deviceConfigList">
+            <!-- Device config list will be dynamically populated here -->
+        </div>
+        <br>
+        <button type="button" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+            onclick="closeModal()">
+            Close
+        </button>
+        <button type="button" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+            onclick="addSelectedConfigs()">
+            Add Selected
+        </button>
+    </dialog>
+
+    <h1 align="center">Existing Configurations</h1>
+    <p> </p>
+    <div id="configTable" style="padding: 20px"> </div>
+</body>
+<!--#include virtual="/includes/footer.html" -->
+
+</html>
+<script type="module" src="/includes/functions.js?v=1" async></script>
+<script type="module" src="/Config/configurations.js?v=1" async></script>

@@ -1,0 +1,1 @@
+../../html-Common/includes/alarm_footer.js
