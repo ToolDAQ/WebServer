@@ -26,9 +26,9 @@ function gettable(command){ //generic get sql table command
 	// Set the request header to indicate that the request body contains form data
 	xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 	
-	
-	var dataString = "user=" + user + "&db=" + db + "&command=" + command;
-	
+	var dataString = "user="     + user
+	               + "&db="      + db
+	               + "&command=" + encodeURIComponent(command);
 	
 	// Send the request
 	xhr.send(dataString);
