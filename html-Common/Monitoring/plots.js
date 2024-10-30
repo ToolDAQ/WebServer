@@ -1,40 +1,35 @@
-var plots_div = document.getElementById('plots');
+import { GetPlotlyPlots, MakePlotlyPlot } from "/includes/functions.js";
+
+var plots = {
+  div:   document.getElementById('plots'),
+  plots: []
+};
 
 function plots_dropdown_update(select) {
   if (select.value == '__update')
-    GetPlot().then(
-      function (plots) {
+    GetPlotlyPlots(undefined, undefined, true).then(
+      function (db_plots) {
+        plots.plots = db_plots;
         select.length = 2;
-        for (let plot of plots) {
+        for (let i = 0; i < db_plots.length; ++i) {
           let option = document.createElement('option');
-          option.value = plot.name;
-          option.text  = plot.name;
+          option.text = db_plots[i].name + ' ' + db_plots[i].version;
           select.add(option);
         };
         select.value = '__none';
       }
     );
   else if (select.value == '__none')
-    Plotly.purge(plots_div);
-  else
-    GetPlot(select.value).then(
-      function (plot) {
-        if (!plot) return;
-        Plotly.newPlot(
-          plots_div,
-          [ { x: plot.x, y: plot.y } ],
-          {
-            title: plot.title,
-            xaxis: { title: plot.xlabel },
-            yaxis: { title: plot.ylabel }
-          }
-        );
-      }
-    );
+    Plotly.purge(plots.div);
+  else {
+    let plot = plots.plots[select.selectedIndex - 2];
+    MakePlotlyPlot(plots.div, plot.name, plot.version);
+  };
 };
 
 {
   let select = document.getElementById('plots_dropdown');
   select.value = '__update';
+  select.addEventListener('change', event => plots_dropdown_update(event.target));
   plots_dropdown_update(select);
 }
