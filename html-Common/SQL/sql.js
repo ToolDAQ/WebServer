@@ -1,3 +1,5 @@
+import { GetPSQLTable } from "/includes/functions.js";
+
 var output = document.getElementById("output");
 var tableselect = document.getElementById("tableselect");
 var select = document.querySelector('select');
@@ -9,39 +11,9 @@ var limit= document.getElementById("limit");
 //update dropdown at startup
 updatedropdown();
 
-	   
-function gettable(command){ //generic get sql table command
-    
-    return new Promise(function(resolve, reject){
-	var xhr = new XMLHttpRequest();
-	
-	var url = "/cgi-bin/sqlquery.cgi";
-	
-	var user ="root";
-	var db="daq";
-    
-	// Set the request method to POST
-	xhr.open("POST", url);
-	
-	// Set the request header to indicate that the request body contains form data
-	xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-	
-	
-	var dataString = "user=" + user + "&db=" + db + "&command=" + command;
-	
-	
-	// Send the request
-	xhr.send(dataString);
-	
-	xhr.onreadystatechange = function() {
-	    if (this.readyState == 4 && this.status == 200) {
-		
-		resolve(xhr.responseText);
-	    }	       
-//	    else reject(new Error('error loading'));
-	}
-    });
-    
+
+function gettable(command) {
+    return GetPSQLTable(command, 'root', 'daq', true);
 }
 
 
