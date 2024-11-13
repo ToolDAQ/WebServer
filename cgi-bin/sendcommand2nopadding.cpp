@@ -106,7 +106,8 @@ int main (){
 					int b=1;
 					ServiceSend.setsockopt(ZMQ_RCVTIMEO, a);
 					ServiceSend.setsockopt(ZMQ_SNDTIMEO, a);
-					ServiceSend.setsockopt(ZMQ_IMMEDIATE, b);
+					//ServiceSend.setsockopt(ZMQ_IMMEDIATE, b); this hangs the process if the connection cannot be made
+					// unfortunately without it, 'send' returns true even if the message is never actually sent...
 					
 					if(debugf) *debugf << "connecting to socket" << std::endl;
 					std::stringstream connection;
