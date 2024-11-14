@@ -1,6 +1,5 @@
 #!/bin/bash
 
-echo 'Content-type: text/csv'
 
 psql -h localhost \
      -U root \
@@ -9,9 +8,16 @@ psql -h localhost \
      -c 'select id, x, y, z, location from pmt order by id' \
      2>&1 |
 {
-  read line
-  [[ $line =~ ^ERROR: ]] && echo 'Status: 400'
+  IFS= read line
+  if [[ $line =~ ^ERROR: ]] || [[ $line =~ ^psql ]]; then
+    echo 'Content-type: text/plain'
+    echo 'Status: 400'
+  else
+    echo 'Content-type: text/csv'
+  fi
   echo
-  [[ -n $line ]] && echo "$line"
+  if [[ -n $line ]]; then
+    echo "$line"
+  fi
   exec cat
 }
