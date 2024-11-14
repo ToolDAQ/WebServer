@@ -1,12 +1,13 @@
 #!/bin/bash
 
+if [[ -z $PGUSER ]]; then
+  export PGUSER=root
+fi
+if [[ -z $PGDATABASE ]]; then
+  export PGDATABASE=daq
+fi
 
-psql -h localhost \
-     -U root \
-     -d daq \
-     --csv \
-     -c 'select id, x, y, z, location from pmt order by id' \
-     2>&1 |
+psql --csv -c 'select id, x, y, z, location from pmt order by id' 2>&1 |
 {
   IFS= read line
   if [[ $line =~ ^ERROR: ]] || [[ $line =~ ^psql ]]; then
