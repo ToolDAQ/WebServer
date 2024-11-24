@@ -1,78 +1,43 @@
 <html>
   <head>
     <title>ToolDAQ Login</title>
-    
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="styles.css">
   </head>
-  
+
   <body>
-    
-    <div class="imgcontainer">
-      <img src="images/logo.png" alt="logo" class="logo">
+    <div class="login-container">
+      <div class="logo">
+        <img src="images/logo.png" alt="Logo" class="responsive-img">
+      </div>
+
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">Login</span>
+          <form method="POST">
+            <div>
+              <label for="uname" class="">Username</label>
+              <input type="text" id="uname" name="uname" placeholder="Enter Username" required>
+            </div>
+
+            <div>
+              <label for="password" class="">Password</label>
+              <input type="password" id="password" name="password" placeholder="Enter Password" required>
+            </div>
+
+            <div class="input-field">
+              <button id="submit" type="submit" class="btn waves-effect waves-light">Login</button>
+            </div>
+          </form>
+
+          <a href="#!" id="forgotPasswordLink" class="forgot-password">Forgot Password?</a>
+        </div>
+      </div>
     </div>
-    
-    <div class="container">
-      <label for="uname"><b>Username</b></label>
-      <input id="uname" type="text" placeholder="Enter Username" name="uname" required>
-      
-      <label for="psw"><b>Password</b></label>
-      <input id="password" type="password" placeholder="Enter Password" name="psw" required>
-      
-      <button id="submit" type="submit">Login</button>
-      <label>
-	<input type="checkbox" checked="checked" name="remember"> Remember me
-      </label>
-    </div>
-    
-    <div class="container" style="background-color:#f1f1f1">
-      <button type="button" class="cancelbtn">Cancel</button>
-      <span class="psw">Forgot <a href="#">password?</a></span>
-    </div>
-    
   </body>
 </html>
-  
-<script type="module" src="/includes/functions.js?v=3"></script>
-<script type="module" >
 
-  import { HTTPRequest } from "/includes/functions.js";
-  
-  // Function to delete all cookies
-  function deleteAllCookies() {
-      var cookies = document.cookie.split(";"); // Get all cookies as an array of strings
-      
-      // Iterate through each cookie
-      for (var i = 0; i < cookies.length; i++) {
-          var cookie = cookies[i];
-          var eqPos = cookie.indexOf("="); // Find the position of '=' in the cookie string
-          var name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie; // Get the cookie name
-	  
-          // Set the expiration date of the cookie to a time in the past
-          document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;";
-      }
-  }
-  
-  // Call the function to delete all cookies
-  deleteAllCookies();
-  
-  let button=document.getElementById("submit");
-  let uname= document.getElementById('uname');
-  let password= document.getElementById('password');
-  
-  button.onclick = function(){
-      
-      var data='uname=' + uname.value + ' password=' + password.value;
-      var out=HTTPRequest("POST", "/cgi-bin/login.cgi", false, data);
-  //    var div = document.createElement("div");
-   //   div.innerHTML=bob;      
-     // let unameout= div.innerText;
-      //console.log(unameout);
-      if (out!="") {
-	  document.cookie = out;
-	  window.location.href = "/index.html";
-      }
-      //console.log(bob);
-      
-  };
-  
-</script>
+<script type="module" src="/includes/functions.js?v=1" async></script>
+<script type="module" src="/includes/auth.js" async></script>
 

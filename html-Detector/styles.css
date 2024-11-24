@@ -549,3 +549,37 @@ a img{
     display: none;
   }
 }
+body, html {
+  height: 100%;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f4f4f9;
+}
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.card {
+  width: 100%;
+  max-width: 400px;
+  padding: 2rem;
+}
+
+.logo {
+  margin-bottom: 2rem;
+}
+
+.card-title {
+  text-align: center;
+}
+
+.forgot-password {
+  display: block;
+  text-align: center;
+  margin-top: 1rem;
+}
