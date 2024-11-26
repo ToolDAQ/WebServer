@@ -586,3 +586,11 @@ body, html {
   text-align: center;
   margin-top: 1rem;
 }
+.mdl-mega-footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  z-index: 1000;
+  padding: 10px 0;
+}
