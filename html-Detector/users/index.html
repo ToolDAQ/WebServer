@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ToolDAQ | Users</title>
+    <link rel="stylesheet" href="/stylesheets/materialize.min.css">
+  </head>
+
+  <body>
+    <!--#include virtual="/includes/header.html" -->
+    <!--#include virtual="subheader.html" -->
+    <!--#include virtual="/includes/drawer.html" -->
+    <div class="container">
+      <h4>Users List</h4>
+      <button id="addUserBtn" class="btn waves-effect waves-light modal-trigger" href="#userModal">Add User</button>
+      <table id="usersTable">
+          <thead>
+              <tr>
+                  <th>User ID</th>
+                  <th>Username</th>
+                  <th>Permissions</th>
+              </tr>
+          </thead>
+          <tbody>
+          </tbody>
+      </table>
+  </div>
+
+  <!-- Modal structure for adding a new user -->
+  <div id="userModal" class="modal">
+    <div class="modal-content">
+        <h4>Add New User</h4>
+        <form id="addUserForm">
+            <div class="input-field">
+              <label for="newUsername">Username</label>
+                <input type="text" id="newUsername" required>
+            </div>
+            <div class="input-field">
+              <label for="newPassword">Password</label>
+                <input type="password" id="newPassword" required>
+            </div>
+            <div class="input-field">
+              <label for="newPermissions">Permissions</label>
+                <textarea type="text" id="newPermissions" rows="8" cols="50" required></textarea><br><br>
+            </div>
+            <button type="submit" class="btn waves-effect waves-light">Add User</button>
+        </form>
+    </div>
+  </div>
+    <!--#include virtual="/includes/footer.html" -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script type="module" src="/Users/users.js?v=1" async></script>
+  </body>
+</html>

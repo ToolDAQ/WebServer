@@ -586,3 +586,12 @@ body, html {
   text-align: center;
   margin-top: 1rem;
 }
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
