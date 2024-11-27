@@ -96,7 +96,6 @@ export async function getDataFetchRequest(url, json_or_text="text"){
 }
 
 export function GetSDTable(filter=null, async=false) { 
-  //  filter= ResolveVariable(filter);
   
   function ProcessTable(csv) {
     let table = document.createElement('table');
