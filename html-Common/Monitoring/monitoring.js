@@ -10,86 +10,49 @@ var updating=false;
 //update dropdown called on startup
 updatedropdown();
 
-function updatedropdown(){ //function for updating dropdown box with monitoring soruces
-	
-	//var xhr = new XMLHttpRequest();
-	
-	//var url = "/cgi-bin/sqltable.cgi";
-	
-	//var user ="root";
-	//var db="daq";
-	
-	var command="SELECT distinct(device) from monitoring"
-	
-	
-	// Set the request method to POST
-	//xhr.open("POST", url);
-	
-	// Set the request header to indicate that the request body contains form data
-	//xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-	
-	
-	//var dataString = "user=" + user + "&db=" + db + "&command=" + command;
-	
-	
-	// Send the request
-	//xhr.send(dataString);
-	
-	
-	
-	//xhr.onreadystatechange = function() {
-	//	if (this.readyState == 4 && this.status == 200) {
-	
-	//console.log("calling gettable with query ",command);
-	
+function updatedropdown(){ //function for updating dropdown box with monitoring sources
+	var command="SELECT distinct(device) from monitoring";
+
 	gettable(command).then(function(result){
-		
-		//console.log("result was '",result,"'");
-		
 		output.innerHTML = result;
 		var table = document.getElementById("table");
-		//console.log("table is ",table,", inner HTML is ",table.innerHTML);
-		//console.log("table rows is ",table.rows);
-		
 		for( var i=1; i < table.rows.length; i++){
 			//console.log("adding option '",table.rows[i].innerText,"'");
 			tableselect.options.add(new Option( table.rows[i].innerText, table.rows[i].innerText));
 		}
-		
+
 		tableselect.selectedIndex=-1;
 		output.innerHTML = "";
 		tableselect.dispatchEvent(new Event("change"));
-		
+
 	});
-	
 }
 
 //generic funcion for returning SQL table
 function gettable(command){
-	
 	return new Promise(function(resolve, reject){
 		var xhr = new XMLHttpRequest();
-		
+
 		var url = "/cgi-bin/sqlquery.cgi";
-		
+
 		var user ="root";
 		var db="daq";
-		
+
 		// Set the request method to POST
 		xhr.open("POST", url);
-		
+
 		// Set the request header to indicate that the request body contains form data
 		xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-		
+
 		var dataString = "user=" + user + "&db=" + db + "&command=" + command;
-		
+
 		//console.log("xhr send '",dataString,"'");
-		
+
 		// Send the request
 		xhr.send(dataString);
-		
+
 		xhr.onreadystatechange = function() {
-			
+
 			if (this.readyState == 4 && this.status == 200) {
 			//console.log("good response '",xhr.responseText,"'");
 			resolve(xhr.responseText);
@@ -97,40 +60,36 @@ function gettable(command){
 	//		else reject(new Error('error loading'));
 		}
 	});
-	
 }
 
 select.addEventListener('change', function(){ //actions to take when drobdown changes
-	
 	if(tableselect.selectedIndex==-1) return;
 	makeplot();
 	updateinterval=setInterval(updateplot, 2000);
-	
 });
 
 function makeplot(){ //function to generate plotly plot
-
     clearInterval(updateinterval);
-              
+
     // Get the selected option
     if (select.options.length >0){
 	var selectedOption = select.options[select.selectedIndex];
 	var command = "select * from monitoring where device='"+ selectedOption.value + "' order by time asc";
 
 		gettable(command).then(function(result){
-			
+
 			output.innerHTML=result;
 			var table = document.getElementById("table");
 			table.style.display = "none";
 			var xdata= new Map();
 			var ydata= new Map();
-			
+
 			for( var i=1; i< table.rows.length; i++){
-				
+
 				var jsondata = JSON.parse(table.rows[i].cells[2].innerText);
-				
+
 				for (let key in jsondata) {
-					
+
 					//if( i == 1 ){
 					if(!xdata.has(key)){
 						xdata.set(key,[table.rows[i].cells[0].innerText.slice(0,-3)]);
@@ -139,23 +98,20 @@ function makeplot(){ //function to generate plotly plot
 						xdata.get(key).push(table.rows[i].cells[0].innerText.slice(0,-3));
 						ydata.get(key).push(jsondata[key]);
 					}
-					
 				}
-				
 			}
-			
+
 			data = [];
 			for(let [key, value] of xdata){
-				
 				data.push({
 					name: selectedOption.value + ":" +key,
 					mode: 'lines',
 					x: value,
 					y: ydata.get(key)
 				});
-				
 			}
-			
+			console.log("Data: " + JSON.stringify(data));
+
 			var layout = {
 				title: 'Monitor Time series with range slider and selectors',
 				xaxis: {
@@ -163,20 +119,18 @@ function makeplot(){ //function to generate plotly plot
 					rangeslider: {}
 				}
 			};
-			
+
 			while(!document.getElementById("same").checked && graphDiv.data != undefined && graphDiv.data.length >0){
 				Plotly.deleteTraces(graphDiv, 0);
 				//   Plotly.deleteTraces(graphDiv, [0]);
 			}
 			//Plotly.deleteTraces('graph', 0);
 			Plotly.plot(graphDiv, data, layout);
-			
+
 		});
 		// Perform an action with the selected option
 		////console.log('You selected: ' + selectedOption.value);
-		
 	}
-	
 };
 
 
