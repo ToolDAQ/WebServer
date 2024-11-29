@@ -1,283 +1,260 @@
-var last;
-var updateinterval;
-var output = document.getElementById("output");
-var tableselect = document.getElementById("tableselect");
-var data =[];
-var select = document.querySelector('select');
-var graphDiv = document.getElementById("graph");
-var updating=false;
+// Initialize global variables
+let last;
+let updateinterval;
+let data = [];
+let updating = false;
 
-//update dropdown called on startup
+const output = document.getElementById("output");
+const tableselect = document.getElementById("tableselect");
+const select = document.querySelector('select');
+const graphDiv = document.getElementById("graph");
+
+// Update dropdown called on startup
 updatedropdown();
 
-function updatedropdown(){ //function for updating dropdown box with monitoring sources
-	var command="SELECT distinct(device) from monitoring";
+// Function to update dropdown with monitoring sources
+async function updatedropdown() {
+  try {
+    const command = "SELECT DISTINCT(device) FROM monitoring";
+    const result = await getTable(command);
+    output.innerHTML = result;
 
-	gettable(command).then(function(result){
-		output.innerHTML = result;
-		var table = document.getElementById("table");
-		for( var i=1; i < table.rows.length; i++){
-			//console.log("adding option '",table.rows[i].innerText,"'");
-			tableselect.options.add(new Option( table.rows[i].innerText, table.rows[i].innerText));
-		}
+    const table = document.getElementById("table");
+    for (let i = 1; i < table.rows.length; i++) {
+      const optionText = table.rows[i].innerText;
+      tableselect.options.add(new Option(optionText, optionText));
+    }
 
-		tableselect.selectedIndex=-1;
-		output.innerHTML = "";
-		tableselect.dispatchEvent(new Event("change"));
-
-	});
+    tableselect.selectedIndex = -1;
+    output.innerHTML = "";
+    tableselect.dispatchEvent(new Event("change"));
+  } catch (error) {
+    console.error('Error updating dropdown:', error);
+    output.innerHTML = 'Error loading data.';
+  }
 }
 
-//generic funcion for returning SQL table
-function gettable(command){
-	return new Promise(function(resolve, reject){
-		var xhr = new XMLHttpRequest();
+// Generic function to return SQL table data
+async function getTable(command) {
+  const xhr = new XMLHttpRequest();
+  const url = "/cgi-bin/sqlquery.cgi";
+  const user = "root";
+  const db = "daq";
+  const dataString = `user=${user}&db=${db}&command=${command}`;
 
-		var url = "/cgi-bin/sqlquery.cgi";
+  return new Promise((resolve, reject) => {
+    xhr.open("POST", url);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-		var user ="root";
-		var db="daq";
-
-		// Set the request method to POST
-		xhr.open("POST", url);
-
-		// Set the request header to indicate that the request body contains form data
-		xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-		var dataString = "user=" + user + "&db=" + db + "&command=" + command;
-
-		//console.log("xhr send '",dataString,"'");
-
-		// Send the request
-		xhr.send(dataString);
-
-		xhr.onreadystatechange = function() {
-
-			if (this.readyState == 4 && this.status == 200) {
-			//console.log("good response '",xhr.responseText,"'");
-			resolve(xhr.responseText);
-			}
-	//		else reject(new Error('error loading'));
-		}
-	});
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4) {
+        if (xhr.status === 200) {
+          resolve(xhr.responseText);
+        } else {
+          reject(new Error('Failed to load data'));
+        }
+      }
+    };
+    xhr.send(dataString);
+  });
 }
 
-select.addEventListener('change', function(){ //actions to take when drobdown changes
-	if(tableselect.selectedIndex==-1) return;
-	makeplot();
-	updateinterval=setInterval(updateplot, 2000);
+// Event listener for select dropdown change
+select.addEventListener('change', function () {
+  if (tableselect.selectedIndex === -1) return;
+  makePlot();
+  updateinterval = setInterval(updatePlot, 2000);
 });
 
-function makeplot(){ //function to generate plotly plot
-    clearInterval(updateinterval);
+// Function to generate the Plotly plot
+async function makePlot() {
+  clearInterval(updateinterval);
 
-    // Get the selected option
-    if (select.options.length >0){
-	var selectedOption = select.options[select.selectedIndex];
-	var command = "select * from monitoring where device='"+ selectedOption.value + "' order by time asc";
+  if (select.options.length > 0) {
+    const selectedOption = select.options[select.selectedIndex];
+    const command = `SELECT * FROM monitoring WHERE device='${selectedOption.value}' ORDER BY time ASC`;
 
-		gettable(command).then(function(result){
+    try {
+      const result = await getTable(command);
+      output.innerHTML = result;
 
-			output.innerHTML=result;
-			var table = document.getElementById("table");
-			table.style.display = "none";
-			var xdata= new Map();
-			var ydata= new Map();
+      const table = document.getElementById("table");
+      table.style.display = "none";
 
-			for( var i=1; i< table.rows.length; i++){
+      const xdata = new Map();
+      const ydata = new Map();
 
-				var jsondata = JSON.parse(table.rows[i].cells[2].innerText);
+      for (let i = 1; i < table.rows.length; i++) {
+        const jsonData = JSON.parse(table.rows[i].cells[2].innerText);
 
-				for (let key in jsondata) {
+        for (let key in jsonData) {
+          if (!xdata.has(key)) {
+            xdata.set(key, [table.rows[i].cells[0].innerText.slice(0, -3)]);
+            ydata.set(key, [jsonData[key]]);
+          } else {
+            xdata.get(key).push(table.rows[i].cells[0].innerText.slice(0, -3));
+            ydata.get(key).push(jsonData[key]);
+          }
+        }
+      }
 
-					//if( i == 1 ){
-					if(!xdata.has(key)){
-						xdata.set(key,[table.rows[i].cells[0].innerText.slice(0,-3)]);
-						ydata.set(key,[jsondata[key]]);
-					} else{
-						xdata.get(key).push(table.rows[i].cells[0].innerText.slice(0,-3));
-						ydata.get(key).push(jsondata[key]);
-					}
-				}
-			}
+      data = [];
+      for (let [key, value] of xdata) {
+        data.push({
+          name: `${selectedOption.value}:${key}`,
+          mode: 'lines',
+          x: value,
+          y: ydata.get(key)
+        });
+      }
 
-			data = [];
-			for(let [key, value] of xdata){
-				data.push({
-					name: selectedOption.value + ":" +key,
-					mode: 'lines',
-					x: value,
-					y: ydata.get(key)
-				});
-			}
-			console.log("Data: " + JSON.stringify(data));
+      const layout = {
+        title: 'Monitor Time Series with Range Slider and Selectors',
+        xaxis: {
+          rangeselector: selectorOptions,
+          rangeslider: {}
+        }
+      };
 
-			var layout = {
-				title: 'Monitor Time series with range slider and selectors',
-				xaxis: {
-					rangeselector: selectorOptions,
-					rangeslider: {}
-				}
-			};
+      // Clear previous plot traces if necessary
+      if (graphDiv.data && graphDiv.data.length > 0) {
+        Plotly.deleteTraces(graphDiv, 0);
+      }
 
-			while(!document.getElementById("same").checked && graphDiv.data != undefined && graphDiv.data.length >0){
-				Plotly.deleteTraces(graphDiv, 0);
-				//   Plotly.deleteTraces(graphDiv, [0]);
-			}
-			//Plotly.deleteTraces('graph', 0);
-			Plotly.plot(graphDiv, data, layout);
+      Plotly.plot(graphDiv, data, layout);
+    } catch (error) {
+      console.error('Error generating plot:', error);
+      output.innerHTML = 'Error generating plot.';
+    }
+  }
+}
 
-		});
-		// Perform an action with the selected option
-		////console.log('You selected: ' + selectedOption.value);
-	}
-};
+// Function to update the plot periodically
+async function updatePlot() {
+  if (updating) return;
+  updating = true;
 
+  if (select.options.length > 0) {
+    const selectedOption = select.options[select.selectedIndex];
+    last = data[0].x[data[0].x.length - 1];
 
-function updateplot(){ //fucntion to update plot
+    const command = `SELECT * FROM monitoring WHERE device='${selectedOption.value}' AND time>'${last.valueOf()}' ORDER BY time ASC`;
 
-  if(updating) return;
-	
-	updating=true;
-	// Get the selected option
-	if (select.options.length >0){
-		
-		var selectedOption = select.options[select.selectedIndex];
-		
-		last=data[0].x[data[0].x.length-1];
-		
-		//var command = "select '*' from monitoring where source=\""+ selectedOption.value + "\" and time>to_timestamp(" + ((last.valueOf())/1000.0) + ");  ";
-		
-    var command = "select * from monitoring where device='"+ selectedOption.value + "' and time>'" + last.valueOf() + "' order by time asc;  ";
-		
-		gettable(command).then(function(result){
-			
-			last=data[0].x[data[0].x.length-1];
-		
-			output.innerHTML=result;
-			var table = document.getElementById("table");
-			table.style.display = "none";
-			var xdata= new Map();
-			var ydata= new Map();
-			
-			for( var i=1; i< table.rows.length; i++){
-			
-			var jsondata = JSON.parse(table.rows[i].cells[2].innerText);
-			
-			for (let key in jsondata) {
-				
-				//		    if( i == 1 ){
-				if(!xdata.has(key)){
-				xdata.set(key,[table.rows[i].cells[0].innerText.slice(0,-3)]);
-				ydata.set(key,[jsondata[key]]);
-				}
-				else{
-					xdata.get(key).push(table.rows[i].cells[0].innerText.slice(0,-3));
-					ydata.get(key).push(jsondata[key]);
-			
-				}
-			}
-			}
-			for(let [key, value] of xdata){
-			
-			for( var i=0; i< data.length; i++){
-				if(data[i].name == selectedOption.value + ":" +key){ 
-				data[i].x=data[i].x.concat(value);
-				data[i].y=data[i].y.concat(ydata.get(key));
-				}
-			}
-			
-			}
-			
-			var layout = {
-			title: 'Monitor Time series with range slider and selectors',
-			xaxis: {
-				rangeselector: selectorOptions,
-				rangeslider: {}
-			}
-			};
-			
-			
-//			while(!document.getElementById("same").checked && graphDiv.data != undefined && graphDiv.data.length >0){
-//				Plotly.deleteTraces(graphDiv, 0);
-//				Plotly.deleteTraces(graphDiv, [0]);
-//			}
-			
-			Plotly.redraw(graphDiv,data, layout);
-			//Plotly.plot(graphDiv, data, layout);
-			updating=false;
-			
-		});
-		// Perform an action with the selected option
-		////console.log('You selected: ' + selectedOption.value);
-		
-	}
-	
-};
+    try {
+      const result = await getTable(command);
+      output.innerHTML = result;
 
+      const table = document.getElementById("table");
+      table.style.display = "none";
 
-var selectorOptions = { //plot options definitions
-	buttons: [ {
-		step: 'hour',
-		stepmode: 'backward',
-		count: 1,
-		label: '1hr'
-	}, {
-		step: 'hour',
-		stepmode: 'backward',
-		count: 3,
-		label: '3hr'
-	}, {
-		step: 'hour',
-		stepmode: 'backward',
-		count: 6,
-		label: '6hr'
-	}, {
-		step: 'hour',
-		stepmode: 'backward',
-		count: 12,
-		label: '12hr'
-	}, {
-		step: 'day',
-		stepmode: 'backward',
-		count: 1,
-		label: '1d'
-	}, {
-		step: 'day',
-		stepmode: 'backward',
-		count: 3,
-		label: '3d'
-	}, {
-		step: 'week',
-		stepmode: 'backward',
-		count: 1,
-		label: '1w'
-	}, {
-		step: 'week',
-		stepmode: 'backward',
-		count: 2,
-		label: '2w'
-	}, {
-		step: 'month',
-		stepmode: 'backward',
-		count: 1,
-		label: '1m'
-	}, {
-		step: 'month',
-		stepmode: 'backward',
-		count: 6,
-		label: '6m'
-	}, {
-		step: 'year',
-		stepmode: 'todate',
-		count: 1,
-		label: 'YTD'
-	}, {
-		step: 'year',
-		stepmode: 'backward',
-		count: 1,
-		label: '1y'
-	}, {
-		step: 'all'
-	}],
+      const xdata = new Map();
+      const ydata = new Map();
+
+      for (let i = 1; i < table.rows.length; i++) {
+        const jsonData = JSON.parse(table.rows[i].cells[2].innerText);
+
+        for (let key in jsonData) {
+          if (!xdata.has(key)) {
+            xdata.set(key, [table.rows[i].cells[0].innerText.slice(0, -3)]);
+            ydata.set(key, [jsonData[key]]);
+          } else {
+            xdata.get(key).push(table.rows[i].cells[0].innerText.slice(0, -3));
+            ydata.get(key).push(jsonData[key]);
+          }
+        }
+      }
+
+      // Update the data
+      for (let [key, value] of xdata) {
+        for (let i = 0; i < data.length; i++) {
+          if (data[i].name === `${selectedOption.value}:${key}`) {
+            data[i].x = data[i].x.concat(value);
+            data[i].y = data[i].y.concat(ydata.get(key));
+          }
+        }
+      }
+
+      const layout = {
+        title: 'Monitor Time Series with Range Slider and Selectors',
+        xaxis: {
+          rangeselector: selectorOptions,
+          rangeslider: {}
+        }
+      };
+
+      Plotly.redraw(graphDiv, data, layout);
+      updating = false;
+    } catch (error) {
+      console.error('Error updating plot:', error);
+      output.innerHTML = 'Error updating plot.';
+      updating = false;
+    }
+  }
+}
+
+// Plot options definitions
+const selectorOptions = {
+  buttons: [{
+    step: 'hour',
+    stepmode: 'backward',
+    count: 1,
+    label: '1hr'
+  }, {
+    step: 'hour',
+    stepmode: 'backward',
+    count: 3,
+    label: '3hr'
+  }, {
+    step: 'hour',
+    stepmode: 'backward',
+    count: 6,
+    label: '6hr'
+  }, {
+    step: 'hour',
+    stepmode: 'backward',
+    count: 12,
+    label: '12hr'
+  }, {
+    step: 'day',
+    stepmode: 'backward',
+    count: 1,
+    label: '1d'
+  }, {
+    step: 'day',
+    stepmode: 'backward',
+    count: 3,
+    label: '3d'
+  }, {
+    step: 'week',
+    stepmode: 'backward',
+    count: 1,
+    label: '1w'
+  }, {
+    step: 'week',
+    stepmode: 'backward',
+    count: 2,
+    label: '2w'
+  }, {
+    step: 'month',
+    stepmode: 'backward',
+    count: 1,
+    label: '1m'
+  }, {
+    step: 'month',
+    stepmode: 'backward',
+    count: 6,
+    label: '6m'
+  }, {
+    step: 'year',
+    stepmode: 'todate',
+    count: 1,
+    label: 'YTD'
+  }, {
+    step: 'year',
+    stepmode: 'backward',
+    count: 1,
+    label: '1y'
+  }, {
+    step: 'all'
+  }]
 };
