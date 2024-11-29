@@ -8,6 +8,7 @@ const output = document.getElementById("output");
 const tableselect = document.getElementById("tableselect");
 const select = document.querySelector('select');
 const graphDiv = document.getElementById("graph");
+const loader = document.getElementById("loader"); // Reference to the loader element
 
 // Update dropdown called on startup
 updatedropdown();
@@ -15,6 +16,9 @@ updatedropdown();
 // Function to update dropdown with monitoring sources
 async function updatedropdown() {
   try {
+    // Show the loader while data is being fetched
+    loader.style.display = 'block';
+
     const command = "SELECT DISTINCT(device) FROM monitoring";
     const result = await getTable(command);
     output.innerHTML = result;
@@ -28,9 +32,15 @@ async function updatedropdown() {
     tableselect.selectedIndex = -1;
     output.innerHTML = "";
     tableselect.dispatchEvent(new Event("change"));
+
+    // Hide the loader once the dropdown is updated
+    loader.style.display = 'none';
   } catch (error) {
     console.error('Error updating dropdown:', error);
     output.innerHTML = 'Error loading data.';
+
+    // Hide the loader if an error occurs
+    loader.style.display = 'none';
   }
 }
 
@@ -68,6 +78,9 @@ select.addEventListener('change', function () {
 
 // Function to generate the Plotly plot
 async function makePlot() {
+  // Show loader before generating plot
+  loader.style.display = 'block';
+
   clearInterval(updateinterval);
 
   if (select.options.length > 0) {
@@ -122,9 +135,15 @@ async function makePlot() {
       }
 
       Plotly.plot(graphDiv, data, layout);
+
+      // Hide loader once the plot is generated
+      loader.style.display = 'none';
     } catch (error) {
       console.error('Error generating plot:', error);
       output.innerHTML = 'Error generating plot.';
+
+      // Hide loader if an error occurs
+      loader.style.display = 'none';
     }
   }
 }
@@ -133,6 +152,9 @@ async function makePlot() {
 async function updatePlot() {
   if (updating) return;
   updating = true;
+
+  // Show loader while updating plot
+  loader.style.display = 'block';
 
   if (select.options.length > 0) {
     const selectedOption = select.options[select.selectedIndex];
@@ -183,15 +205,20 @@ async function updatePlot() {
       };
 
       Plotly.redraw(graphDiv, data, layout);
+
+      // Hide loader once update is complete
+      loader.style.display = 'none';
       updating = false;
     } catch (error) {
       console.error('Error updating plot:', error);
       output.innerHTML = 'Error updating plot.';
+
+      // Hide loader if an error occurs
+      loader.style.display = 'none';
       updating = false;
     }
   }
 }
-
 // Plot options definitions
 const selectorOptions = {
   buttons: [{
