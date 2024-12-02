@@ -8,7 +8,7 @@ const output = document.getElementById("output");
 const tableselect = document.getElementById("tableselect");
 const select = document.querySelector('select');
 const graphDiv = document.getElementById("graph");
-const loader = document.getElementById("loader"); // Reference to the loader element
+const loader = document.getElementById("loader");
 
 // Update dropdown called on startup
 updatedropdown();
@@ -126,7 +126,8 @@ async function makePlot() {
         xaxis: {
           rangeselector: selectorOptions,
           rangeslider: {}
-        }
+        },
+				responsive: true
       };
 
       // Clear previous plot traces if necessary
@@ -135,6 +136,10 @@ async function makePlot() {
       }
 
       Plotly.plot(graphDiv, data, layout);
+
+			window.addEventListener('resize', function() {
+				Plotly.Plots.resize(graphDiv);
+			});
 
       // Hide loader once the plot is generated
       loader.style.display = 'none';
@@ -201,10 +206,15 @@ async function updatePlot() {
         xaxis: {
           rangeselector: selectorOptions,
           rangeslider: {}
-        }
+        },
+				responsive: true
       };
 
       Plotly.redraw(graphDiv, data, layout);
+
+			window.addEventListener('resize', function() {
+				Plotly.Plots.resize(graphDiv);
+			});
 
       // Hide loader once update is complete
       loader.style.display = 'none';
