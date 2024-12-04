@@ -8,11 +8,14 @@ lib_dirs     = $(addprefix -L $(Dependencies)/,$(addsuffix /lib,$(libs)))
 CXXFLAGS ?= -O3 -pipe
 CXXFLAGS += $(include_dirs) $(lib_dirs)
 
-programs = sendcommand2.cgi sendcommand2nopadding.cgi
+programs = command.cgi sendcommand2.cgi sendcommand2nopadding.cgi
 
 .PHONY: all clean
 
 all: $(programs)
+
+command.cgi: command.cpp
+	$(CXX) -o $@ $< $(CXXFLAGS) -lzmq -lStore
 
 sendcommand2.cgi: sendcommand2.cpp
 	$(CXX) -o $@ $< $(CXXFLAGS) -lzmq -lcgicc -lStore
