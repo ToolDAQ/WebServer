@@ -151,12 +151,15 @@ export function request(url, args, options) {
     options = { method: 'POST', body: options };
 
   return fetch(url, options).then(
-    function (response) {
-      if (!response.ok)
+    async function (response) {
+      if (!response.ok) {
+        let message = await response.text();
+        if (message != null && message != '') message = ': ' + message;
         throw new RequestError(
-          `Request ${response.url} failed with status ${response.status} ${response.statusText}`,
+          `Request ${response.url} failed with status ${response.status} ${response.statusText}${message}`,
           response
         );
+      };
       return response;
     }
   );
