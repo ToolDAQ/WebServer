@@ -14,11 +14,6 @@
 
 #include <zmq.hpp>
 
-// set to 1 to enable debug output
-#if 0
-#define DEBUG_FILE "/tmp/command.log"
-#endif
-
 std::string uri_decode(std::string string) {
   size_t i = 0;
   while (true) {
@@ -93,15 +88,12 @@ std::string& get_argument(
   return argument->second;
 };
 
-int main() {
+int main(int argc, char** argv) {
   try {
-    std::ofstream* debug =
-#ifdef DEBUG_FILE
-        new std::ofstream(DEBUG_FILE, std::ios::out)
-#else
-        nullptr
-#endif
-    ;
+    std::ofstream* debug = nullptr;
+    if (argc > 2 && strcmp(argv[1], "-d") == 0)
+      debug = new std::ofstream(argv[2], std::ios::out);
+
 
     auto args = get_arguments();
     std::string& ip   = get_argument(args, "ip");
