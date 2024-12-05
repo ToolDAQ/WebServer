@@ -1,4 +1,6 @@
+#include <chrono>
 #include <iostream>
+#include <iomanip>
 #include <stdexcept>
 #include <sstream>
 #include <string>
@@ -11,8 +13,6 @@
 #include <Store.h>
 
 #include <zmq.hpp>
-
-#include <boost/date_time/posix_time/posix_time.hpp>
 
 // set to 1 to enable debug output
 #if 0
@@ -116,12 +116,14 @@ int main() {
     std::string json;
     {
       ToolFramework::Store store;
-      store.Set(
-          "msg_time",
-          boost::posix_time::to_iso_extended_string(
-            boost::posix_time::microsec_clock::universal_time()
-          ) + "Z"
+
+      auto now = std::chrono::system_clock::to_time_t(
+          std::chrono::system_clock::now()
       );
+      std::stringstream ss;
+      ss << std::put_time(std::localtime(&now), "%F %TZ%z");
+      store.Set("msg_time", ss.str());
+
       store.Set("msg_type",  "Command");
       store.Set("msg_value", command);
       store.Set("var1",      argument);
