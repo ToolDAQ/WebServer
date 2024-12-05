@@ -137,7 +137,6 @@ int main() {
     const int timeout = 5000;
     socket.setsockopt(ZMQ_RCVTIMEO,  timeout);
     socket.setsockopt(ZMQ_SNDTIMEO,  timeout);
-    socket.setsockopt(ZMQ_IMMEDIATE, 1);
 
     {
       if (debug) *debug << "connecting to socket" << std::endl;
