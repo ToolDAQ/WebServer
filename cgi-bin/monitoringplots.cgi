@@ -16,7 +16,7 @@ echo "
 #<p><a href=\"/cgi-bin/monitoringnr.cgi\">Disable refresh</a></p>
 
 #"
-for file in `ls ../monitoringplots/ -p | grep -v '/'`
+for file in `ls ../html-Common/monitoringplots/ -p | grep -v '/'`
 do
     if [ ! -d "$file" ]; then
 	echo " <img src=\"/monitoringplots/$file\"  width=\"40%\" height=\"40%\"> "
@@ -27,4 +27,4 @@ done
 
 #echo `cat /web/html/footer.html`
 
-#echo "<script src=\"/monitoringtabs.js?v=1\"></script>"                                                                                                
+#echo "<script src=\"/monitoringtabs.js?v=1\"></script>"

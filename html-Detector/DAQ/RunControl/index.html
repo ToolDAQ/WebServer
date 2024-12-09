@@ -11,7 +11,7 @@
 
   
   <br>
-  <label>DAQ Service Name: </label>
+  <label for="ServiceName">DAQ Service Name: </label>
   <input type="text" name="ServiceName"  id="ServiceName"
    value="WCTE_RBU" disabled> <!-- FIXME experiment-specific hard-coded value! -->
   <label>Slow Control Service IP: </label>
@@ -20,6 +20,11 @@
    <label> Port: </label>
    <input type="text" name="ServicePort" id="ServicePort"
     value="<searching...>" disabled>
+  <br>
+  <br>
+   <label for="ServiceStatus">Status: </label>
+   <input type="text" name="ServiceStatus"  id="ServiceStatus"
+    value="<searching...>"  size="100" disabled>
   <br>
   <br>
   <h4> Run Control </h4>
@@ -44,4 +49,4 @@
 
 <!--#include virtual="/includes/footer.html" -->
 
-<script type="module", src="/DAQ/RunControl/RunControl.js?v=1" async></script>
+<script type="module", src="./RunControl.js?v=1" async></script>

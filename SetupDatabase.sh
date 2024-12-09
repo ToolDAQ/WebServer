@@ -18,6 +18,9 @@ sudo -u postgres createuser -s root
 echo "creating 'daq' database"
 sudo -u postgres psql -c "create database daq with owner=root;"
 
+echo "creating pgcrypto extension"
+psql -ddaq -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
+
 echo "creating monitoring table"
 psql -ddaq -c "create table monitoring (time timestamp with time zone NOT NULL, device text NOT NULL, data JSONB NOT NULL);"
 
@@ -52,12 +55,14 @@ psql -ddaq -c "create table pmt (id int NOT NULL, x real NOT NULL, y real NOT NU
 echo "creating event_display table"
 psql -ddaq -c "create table event_display (evnt bigint NOT NULL, time timestamp with time zone NOT NULL, data JSONB NOT NULL, UNIQUE (evnt));"
 
-echo "creating plots table"
-psql -ddaq -c "create table plots (plot text PRIMARY KEY, time timestamp with time zone NOT NULL DEFAULT now(), x float[] NOT NULL DEFAULT '{}', y float[] NOT NULL DEFAULT '{}', xlabel text NOT NULL DEFAULT '', ylabel text NOT NULL DEFAULT '', title text NOT NULL DEFAULT '', info json NOT NULL DEFAULT '{}')"
-psql -ddaq -c 'create function on_plots_update() returns trigger as $$ begin new.time = now(); return new; end; $$ language plpgsql'
-psql -ddaq -c "create trigger plots_update before update on plots for row execute procedure on_plots_update()"
+echo "creating plotlyplots table"
+psql -ddaq -c "create table plotlyplots (name text NOT NULL, time timestamp with time zone NOT NULL DEFAULT now(), version int NOT NULL, traces jsonb NOT NULL, layout jsonb NOT NULL DEFAULT '{}', UNIQUE (name, version));"
 
 #echo "registering database to start on boot"
 #echo " sudo -u postgres /usr/bin/pg_ctl start -D /var/lib/pgsql/data -s -o \"-p 5432\" -w -t 300;" >> /etc/rc.local
+
+# Insert a default user for testing
+echo "Inserting a default user"
+psql -ddaq -c "INSERT INTO users (username, password_hash) VALUES ('dev_user', crypt('dev_password', gen_salt('bf')));"
 
 touch /.DBSetupDone
