@@ -10,8 +10,23 @@ const select = document.querySelector('select');
 const graphDiv = document.getElementById("graph");
 const loader = document.getElementById("loader");
 
-// Update dropdown called on startup
-updatedropdown();
+if (document.readyState !== 'loading') {
+  Init();
+} else {
+  document.addEventListener("DOMContentLoaded", function () {
+    Init();
+  });
+}
+
+function init() {
+  updatedropdown();
+
+  select.addEventListener('change', function () {
+    if (tableselect.selectedIndex === -1) return;
+    makePlot();
+    updateinterval = setInterval(updatePlot, 2000);
+  });
+}
 
 // Function to update dropdown with monitoring sources
 async function updatedropdown() {
@@ -68,13 +83,6 @@ async function getTable(command) {
     xhr.send(dataString);
   });
 }
-
-// Event listener for select dropdown change
-select.addEventListener('change', function () {
-  if (tableselect.selectedIndex === -1) return;
-  makePlot();
-  updateinterval = setInterval(updatePlot, 2000);
-});
 
 // Function to generate the Plotly plot
 async function makePlot() {
