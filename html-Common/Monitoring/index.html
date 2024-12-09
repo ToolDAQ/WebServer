@@ -28,9 +28,9 @@
   <!-- <div id="plots"></div> -->
   <div id="plots_frame" align="center">
     <label for="plots_dropdown">Select plot</label><br>
-    <select id="plots_dropdown" onchange='plots_dropdown_update(this)'>
-      <option value="__update">Update</option>
-      <option value="__none" selected></option>
+    <select id="plots_dropdown">
+      <option>Update</option>
+      <option></option>
     </select>
     <div id="plots"></div>
   </div>
@@ -47,11 +47,11 @@
 
 <!--#include virtual="/includes/footer.html" -->
 
-<script src="/includes/functions.js"></script>
+<script type="module" src="/includes/functions.js"></script>
 
 <script src="https://cdn.plot.ly/plotly-1.8.0.min.js" async></script>
 <script src="./monitoring.js?v=7" async></script>
 <script src="./monitoringtabs.js?v=1" async></script>
 <script type="module" src="./jsroot.js" async></script>
-<script src="./plots.js" async></script>
+<script type="module" src="./plots.js" async></script>
     

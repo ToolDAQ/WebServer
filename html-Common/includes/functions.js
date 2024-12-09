@@ -10,8 +10,9 @@
 //   GetPSQL(command, user, database, async=false) - query sql database, response returned as json object
 //   MakePlotDataFromPSQL(command, user, databse, output_data_array=null, async=false) - makes data for a plotly plot based on sql table
 //   MakePlot(div, data, layout, update=false) - makes or updates a plot div
-//   GetPlot(name) - retrieves a plot from the database
-//   GetPlot() - retrieves an array of all plots from the database
+//   GetPlotlyPlot(name, version, user, database, async) - get a Plotly plot from the database
+//   GetPlotlyPlots(used, database, async) - get a list of available Plotly plots in the database
+//   MakePlotlyPlot(div, name, version, user, database) - create a Plotly plot on a div
 //   DrawRootPlot(div, obj) - draw a jsroot plot from jsroot plot object
 //   DrawRootPlotJSON(div, root_json) - draw a jsroot plot from jsroot compatible JSON string
 //   DrawRootPlotDB(div, plotname, plotver=-1) - draw a jsroot plot from database
@@ -467,35 +468,86 @@ export function MakePlot(div, data, layout, update=false){
     }
 }
 
-// Fetch a named plot from the database
-// Returns a promise to return an object representing the plot with the following structure:
-// {
-//   plot:   <plot name>,
-//   x:      [ <array of x coordinates> ],
-//   y:      [ <array of y coordinates> ],
-//   xlabel: <x axis label>,
-//   ylabel: <y axis label>,
-//   title:  <title>,
-//   info:   <user supplied data object>
-// }
-// Parameters:
-//   name --- plot name; when undefined returns an array of all plots in the database
+// Execute an SQL command and return the result as a JSON array
+function GetPSQLJSON(command, user, database, async = false) {
+  if (async)
+    return new Promise(
+      function (resolve, reject) {
+        GetPSQL(command, user, database, true).then(
+          function (result) {
+            if (result == '\n')
+              resolve([]);
+            else if (result[0] == '[')
+              resolve(JSON.parse(result));
+            else
+              reject(result);
+          }
+        );
+      }
+    );
 
-export function GetPlot(name) {
-  //console.log(`GetPlot called with arg ${name}`);
-  let url = '/cgi-bin/getplot.cgi';
-  if (name !== undefined) url += '?plot=' + name;
-  //console.log(`invoking url ${url}`);
-  return HTTPRequest('GET', url, true).then(
-    function (reply) {
-      return JSON.parse(reply);
-    },
-    function(reason){
-      console.log(`GetPlot error: ${reason}`);
-      return;
+  let result = GetPSQL(command, user, database, false);
+  if (result == '\n')
+    return [];
+  if (result[0] == '[')
+    return JSON.parse(result);
+  throw Error(result);
+};
+
+// Fetch a Plotly plot from the database.
+// Returns an object with the following structure:
+// {
+//   name:    <plot name>,
+//   time:    <string with the timestamp>,
+//   version: <plot version>,
+//   trace:   <Plotly trace object>,
+//   layout:  <Plotly layout object>
+// }
+// See Plotly documentation for details on what data is supported.
+export function GetPlotlyPlot(name, version, user, database, async) {
+  if (typeof(name) != 'string' || name == '')
+    throw Error('GetPlotlyPlot: name must be a non-empty string');
+  let query = "select * from plotlyplots where name = '" + name + "'";
+
+  if (version === null || version === undefined || version < 0)
+    query += ' order by time desc limit 1';
+  else if (typeof(version) == 'number')
+    query += ' and version = ' + version;
+  else
+    throw Error('GetPlotlyPlot: version must be an integer');
+
+  let request = GetPSQLJSON(query, user, database, async);
+  if (async) return request.then(x => x[0]);
+  return request[0];
+};
+
+// Get a list of plots stored in the database.
+// Returns an array of objects with the following structure:
+// [
+//   {
+//     name:    <plot name>,
+//     version: <plot version>
+//   }
+// ]
+export function GetPlotlyPlots(user, database, async) {
+  return GetPSQLJSON(
+    "select name, version from plotlyplots order by name, version",
+    user,
+    database,
+    async
+  );
+};
+
+// Create a Plotly plot in a div. `name' and `version' are the name and the
+// version of the plot in the database.
+export function MakePlotlyPlot(div, name, version, user, database) {
+  GetPlotlyPlot(name, version, user, database, true).then(
+    function (plot) {
+      if (!plot) Plotly.purge(div);
+      Plotly.newPlot(div, plot.traces, plot.layout);
     }
   );
-}
+};
 
 // draw JSROOT plot from database
 export async function DrawRootPlotDB(div, plotname, plotver=-1){
