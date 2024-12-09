@@ -1,6 +1,23 @@
 <head>
   <title>ToolDAQ Webpage</title>
-  
+  <style>
+    .loader {
+      border: 16px solid #f3f3f3; /* Light gray */
+      border-top: 16px solid #3498db; /* Blue */
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 2s linear infinite;
+      display: none; /* Hidden by default */
+      margin: auto;
+      margin-top: 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 
 
@@ -8,23 +25,31 @@
 <!--#include virtual="../subheader.html" -->
 
 <div id="montabbar" class="mdl-layout__tab-bar mdl-js-ripple-effect is-casting-shadow mdl-js-ripple-effect--ignore-events" data-upgraded=",MaterialRipple">  <!--class="mdl-layout__tab-bar mdl-js-ripple-effect" >-->
-</div>  
+</div>
 
-<!--#include virtual="/includes/drawer.html" -->    
+<!--#include virtual="/includes/drawer.html" -->
 
 
 <h1 align="center">Monitoring</h1>
 
-<div align="center">
-  <select id="tableselect"></select>
-  <label for="table select"> Select device data to plot </label><br>
-  <input type="checkbox" id="same" name="same" value="same">
-  <label for="same"> Draw on same plot? </label><br>
-  <br>      
-  <div align="center" id="output"></div>
-  <div id="graph"></div>
+<div id="page-content" align="center">
+  <div class="controls">
+    <div>
+      <label for="table select"> Select device data to plot </label><br>
+      <select id="tableselect"></select>
+    </div>
+    <div>
+      <label for="same"> Draw on same plot? </label><br>
+      <input type="checkbox" id="same" name="same" value="same">
+    </div>
+  </div>
+  <div class="chart">
+    <div align="center" id="output"></div>
+    <div id="loader" class="loader"></div>
+    <div id="graph"></div>
+  </div>
   <br>
-  
+
   <!-- <div id="plots"></div> -->
   <div id="plots_frame" align="center">
     <label for="plots_dropdown">Select plot</label><br>
@@ -34,14 +59,13 @@
     </select>
     <div id="plots"></div>
   </div>
-  
+
   <label for="rootplot_dropdown"> Select ROOT plot</label><br>
   <div align="center"><select id="rootplot_dropdown"></select><br>
     <div id="jsroot_div" style="height:500px;"></div>
     <iframe width="700" height="400">
       <!-- <div id="jsroot_div"></div> -->
     </iframe>
-    
   </div>
 </div>
 
@@ -54,4 +78,3 @@
 <script src="./monitoringtabs.js?v=1" async></script>
 <script type="module" src="./jsroot.js" async></script>
 <script type="module" src="./plots.js" async></script>
-    
