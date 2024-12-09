@@ -2,7 +2,7 @@
 // Description: JavaScript for controlling start/stop of runs & subruns
 "use strict";
 
-import { GetPSQLTable, GetPSQL, GetIP, GetPort, Command } from '/includes/functions.js';
+import { GetPSQLTable, GetPSQL, GetIP, GetPort, GetSDTable, Command } from '/includes/functions.js';
 
 if (document.readyState !== 'loading'){
 	//console.log("already loaded, initing");
@@ -70,9 +70,9 @@ async function GetRunConfigurations(){
 		// run a query to get run configurations from DB
 		let querystring = "SELECT config_id,name,version,description FROM configurations";
 		
-		let newconfigs;
+		let newconfigstring;
 		try {
-			newconfigs = await GetPSQL(querystring);
+			newconfigstring = await GetPSQL(querystring);
 		} catch(error){
 			// FIXME GetPQSL can return just an error string rather than an SQL result
 			// but it doesn't reject in such cases! crude validity check below, but better upstream
@@ -83,14 +83,20 @@ async function GetRunConfigurations(){
 		//console.log("run configurations: '"+newconfigs+"'");
 		
 		// skip update if no change
-		if(configs === newconfigs){
+		if(configs === newconfigstring){
 			//console.log("no new run configurations; done");
 			return;
 		}
 		
 		// GetPSQL returns its results as a json array... in theory. Crude validity check.
+		let newconfigs;
 		//newconfigs = JSON.parse("[{\"name\":\"one\"}, {\"name\":\"two\"}]"); // seems to pass as expected
-		newconfigs = JSON.parse(newconfigs);
+		try {
+			newconfigs = JSON.parse(newconfigstring);
+		} catch(error){
+			console.error(`invalid JSON in run configuration '${newconfigstring}'`);
+			return;
+		}
 		if(newconfigs === 'undefined' || !Array.isArray(newconfigs) || !newconfigs.length){
 			console.error("invalid run configuration array:");
 			console.error(newconfigs);
@@ -181,7 +187,9 @@ function PopulateVersions(selectedVer=-1){
 	let selectedVerIndex=-1;
 	let versionarr = versionMap.get(selectedName);
 	// sort descending
-	versionarr.sort();
+
+	// we have to give it a weird prototype as by default it sorts alphabetically
+	versionarr.sort(function(a, b) { return a - b; });
 	versionarr.reverse();
 	
 	// if not told what version to select, look it up (to preserve user selection)
@@ -225,23 +233,25 @@ async function FindRunControlService(resolve, reject){
 	
 	//console.log("searching for RunControl slow control service...");
 	
-	const daq_service_name = document.getElementById('ServiceName').innerHTML;
+	const daq_service_name = document.getElementById('ServiceName').value;
 	const slow_service_name = "SlowControlReceiver";  // should always be this...
 	
 	try {
 		
+		// FIXME make a 'GetService' in functions.js that returns IP, port and status all at once!
 		// get promises that will eventually return IP and port
 		let ip_promise = GetIP(daq_service_name,true);
-		let port_promise = GetPort(slow_service_name,true);
-		//let port_promise = new Promise( (resolve, reject) => { resolve(60000); }); // it's always going to be 60000 says ben
+		//let port_promise = GetPort(slow_service_name,true);
+		let port_promise = new Promise( (resolve, reject) => { resolve(60000); }); // it's always going to be 60000 says ben
+		let status_promise = GetSDTable(daq_service_name, true);
 		
 		// produce a combined promise that will wait for both promises to be fulfilled
 		// (or for either of them to be rejected)
-		const combinedPromise = Promise.all([ip_promise, port_promise]);
+		const combinedPromise = Promise.all([ip_promise, port_promise, status_promise]);
 		
 		// await will throw a reason if either promise rejects,
 		// otherwise it will return an array of promised values; i.e. [ip, port]
-		let [ip, port] = await combinedPromise;
+		let [ip, port, sdtable] = await combinedPromise;
 		
 		// sanity checks
 		if(ip==""){
@@ -259,6 +269,14 @@ async function FindRunControlService(resolve, reject){
 		}
 		document.getElementById("ServicePort").value = port;
 		runcontrol_port = port;
+		
+		if(sdtable=="" || sdtable.rows[0].cells.length < 5){
+			let reason="empty/invalid sdtable for run control service status!";
+			//console.error(reason);
+			if(typeof reject === 'function') reject(reason);
+		}
+		// else extract status
+		document.getElementById("ServiceStatus").value = (sdtable.rows[0].cells[4].innerText.trim());
 		
 		console.log("RunControl service at: "+ip+"::"+port);
 		if(typeof resolve === 'function') resolve([ip,port]);

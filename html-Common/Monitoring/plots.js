@@ -1,3 +1,6 @@
+"use strict;"
+import { GetPlot } from "/includes/functions.js";
+
 var plots_div = document.getElementById('plots');
 
 function plots_dropdown_update(select) {
