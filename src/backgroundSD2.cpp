@@ -55,8 +55,6 @@ int main (){
     if (myfile.is_open())
       {
 	
-	myfile<<"Content-type:text/html"<<std::endl<<std::endl<<"<html><body>"<<std::endl;
-	
 	Ireceive.send(send);
 	
 	
@@ -80,7 +78,6 @@ int main (){
 	  
 	}
 	
-	myfile<<std::endl<<"<body/><html/>"<<std::endl;
 	myfile.close();
 	
 	sleep(2);
