@@ -10,10 +10,23 @@
     <!--#include virtual="/includes/header.html" -->
     <!--#include virtual="/includes/drawer.html" -->
     
-    <p> </p> 
+    <p> </p>
     <h1 align="center">Alarms</h1>
-    <p> </p>      
-    <div id="alarm output" style="padding: 20px"> </div>      
+    <p> </p>
+    <label for="deviceNameFilter">Show Only Alarms for Device: </label>
+    <input id="deviceNameFilter" type="text" placeholder="Device Name"  size="20">
+    <p> </p>
+    <div id="alarm_output" style="padding: 20px"> </div>
+    <br><br>
+    <label for="numrows">Num rows:</label>
+    <input id="numrows" type="number" style="background-color: white" class="form-control" value='50' >
+    <br><br>
+    <button id="loadMore">Load More Entries</button>
+    <br><br>
+    
+   <label for="deviceNameSilence">Silence All Alarms for Device: </label>
+   <input id="deviceNameSilence" type="text" placeholder="Device Name"  size="20">
+   <button id="btnSilenceAll">Silence</button>
 
     <p> </p>   
     
@@ -23,4 +36,4 @@
 </html>
 
 <script type="module" src="/includes/functions.js?v=1" async></script>
-<script type="module" src="/Alarms/alarms.js?v=1" async></script>
+<script type="module" src="./alarms.js?v=1" async></script>

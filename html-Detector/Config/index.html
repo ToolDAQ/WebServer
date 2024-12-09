@@ -12,16 +12,29 @@
     <h1 align="center">Add New Configuration</h1>
     <form id="configForm" method="POST">
         <label for="name">Configuration Name:</label><br>
-        <input type="text" id="name" name="name" required><br><br>
+        <input type="text" id="name" name="name" size="40" style="margin:10px;" required><br><br>
 
         <label for="description">Description:</label><br>
-        <textarea id="description" name="description" rows="4" cols="50" required></textarea><br><br>
+        <textarea id="description" name="description" rows="3" cols="100" style="resize:both; width:80%; margin:10px;" required></textarea><br><br>
 
         <label for="author">Author:</label><br>
-        <input type="text" id="author" name="author" required><br><br>
+        <input type="text" id="author" name="author" size="40" style="margin:10px;" required><br><br>
 
         <label for="data">Configuration Data (JSON):</label><br>
-        <textarea id="data" name="data" rows="8" cols="50" required></textarea><br><br>
+        <textarea id="data" name="data" rows="4" cols="100" style="resize:both; width:80%; margin:10px;" required></textarea><br><br>
+        
+        <script type="text/javascript">
+            const datainput = document.querySelector("#data");
+            datainput.addEventListener('input', autoResize, false);
+            
+            const descriptinput = document.querySelector("#description");
+            descriptinput.addEventListener('input', autoResize, false);
+            
+            function autoResize() {
+                this.style.height = 'auto';
+                this.style.height = this.scrollHeight + 'px';
+            }
+        </script>
 
         <button type="button" id="addConfigBtn"">Add Configuration</button>
     </form>
@@ -51,4 +64,4 @@
 
 </html>
 <script type="module" src="/includes/functions.js?v=1" async></script>
-<script type="module" src="/Config/configurations.js?v=1" async></script>
+<script type="module" src="./configurations.js?v=1" async></script>
