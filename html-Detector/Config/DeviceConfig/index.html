@@ -20,16 +20,29 @@
     <!-- Form to add a new device configuration -->
     <form id="deviceConfigForm">
         <label for="device">Device:</label>
-        <input type="text" id="device" name="device" required><br><br>
+        <input type="text" id="device" name="device" size="40" style="margin: 10px;" required><br><br>
 
         <label for="author">Author:</label>
-        <input type="text" id="author" name="author" required><br><br>
+        <input type="text" id="author" name="author" size="40" style="margin: 10px;" required><br><br>
 
-        <label for="description">Description:</label>
-        <textarea id="description" name="description" required></textarea><br><br>
+        <label for="description">Description:</label><br>
+        <textarea id="description" name="description" style="resize:both; width:80%; margin:10px;" required></textarea><br><br>
 
-        <label for="data">Data (JSON format):</label>
-        <textarea id="data" name="data" required></textarea><br><br>
+        <label for="data">Data (JSON format):</label><br>
+        <textarea id="data" name="data" style="resize:both; width:80%; margin:10px;" required></textarea><br><br>
+        
+        <script type="text/javascript">
+            const datainput = document.querySelector("#data");
+            datainput.addEventListener('input', autoResize, false);
+            
+            const descriptinput = document.querySelector("#description");
+            descriptinput.addEventListener('input', autoResize, false);
+            
+            function autoResize() {
+                this.style.height = 'auto';
+                this.style.height = this.scrollHeight + 'px';
+            }
+        </script>
 
         <button type="button" id="addDeviceConfigBtn" >Add Device Configuration</button>
     </form>
@@ -41,5 +54,5 @@
     <!--#include virtual="/includes/footer.html" -->
 
     <script type="module" src="/includes/functions.js?v=1" async></script>
-    <script type="module" src="/Config/DeviceConfig/deviceConfig.js?v=1" async></script>
+    <script type="module" src="./deviceConfig.js?v=1" async></script>
 </body>
