@@ -15,57 +15,30 @@ var abandonupdate=false;
 //update dropdown called on startup
 updatedropdown();
 
-//function for updating dropdown box with monitoring sources
-function updatedropdown(){
-	
-	//var xhr = new XMLHttpRequest();
-	
-	//var url = "/cgi-bin/sqltable.cgi";
-	
-	//var user ="root";
-	//var db="daq";
-	
-	var command="SELECT distinct(device) from monitoring"
-	
-	
-	// Set the request method to POST
-	//xhr.open("POST", url);
-	
-	// Set the request header to indicate that the request body contains form data
-	//xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-	
-	
-	//var dataString = "user=" + user + "&db=" + db + "&command=" + command;
-	
-	
-	// Send the request
-	//xhr.send(dataString);
-	
-	
-	
-	//xhr.onreadystatechange = function() {
-	//if (this.readyState == 4 && this.status == 200) {
-	
-	gettable(command).then(function(result){
-	
-	output.innerHTML = result;
-	var table = document.getElementById("table");
-	
-	for( var i=1; i < table.rows.length; i++){    
-		tableselect.options.add(new Option( table.rows[i].innerText, table.rows[i].innerText));
-	}
-	
-	tableselect.selectedIndex=-1;
-	output.innerHTML = "";
-	tableselect.dispatchEvent(new Event("change"));
-	
-	});
-	
-}
-
 //generic funcion for returning SQL table
 function gettable(command){
 	return GetPSQLTable(command, 'root', 'daq', true);
+}
+
+//function for updating dropdown box with monitoring sources
+function updatedropdown(){
+	
+	var command="SELECT distinct(device) from monitoring"
+	
+	gettable(command).then(function(result){
+		
+		output.innerHTML = result;
+		var table = document.getElementById("table");
+		for( var i=1; i < table.rows.length; i++){    
+			tableselect.options.add(new Option( table.rows[i].innerText, table.rows[i].innerText));
+		}
+		
+		tableselect.selectedIndex=-1;
+		output.innerHTML = "";
+		tableselect.dispatchEvent(new Event("change"));
+	
+	});
+	
 }
 
 // actions to take when dropdown changes
