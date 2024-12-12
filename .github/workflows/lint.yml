@@ -30,6 +30,21 @@ jobs:
     - name: Lint HTML
       run: npx htmlhint .
 
+  fix_html:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install HTML Tidy globally
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y tidy
+
+    - name: Lint and Fix HTML files
+      run: |
+        tidy -qe **/*.html
+
   lint_css:
     runs-on: ubuntu-latest
     steps:
