@@ -1,6 +1,5 @@
 <head>
 <title>ToolDAQ Webpage</title>
-
 </head>
 
 <!--#include virtual="/includes/header.html" -->
@@ -9,7 +8,7 @@
 
 <div id="RunControl">
 
-  
+
   <br>
   <label for="ServiceName">DAQ Service Name: </label>
   <input type="text" name="ServiceName"  id="ServiceName"
@@ -28,6 +27,7 @@
   <br>
   <br>
   <h4> Run Control </h4>
+  <input type="text" id="stop_description" placeholder="Add a note for stopping" class="stop-description-field">
   <button id="RunStop">Stop Current Run</button>
   <br>
   <br>
@@ -49,4 +49,4 @@
 
 <!--#include virtual="/includes/footer.html" -->
 
-<script type="module", src="./RunControl.js?v=1" async></script>
+<script type="module" src="/DAQ/RunControl/RunControl.js?v=1" async></script>
