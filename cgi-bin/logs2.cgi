@@ -12,7 +12,7 @@ do
     echo "<a href=\"../logs/$file\"> $file </a>                                                                                                              
 
  
-<div id=$file align='left' style=\"#ccc;font:12px/13px Georgia, Garamond, Serif;overflow:scroll;border:2px solid;padding:1%;height:200px\">"
+<div id='"$file"' align='left' style=\"#ccc; font:12px/13px Georgia, Garamond, Serif; overflow:scroll; border:2px solid; padding:1%; height:200px\">"
 
     tail ../logs/$file > /tmp/$file -n 15
 
@@ -34,6 +34,6 @@ divid.scrollTop = divid.scrollHeight;"
 
 done
 
-echo"
+echo "
 <body/><html/>
 "

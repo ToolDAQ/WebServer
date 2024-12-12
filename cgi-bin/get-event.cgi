@@ -6,6 +6,9 @@ fi
 if [[ -z $PGDATABASE ]]; then
   export PGDATABASE=daq
 fi
+if [[ -z $PGHOST ]]; then
+  export PGHOST=127.0.0.1
+fi
 
 query() {
   psql --csv -c "$@" 2>&1 |

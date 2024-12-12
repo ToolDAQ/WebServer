@@ -1,80 +1,110 @@
-<head>
-  <title>ToolDAQ Webpage</title>
-  <style>
-    .loader {
-      border: 16px solid #f3f3f3; /* Light gray */
-      border-top: 16px solid #3498db; /* Blue */
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      animation: spin 2s linear infinite;
-      display: none; /* Hidden by default */
-      margin: auto;
-      margin-top: 20px;
-    }
 
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-  </style>
-</head>
+<html>
+	<head>
+		<title>ToolDAQ Webpage</title>
+		
+		<style>
+		  .loader {
+		    border: 16px solid #f3f3f3; /* Light gray */
+		    border-top: 16px solid #3498db; /* Blue */
+		    border-radius: 50%;
+		    width: 50px;
+		    height: 50px;
+		    animation: spin 2s linear infinite;
+		    display: none; /* Hidden by default */
+		    margin: auto;
+		    margin-top: 20px;
+		  }
+	      @keyframes spin {
+		    0% { transform: rotate(0deg); }
+		    100% { transform: rotate(360deg); }
+		  }
+		</style>
+		
+	</head>
+	
+	<body>
+	  
+	<!--#include virtual="/includes/header.html" -->
+	<!--#include virtual="../subheader.html" -->
+	
+	<div id="montabbar" class="mdl-layout__tab-bar mdl-js-ripple-effect is-casting-shadow mdl-js-ripple-effect--ignore-events" data-upgraded=",MaterialRipple">  <!--class="mdl-layout__tab-bar mdl-js-ripple-effect" >-->
+	</div>
+	
+	<!--#include virtual="/includes/drawer.html" -->
+	
+		
+		<h1 align="center">Monitoring</h1>
+		
+		<div id="page content" align="center">
+			<h3 align="center">Ad-hoc Plot from Monitoring Table</h3>
+			
+			<div class="controls">
+				<label for="autoUpdate">AutoUpdate: </label>
+				<input id="autoUpdate" type="checkbox" checked>
+				<label for="refreshRate">Refresh Rate [s]: </label>
+				<input id="refreshRate" type="number" style="background-color: white" class="form-control" value='10' >
+				<br><br>
+				
+				<label for="historyLength">History Length:</label>
+				<input id="historyLength" type="number" style="background-color: white" class="form-control" value='200' >
+				<br><br>
+				
+				<label for="table select"> Select device data to plot </label><br>
+				<select id="tableselect"></select>
+				<input type="checkbox" id="same" name="same" value="same">
+				<label for="same"> Draw on same plot? </label><br>
+				<br>
+			</div>
+			
+			<div id="loader" class="loader"></div>
+			<div align="center" class="chart" id="output"></div>
+			<div id="graph"></div>
+			<br>
+			  
+		</div>
+		
+		<br>
+		
+		<!-- old code, awaiting merge of updated version
+		<div id="plots_frame" align="center">
+			<h3 align="center">Retrieve Plot from Plots Table</h3>
+			<label for="plots_dropdown">Select plot</label><br>
+			<select id="plots_dropdown" onchange='plots_dropdown_update(this)'>
+				<option value="__update">Update</option>
+				<option value="__none" selected></option>
+			</select>
+			<div id="plots"></div>
+		</div>
+		
+		<br>
+		-->
+		
+		<div align="center">
+			<br><h3 align="center">Retrieve Plot from RootPlots Table</h3>
+			<label for="rootplot_dropdown"> Select ROOT plot</label><br>
+			<select id="rootplot_dropdown"></select><br><br>
+			<!-- NOTE: YOU MUST SPECIFY AT LEAST ONE DIMENSION TO YOUR PLOT DIV,
+			     ELSE THE PLOT WILL BE 0 SIZE AND INVISIBLE -->
+			<div id="jsroot_div" style="height:500px;"></div>
+			<!-- see the following for an example of jsroot helper functions -->
+			<!--<script type="module" src="./demojsroot.js"></script> -->
+		</div>
+		
+	</body>
+	
+	<!--#include virtual="/includes/footer.html" -->
+	
+</html>
 
-
-<!--#include virtual="/includes/header.html" -->
-<!--#include virtual="../subheader.html" -->
-
-<div id="montabbar" class="mdl-layout__tab-bar mdl-js-ripple-effect is-casting-shadow mdl-js-ripple-effect--ignore-events" data-upgraded=",MaterialRipple">  <!--class="mdl-layout__tab-bar mdl-js-ripple-effect" >-->
-</div>
-
-<!--#include virtual="/includes/drawer.html" -->
-
-
-<h1 align="center">Monitoring</h1>
-
-<div id="page-content" align="center">
-  <div class="controls">
-    <div>
-      <label for="table select"> Select device data to plot </label><br>
-      <select id="tableselect"></select>
-    </div>
-    <div>
-      <label for="same"> Draw on same plot? </label><br>
-      <input type="checkbox" id="same" name="same" value="same">
-    </div>
-  </div>
-  <div class="chart">
-    <div align="center" id="output"></div>
-    <div id="loader" class="loader"></div>
-    <div id="graph"></div>
-  </div>
-  <br>
-
-  <!-- <div id="plots"></div> -->
-  <div id="plots_frame" align="center">
-    <label for="plots_dropdown">Select plot</label><br>
-    <select id="plots_dropdown">
-      <option>Update</option>
-      <option></option>
-    </select>
-    <div id="plots"></div>
-  </div>
-
-  <label for="rootplot_dropdown"> Select ROOT plot</label><br>
-  <div align="center"><select id="rootplot_dropdown"></select><br>
-    <div id="jsroot_div" style="height:500px;"></div>
-    <iframe width="700" height="400">
-      <!-- <div id="jsroot_div"></div> -->
-    </iframe>
-  </div>
-</div>
-
-<!--#include virtual="/includes/footer.html" -->
-
+<!-- <script src="https://cdn.plot.ly/plotly-1.8.0.min.js" async></script> -->
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script type="module" src="/includes/functions.js"></script>
-
-<script src="https://cdn.plot.ly/plotly-1.8.0.min.js" async></script>
-<script src="./monitoring.js?v=7" async></script>
-<script src="./monitoringtabs.js?v=1" async></script>
+<script type="module" src="./monitoring.js?v=7" async></script>
+<script type="module" src="./monitoringtabs.js?v=1" async></script>
 <script type="module" src="./jsroot.js" async></script>
+<!-- old code, awaiting merge of upstream updated version
 <script type="module" src="./plots.js" async></script>
+-->
+
+

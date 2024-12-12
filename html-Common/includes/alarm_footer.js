@@ -47,16 +47,9 @@ test_alarm_button.addEventListener("click", TestAlarm);
 
 async function TestAlarm() {
     alarm_message.value = "Alarm Test";
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 4; i++) {
         await sleep(1000);
-        playAlarmSound();
-        if (document.body.style.backgroundColor == "red") {
-            document.body.style.backgroundColor = "white";
-            alarm_message.style.backgroundColor = "white";
-        } else {
-            document.body.style.backgroundColor = "red";
-            alarm_message.style.backgroundColor = "red";
-        }
+        AlarmOn();
     }
     alarm_message.value = "no current alarm";
 }

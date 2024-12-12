@@ -1,305 +1,480 @@
-// Initialize global variables
-let last;
-let updateinterval;
-let data = [];
-let updating = false;
+"use strict;"
+import { GetPSQLTable } from "/includes/functions.js";
 
-const output = document.getElementById("output");
-const tableselect = document.getElementById("tableselect");
-const select = document.querySelector('select');
-const graphDiv = document.getElementById("graph");
-const loader = document.getElementById("loader");
+var last;
+var updateinterval;
+var output = document.getElementById("output");
+var tableselect = document.getElementById("tableselect");
+var data =[];
+var drawnDevices = new Map();
+var select = document.querySelector('select');
+var graphDiv = document.getElementById("graph"); 
+var updating=false;
+var abandonupdate=false;
 
-if (document.readyState !== 'loading') {
-  Init();
-} else {
-  document.addEventListener("DOMContentLoaded", function () {
-    Init();
-  });
+//update dropdown called on startup
+updatedropdown();
+
+//generic funcion for returning SQL table
+function gettable(command){
+	return GetPSQLTable(command, 'root', 'daq', true);
 }
 
-function init() {
-  updatedropdown();
-
-  select.addEventListener('change', function () {
-    if (tableselect.selectedIndex === -1) return;
-    makePlot();
-    updateinterval = setInterval(updatePlot, 2000);
-  });
+//function for updating dropdown box with monitoring sources
+function updatedropdown(){
+	
+	var command="SELECT distinct(device) from monitoring"
+	
+	gettable(command).then(function(result){
+		
+		output.innerHTML = result;
+		var table = document.getElementById("table");
+		if(!table){
+			console.error(`no table in return from gettable: ${output.innerHTML}`);
+		}
+		for( var i=1; i < table.rows.length; i++){    
+			tableselect.options.add(new Option( table.rows[i].innerText, table.rows[i].innerText));
+		}
+		
+		tableselect.selectedIndex=-1;
+		output.innerHTML = "";
+		tableselect.dispatchEvent(new Event("change"));
+	
+	},
+	function(err){
+		console.error(err);
+	});
+	
 }
 
-// Function to update dropdown with monitoring sources
-async function updatedropdown() {
-  try {
-    // Show the loader while data is being fetched
-    loader.style.display = 'block';
+// actions to take when dropdown changes
+select.addEventListener('change', function(){ 
+	
+	if(tableselect.selectedIndex==-1) return;
+	makeplot();
+	
+	if(document.getElementById("autoUpdate").checked){
+		let refreshrate = document.getElementById("refreshRate").value;
+		if(refreshrate<1) refreshrate=1;
+		updateinterval = setInterval(updateplot, refreshrate*1000);
+	}
+	
+});
 
-    const command = "SELECT DISTINCT(device) FROM monitoring";
-    const result = await getTable(command);
-    output.innerHTML = result;
+// action to take when auto-update is checked
+document.getElementById("autoUpdate").addEventListener("change", (event) => {
+	
+	if(tableselect.selectedIndex==-1) return;
+	
+	if(event.currentTarget.checked){
+		let refreshrate = document.getElementById("refreshRate").value;
+		if(refreshrate<1) refreshrate=1;
+		updateinterval = setInterval(updateplot, refreshrate*1000);
+		// since this doesn't fire immediately, call it now
+		updateplot();
+	}
+	else {
+		clearInterval(updateinterval);
+	}
+	
+});
 
-    const table = document.getElementById("table");
-    for (let i = 1; i < table.rows.length; i++) {
-      const optionText = table.rows[i].innerText;
-      tableselect.options.add(new Option(optionText, optionText));
-    }
+// action to take when auto-update refresh rate is changed
+document.getElementById("refreshRate").addEventListener("change", (event) => {
+	
+	if(tableselect.selectedIndex==-1) return;
+	
+	if(document.getElementById("autoUpdate").checked){
+		let refreshrate = document.getElementById("refreshRate").value;
+		if(refreshrate<1) refreshrate=1;
+		clearInterval(updateinterval);
+		updateinterval = setInterval(updateplot, refreshrate*1000);
+		// since this doesn't fire immediately, call it now
+		updateplot();
+	}
+	
+});
 
-    tableselect.selectedIndex = -1;
-    output.innerHTML = "";
-    tableselect.dispatchEvent(new Event("change"));
+// action to take when history length is changed
+document.getElementById("historyLength").addEventListener("change", (event) => {
+	
+	if(tableselect.selectedIndex==-1) return;
+	
+	// if history length has reduced, we just need to drop points,
+	// which can be done by calling trimplot
+	// but if history length has been increased, we need to fetch older data,
+	// which our regular calls to 'updateplot' will not do.
+	// simplest is just to re-run makeplot.
+	const numrows = document.getElementById("historyLength").value;
+	if( data.length == 0 || data[0].x.length < numrows ){
+		makeplot();
+	} else {
+		trimplot();
+	}
+	
+});
 
-    // Hide the loader once the dropdown is updated
-    loader.style.display = 'none';
-  } catch (error) {
-    console.error('Error updating dropdown:', error);
-    output.innerHTML = 'Error loading data.';
+//function to generate plotly plot
+function makeplot(){
+	
+	try {
+		
+		// Get the selected option
+		if (select.options.length <= 0){
+			return;
+		}
+		
+		var selectedOption = select.options[select.selectedIndex];
+		
+		// check if the selected option is already drawn
+		if(drawnDevices.has(selectedOption.value)){
+			// maybe the user has un-checked the 'draw on same plot' option and wants to clear other traces
+			if(document.getElementById("same").checked || (graphDiv.data != undefined && graphDiv.data.length ==1)){
+				console.log(`skipping already drawn option ${selectedOption.value}`);
+				return;
+			}
+		}
+		
+		// unregister the plot for updating while we alter it
+		clearInterval(updateinterval);
+		
+		// check if the plot is actively undergoing an update
+		if(updating){
+			abandonupdate=true; // tell it not to bother
+			// (prevents an existing async callback overwriting our graph div)
+		}
+		
+		// TODO add alternative limit based on time range rather than number of rows?
+		let numrows = document.getElementById("historyLength").value;
+		if(numrows <= 0) numrows = 200;
+		var command = `select * from monitoring where device='${selectedOption.value}' order by time desc LIMIT ${numrows}`;
+		
+		//console.log("makeplot submitting query");
+		gettable(command).then(function(result){
+			//console.log("makeplot got query result");
+			
+			output.innerHTML=result;
+			var table = document.getElementById("table");
+			table.style.display = "none";
+			var xdata= new Map();
+			var ydata= new Map();
+			
+			// SQL query returns time descending (most recent first, seems sensible as that's the most relevant data)
+			// but to append new data on update calls, we want to be able to push (append to back), so data arrays
+			// needs to be ordered with earliest data first. So parse the sql response from last to first
+			//for( var i=1; i< table.rows.length; i++){
+			for( var i=table.rows.length-1; i>0 ; i--){
+				
+				//let jsonstring = table.rows[i].cells[2].innerText;
+				var jsondata = JSON.parse(table.rows[i].cells[2].innerText);
+				let xval = table.rows[i].cells[0].innerText.slice(0,-3);
+				
+				for (let key in jsondata) {
+					
+					//if( i == 1 ){
+					if(!xdata.has(key)){
+						
+						xdata.set(key,[xval]);
+						ydata.set(key,[jsondata[key]]);
+						
+					} else {
+						xdata.get(key).push(xval);
+						ydata.get(key).push(jsondata[key]);
+						
+					}
+				}
+			}
+			
+			data = [];
+			for(let [key, value] of xdata){
+				
+				data.push({
+					name: selectedOption.value + ":" +key,
+					//mode: 'lines',        // 'mode' aka 'type'
+					mode: 'markers',
+					//mode:'lines+markers', //  aka 'scatter'
+					x: value,
+					y: ydata.get(key)
+				});
+				
+			}
+			
+			/*
+			// remove any existing plot to prevent memory leaks
+			while(!document.getElementById("same").checked && graphDiv.data != undefined && graphDiv.data.length >0){
+				Plotly.deleteTraces(graphDiv, 0);
+				//   Plotly.deleteTraces(graphDiv, [0]);
+			}
+			//Plotly.deleteTraces('graph', 0);
+			*/
+			
+			if(!document.getElementById("same").checked){
+				//console.log("purge it");
+				Plotly.purge(graphDiv);
+				drawnDevices.clear();
+			}
+			
+			drawnDevices.set(selectedOption.value, 1);
+			
+			// react does not seem to work, seems like 'react' does not make new traces, just updates existing ones?
+			if(true || drawnDevices.size==1){
+				//console.log("new plot time");
+				Plotly.purge(graphDiv);
+				Plotly.newPlot(graphDiv, data, layout); // Plotly.plot ...?
+			} else {
+				//console.log("updated plot time");
+				layout.datarevision = Math.random();
+				Plotly.react(graphDiv, data, layout);
+			}
+			
+			// only set this back to false at the end of the thenable,
+			// when our callback has finished (or on error)
+			//console.log("done making plot");
+			
+		});
+		
+	} catch(err){
+		console.error(err);
+	}
+	
+};
 
-    // Hide the loader if an error occurs
-    loader.style.display = 'none';
-  }
+
+//function to update plot
+function updateplot(){
+	
+	if(updating) return;
+	updating=true;
+	console.log("checking for new data...");
+	
+	try {
+		// Get the selected option
+		if (select.options.length == 0) return;
+		var selectedOption = select.options[select.selectedIndex];
+		
+		//var command = "select '*' from monitoring where source=\""+ selectedOption.value + "\" and time>to_timestamp(" + ((last.valueOf())/1000.0) + ");  ";
+		
+		last=data[0].x[data[0].x.length-1];
+		//console.log(`timestamp of last retreived data: ${last}`);
+		//last = data[0].x[0];
+		
+		let numrows = document.getElementById("historyLength").value;
+		if(numrows <= 0) numrows = 200;
+		
+		//var command = `select * from monitoring where device='${selectedOption.value}' and time>'${last.valueOf()}' order by time desc LIMIT ${numrows};`;
+		var command = `select * from monitoring where device='${selectedOption.value}' and time>'${last.valueOf()}' order by time desc LIMIT ${numrows};`;
+		
+		//console.log("updateplot submitting query");
+		gettable(command).then(function(result){
+			if(abandonupdate){
+				abandonupdate=false;
+				//console.log("abandoning update");
+				updating=false;
+				return;
+			}
+			
+			//console.log("updateplot processing result");
+			
+			output.innerHTML=result;
+			var table = document.getElementById("table");
+			table.style.display = "none";
+			var xdata= new Map();
+			var ydata= new Map();
+			
+			//for( var i=1; i< table.rows.length; i++){
+			for( var i=table.rows.length-1; i>0 ; i--){
+				
+				const xval = table.rows[i].cells[0].innerText.slice(0,-3);
+				let jsonstring = table.rows[i].cells[2].innerText;
+				var jsondata = JSON.parse(table.rows[i].cells[2].innerText);
+				
+				for (let key in jsondata) {
+					
+					//if( i == 1 ){
+					if(!xdata.has(key)){
+						
+						xdata.set(key,[xval]);
+						ydata.set(key,[jsondata[key]]);
+						
+					} else {
+						
+						xdata.get(key).push(xval);
+						ydata.get(key).push(jsondata[key]);
+						
+					}
+				}
+			}
+			
+			
+			for(let [key, value] of xdata){
+				for( var i=0; i< data.length; i++){
+					if(data[i].name == selectedOption.value + ":" +key){ 
+						data[i].x=data[i].x.concat(value);
+						data[i].y=data[i].y.concat(ydata.get(key));
+						// since we only append data we need to truncate to numrows at most
+						data[i].x = data[i].x.slice(-numrows);
+						data[i].y = data[i].y.slice(-numrows);
+					}
+				}
+			}
+			
+			/*
+			while(!document.getElementById("same").checked && graphDiv.data != undefined && graphDiv.data.length >0){
+				Plotly.deleteTraces(graphDiv, 0);
+				  Plotly.deleteTraces(graphDiv, [0]);
+			}
+			*/
+			
+			// tell plotly the data has changed
+			layout.datarevision = Math.random();
+			
+			//Plotly.plot(graphDiv, data, layout);
+			//Plotly.redraw(graphDiv,data, layout); -- deprecated in ~2017? can't find it in the docs
+			Plotly.react(graphDiv,data,layout); // -- believe this may be the more efficient current way
+			
+			// reset updating at end of callback
+			updating=false;
+			
+			//console.log("done updating plot");
+			
+		});
+		
+	} catch(err){
+		console.error(err);
+		// reset this on error
+		updating=false;
+	}
+	
+};
+
+// function to drop older values when history length is reduced
+function trimplot(){
+	
+	const numrows = document.getElementById("historyLength").value;
+	
+	// update trace data arrays
+	for( var i=0; i< data.length; i++){
+		data[i].x = data[i].x.slice(-numrows);
+		data[i].y = data[i].y.slice(-numrows);
+	}
+	
+	// tell plotly the data has changed
+	layout.datarevision = Math.random();
+	
+	// trigger redraw
+	Plotly.react(graphDiv,data,layout);
+	
 }
 
-// Generic function to return SQL table data
-async function getTable(command) {
-  const xhr = new XMLHttpRequest();
-  const url = "/cgi-bin/sqlquery.cgi";
-  const user = "root";
-  const db = "daq";
-  const dataString = `user=${user}&db=${db}&command=${command}`;
+// TODO tie these up with history length
+// XXX must be defined before 'layout' as layout references this in rangeselector
+var selectorOptions = {
+	buttons: [ {
+		step: 'hour',
+		stepmode: 'backward',
+		count: 1,
+		label: '1hr'
+	}, {
+		step: 'hour',
+		stepmode: 'backward',
+		count: 3,
+		label: '3hr'
+	}, {
+		step: 'hour',
+		stepmode: 'backward',
+		count: 6,
+		label: '6hr'
+	}, {
+		step: 'hour',
+		stepmode: 'backward',
+		count: 12,
+		label: '12hr'
+	}, {
+		step: 'day',
+		stepmode: 'backward',
+		count: 1,
+		label: '1d'
+	}, {
+		step: 'day',
+		stepmode: 'backward',
+		count: 3,
+		label: '3d'
+	}, {
+		step: 'week',
+		stepmode: 'backward',
+		count: 1,
+		label: '1w'
+	}, {
+		step: 'week',
+		stepmode: 'backward',
+		count: 2,
+		label: '2w'
+	}, {
+		step: 'month',
+		stepmode: 'backward',
+		count: 1,
+		label: '1m'
+	}, {
+		step: 'month',
+		stepmode: 'backward',
+		count: 6,
+		label: '6m'
+	}, {
+		step: 'year',
+		stepmode: 'todate',
+		count: 1,
+		label: 'YTD'
+	}, {
+		step: 'year',
+		stepmode: 'backward',
+		count: 1,
+		label: '1y'
+	}, {
+		step: 'all'
+	}],
+};
 
-  return new Promise((resolve, reject) => {
-    xhr.open("POST", url);
-    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-    xhr.onreadystatechange = function () {
-      if (xhr.readyState === 4) {
-        if (xhr.status === 200) {
-          resolve(xhr.responseText);
-        } else {
-          reject(new Error('Failed to load data'));
-        }
-      }
-    };
-    xhr.send(dataString);
-  });
-}
-
-// Function to generate the Plotly plot
-async function makePlot() {
-  // Show loader before generating plot
-  loader.style.display = 'block';
-
-  clearInterval(updateinterval);
-
-  if (select.options.length > 0) {
-    const selectedOption = select.options[select.selectedIndex];
-    const command = `SELECT * FROM monitoring WHERE device='${selectedOption.value}' ORDER BY time ASC`;
-
-    try {
-      const result = await getTable(command);
-      output.innerHTML = result;
-
-      const table = document.getElementById("table");
-      table.style.display = "none";
-
-      const xdata = new Map();
-      const ydata = new Map();
-
-      for (let i = 1; i < table.rows.length; i++) {
-        const jsonData = JSON.parse(table.rows[i].cells[2].innerText);
-
-        for (let key in jsonData) {
-          if (!xdata.has(key)) {
-            xdata.set(key, [table.rows[i].cells[0].innerText.slice(0, -3)]);
-            ydata.set(key, [jsonData[key]]);
-          } else {
-            xdata.get(key).push(table.rows[i].cells[0].innerText.slice(0, -3));
-            ydata.get(key).push(jsonData[key]);
-          }
-        }
-      }
-
-      data = [];
-      for (let [key, value] of xdata) {
-        data.push({
-          name: `${selectedOption.value}:${key}`,
-          mode: 'lines',
-          x: value,
-          y: ydata.get(key)
-        });
-      }
-
-      const layout = {
-        title: 'Monitor Time Series with Range Slider and Selectors',
-        xaxis: {
-          rangeselector: selectorOptions,
-          rangeslider: {}
-        },
-				responsive: true
-      };
-
-      // Clear previous plot traces if necessary
-      if (graphDiv.data && graphDiv.data.length > 0) {
-        Plotly.deleteTraces(graphDiv, 0);
-      }
-
-      Plotly.plot(graphDiv, data, layout);
-
-			window.addEventListener('resize', function() {
-				Plotly.Plots.resize(graphDiv);
-			});
-
-      // Hide loader once the plot is generated
-      loader.style.display = 'none';
-    } catch (error) {
-      console.error('Error generating plot:', error);
-      output.innerHTML = 'Error generating plot.';
-
-      // Hide loader if an error occurs
-      loader.style.display = 'none';
-    }
-  }
-}
-
-// Function to update the plot periodically
-async function updatePlot() {
-  if (updating) return;
-  updating = true;
-
-  // Show loader while updating plot
-  loader.style.display = 'block';
-
-  if (select.options.length > 0) {
-    const selectedOption = select.options[select.selectedIndex];
-    last = data[0].x[data[0].x.length - 1];
-
-    const command = `SELECT * FROM monitoring WHERE device='${selectedOption.value}' AND time>'${last.valueOf()}' ORDER BY time ASC`;
-
-    try {
-      const result = await getTable(command);
-      output.innerHTML = result;
-
-      const table = document.getElementById("table");
-      table.style.display = "none";
-
-      const xdata = new Map();
-      const ydata = new Map();
-
-      for (let i = 1; i < table.rows.length; i++) {
-        const jsonData = JSON.parse(table.rows[i].cells[2].innerText);
-
-        for (let key in jsonData) {
-          if (!xdata.has(key)) {
-            xdata.set(key, [table.rows[i].cells[0].innerText.slice(0, -3)]);
-            ydata.set(key, [jsonData[key]]);
-          } else {
-            xdata.get(key).push(table.rows[i].cells[0].innerText.slice(0, -3));
-            ydata.get(key).push(jsonData[key]);
-          }
-        }
-      }
-
-      // Update the data
-      for (let [key, value] of xdata) {
-        for (let i = 0; i < data.length; i++) {
-          if (data[i].name === `${selectedOption.value}:${key}`) {
-            data[i].x = data[i].x.concat(value);
-            data[i].y = data[i].y.concat(ydata.get(key));
-          }
-        }
-      }
-
-      const layout = {
-        title: 'Monitor Time Series with Range Slider and Selectors',
-        xaxis: {
-          rangeselector: selectorOptions,
-          rangeslider: {}
-        },
-				responsive: true
-      };
-
-      Plotly.redraw(graphDiv, data, layout);
-
-			window.addEventListener('resize', function() {
-				Plotly.Plots.resize(graphDiv);
-			});
-
-      // Hide loader once update is complete
-      loader.style.display = 'none';
-      updating = false;
-    } catch (error) {
-      console.error('Error updating plot:', error);
-      output.innerHTML = 'Error updating plot.';
-
-      // Hide loader if an error occurs
-      loader.style.display = 'none';
-      updating = false;
-    }
-  }
-}
-// Plot options definitions
-const selectorOptions = {
-  buttons: [{
-    step: 'hour',
-    stepmode: 'backward',
-    count: 1,
-    label: '1hr'
-  }, {
-    step: 'hour',
-    stepmode: 'backward',
-    count: 3,
-    label: '3hr'
-  }, {
-    step: 'hour',
-    stepmode: 'backward',
-    count: 6,
-    label: '6hr'
-  }, {
-    step: 'hour',
-    stepmode: 'backward',
-    count: 12,
-    label: '12hr'
-  }, {
-    step: 'day',
-    stepmode: 'backward',
-    count: 1,
-    label: '1d'
-  }, {
-    step: 'day',
-    stepmode: 'backward',
-    count: 3,
-    label: '3d'
-  }, {
-    step: 'week',
-    stepmode: 'backward',
-    count: 1,
-    label: '1w'
-  }, {
-    step: 'week',
-    stepmode: 'backward',
-    count: 2,
-    label: '2w'
-  }, {
-    step: 'month',
-    stepmode: 'backward',
-    count: 1,
-    label: '1m'
-  }, {
-    step: 'month',
-    stepmode: 'backward',
-    count: 6,
-    label: '6m'
-  }, {
-    step: 'year',
-    stepmode: 'todate',
-    count: 1,
-    label: 'YTD'
-  }, {
-    step: 'year',
-    stepmode: 'backward',
-    count: 1,
-    label: '1y'
-  }, {
-    step: 'all'
-  }]
+//plot options
+var layout = {
+	title: 'Monitor Time series with range slider and selectors',
+	hovermode: 'closest',
+	xaxis: {
+		rangeselector: selectorOptions,
+		rangeslider: {}, // add a scrubber on the bottom
+		uirevision: true,
+	},
+	yaxis: {
+		fixedrange: false,
+		autorange: true,
+		//rangemode: 'nonnegative',
+		uirevision: true,
+	},
+	/*
+	// demo: add a horizontal cursor
+	shapes: [
+		{
+			type: 'line',
+			xref: 'paper',
+			x0: 0,
+			x1: 1,
+			y0: 2500000,
+			y1: 2500000,
+			opacity: 0.2,
+			line: {
+				color: 'rgb(255, 0, 0)',
+				//width: 4,
+				//dash: 'dashdot'
+			},
+			// N.B. shape labels stopped working since 2.32.0 ¬_¬
+			label: {
+				text: 'Alarm Threshold',
+				xanchor: 'right',
+				textposition: 'end', // or 'start' or 'middle'
+				font: { size: 10, color: 'red' },
+				//yanchor: 'bottom',
+			},
+		},
+	],
+	*/
+	dragmode: 'zoom', // required with a rangeslider to stop it restricting zoom to x-axis only
 };
