@@ -3,9 +3,8 @@ name: Lint Code
 on: [push, pull_request]
 
 jobs:
-  lint:
+  lint_js:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -15,42 +14,57 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y eslint  # Install ESLint globally
 
-    - name: Install ShellCheck
-      run: |
-        sudo apt-get install -y shellcheck
-
-    - name: Install Clang-Tidy
-      run: |
-        sudo apt-get install -y clang-tidy
-
-    # - name: Install Perl and cpanm
-    #   run: |
-    #     sudo apt-get install -y perl
-    #     sudo apt-get install -y cpanminus  # Install cpanm tool
-
-    # - name: Install missing Perl dependencies
-    #   run: |
-    #     sudo cpanm Module::Pluggable  # Install the missing dependency
-    #     sudo cpanm --installdeps Perl::Critic  # Install all dependencies for Perl::Critic
-
-    # - name: Install Perl::Critic
-    #   run: |
-    #     sudo cpanm Perl::Critic  # Install Perl::Critic module
-
     - name: Lint JavaScript
       run: npx eslint .
+
+  lint_html:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install HTMLHint globally
+      run: |
+        sudo npm install -g htmlhint
 
     - name: Lint HTML
       run: npx htmlhint .
 
+  lint_css:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install Stylelint globally
+      run: |
+        sudo npm install -g stylelint
+
     - name: Lint CSS
       run: npx stylelint "**/*.css"
+
+  lint_shell:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install ShellCheck globally
+      run: |
+        sudo apt-get install -y shellcheck
 
     - name: Lint Shell scripts
       run: shellcheck **/*.sh
 
+  lint_cpp:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install Clang-Tidy globally
+      run: |
+        sudo apt-get install -y clang-tidy
+
     - name: Lint C++ code
       run: clang-tidy **/*.cpp
-
-    # - name: Lint Perl
-    #   run: perlcritic **/*.pl
