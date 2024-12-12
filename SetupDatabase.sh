@@ -46,7 +46,7 @@ echo "creating rootplots table"
 psql -ddaq -c "create table rootplots (name text NOT NULL, draw_options text NOT NULL, time timestamp with time zone NOT NULL, data jsonb NOT NULL, version int NOT NULL, UNIQUE (name, version));"
 
 echo "creating users table"
-psql -ddaq -c "create table users (user_id serial NOT NULL, username text NOT NULL, password text NOT NULL, permissions JSONB, UNIQUE (user_id));"
+psql -ddaq -c "create table users (user_id serial NOT NULL, username text NOT NULL, password_hash text NOT NULL, permissions JSONB, UNIQUE (user_id));"
 
 echo "creating pmt table"
 psql -ddaq -c "create type pmt_location as enum ('bottom', 'barrel', 'top');"

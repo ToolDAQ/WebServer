@@ -10,7 +10,7 @@ export function authenticateUser() {
         return;
     }
 
-    let query = `SELECT username FROM users WHERE username = '${uname}' AND password = crypt('${password}', password);`
+    let query = `SELECT username FROM users WHERE username = '${uname}' AND password_hash = crypt('${password}', password_hash);`
 
     GetPSQLTable(query, "root", "daq", true)
         .then((response) => {
