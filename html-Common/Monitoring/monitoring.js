@@ -29,6 +29,9 @@ function updatedropdown(){
 		
 		output.innerHTML = result;
 		var table = document.getElementById("table");
+		if(!table){
+			console.error(`no table in return from gettable: ${output.innerHTML}`);
+		}
 		for( var i=1; i < table.rows.length; i++){    
 			tableselect.options.add(new Option( table.rows[i].innerText, table.rows[i].innerText));
 		}
@@ -37,6 +40,9 @@ function updatedropdown(){
 		output.innerHTML = "";
 		tableselect.dispatchEvent(new Event("change"));
 	
+	},
+	function(err){
+		console.error(err);
 	});
 	
 }

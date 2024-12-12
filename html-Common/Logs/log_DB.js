@@ -1,9 +1,17 @@
+"use strict;"
+import { GetPSQLTable } from "/includes/functions.js";
+
 var log_output=document.getElementById("log_output");
 var update = setInterval(GetLogSources, 5000); // Run the GetLogSources() function every minute
 var updating = false;
 
 //load logs on startup
 GetLogSources();
+
+//generic funcion for returning SQL table
+function gettable(command){
+        return GetPSQLTable(command, 'root', 'daq', true);
+}
 
 function GetLogSources(){ //command to get log files, first cehckes which devices exist then gets the last 15 messages for each
 
@@ -62,40 +70,6 @@ function GetLogSources(){ //command to get log files, first cehckes which device
 
 
     });	    
-    
-}
-		   
-
-function gettable(command){ //generic command to get table from SQL
-    
-    return new Promise(function(resolve, reject){
-	var xhr = new XMLHttpRequest();
-	
-	var url = "/cgi-bin/sqlquery.cgi";
-	
-	var user ="root";
-	var db="daq";
-    
-	// Set the request method to POST
-	xhr.open("POST", url);
-	
-	// Set the request header to indicate that the request body contains form data
-	xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-	
-	
-	var dataString = "user=" + user + "&db=" + db + "&command=" + command;
-	
-	
-	// Send the request
-	xhr.send(dataString);
-	xhr.onreadystatechange = function() {
-	    
-	    if (this.readyState == 4 && this.status == 200) {
-		resolve(xhr.responseText);
-	    }	       
-	    //	    else reject(new Error('error loading'));
-	}
-    });
     
 }
 

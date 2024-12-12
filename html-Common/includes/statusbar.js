@@ -27,7 +27,8 @@ function getCookie(cookieName) {
 }
 
 
-
-user.innerText=getCookie("user");
-getTimeInTimezones();
-setInterval(getTimeInTimezones, 1000); // 1000 milliseconds = 1 second
+if(user != undefined){
+	user.innerText=getCookie("user");
+	getTimeInTimezones();
+	setInterval(getTimeInTimezones, 1000); // 1000 milliseconds = 1 second
+}
