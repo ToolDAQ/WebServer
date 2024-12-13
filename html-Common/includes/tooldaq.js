@@ -2,6 +2,7 @@
 // requestText(url, args, options) -> string
 // requestJson(url, args, options) -> JSON
 // requestCSV(url, args, options)  -> Array of Array
+// requestHTML(url, args, options) -> HTMLDocument
 //
 // dbJson(query)           -> JSON [ { column: value } ]
 // dbTable(query, header)  -> Array of Array, first row may be column names
