@@ -8,7 +8,7 @@
   - [`requestJson`](#requestJson)
   - [`requestCSV`](#requestCSV)
   - [`requestHTML`](#requestHTML)
-- [Database quering](#s-database)
+- [Database querying](#s-database)
   - [`dbJson`](#dbJson)
   - [`dbTable`](#dbTable)
   - [`dbPlot`](#dbPlot)
@@ -153,7 +153,7 @@ type is extracted from Content-type of the server response header.
 See [`request`](#request) for the description of `args` and `options`.
 
 <a name='s-database'></a>
-## Database quering
+## Database querying
 
 <a name='dbJson'></a>
 ### dbJson
@@ -192,7 +192,7 @@ derivative of [`Error`][Error].
 ### dbPlot
 
 ```javascript
-dbPlot(query, template) -> Promise -> [ { name, x, y } ... ]
+dbPlot(query, template) -> Promise -> [ { name, x, y }, { name, x, y2 }, ... ]
 ```
 Sends `query` to the database and returns an array of objects suitable as the
 `data` argument to [Plotly][].[newPlot][Plotly.newPlot] function
@@ -202,8 +202,8 @@ variable. The first column is interpreted as the plot x coordinate. For each
 other column an object is created with the following properties defined:
 
 - `name`: trace name that appears in the legend &mdash; the name of the column as
-  provided in the query.
-- `x`: an array of x coordinates &mdash; values of column 0.
+  provided in the query;
+- `x`: an array of x coordinates &mdash; values of column 0;
 - `y`: an array of y coordinates &mdash; values of the column.
 
 In addition to that, `template` can be used to set default values for all
@@ -218,7 +218,7 @@ derivative of [`Error`][Error].
 
 Example:
 ```javascript
-// Retreive traces for a couple of columns from the monitoring table; see however getMonitoringPlot function below
+// Retrieve traces for a couple of columns from the monitoring table; see however getMonitoringPlot function below
 let plot = dbPlot(
   "select time, data->'temp_1' as \"temperature 1\", data->'temp_2' as \"temperature 2\" from monitoring where device = 'Example'
 );
@@ -294,7 +294,7 @@ await getMonitoringPlot('Example', { columns: /voltage/, from: 'Nov 1, 2024' });
 // Get all temperatures for the last 30 minutes and give the traces a less cryptic name
 await getMonitoringPlot(
   'Example',
-  { 
+  {
     columns: [ [ /temp_(\d+)/, 'temperature $1' ] ],
     from: new Date(Date.now() - 30 * 60 * 60 * 1000)
   }
@@ -523,7 +523,7 @@ Fills an HTML table with data.
 If `data` is an array of objects, then it is assumed that all objects have
 a (mostly) common set of (enumerated) properties, and these properties are
 treated as columns. The set of columns is extracted from the first object, but
-it can be overriden with some settings of `header`. Following `header` values
+it can be overridden with some settings of `header`. Following `header` values
 are supported:
 - `null` or `undefined`: no table header is provided. The set of columns is
   extracted from the first row. If some object in the rest of the table has a
