@@ -87,6 +87,12 @@ await request(
 await request('/cgi-bin/db-query.cgi', { query: 'invalid sql' })
       .catch(e => e.response.text())
 
+// Promise.all can be used to make a number of requests in parallel
+// and wait until all of them are settled:
+let r0 = request(...);
+let r1 = request(...);
+let r2 = request(...);
+let results = await Promise.all([ r0, r1, r2 ]);
 ```
 
 <a name='requestText'></a>
