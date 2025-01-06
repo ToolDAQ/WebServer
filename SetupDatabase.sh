@@ -21,6 +21,9 @@ sudo -u postgres psql -c "create database daq with owner=root;"
 echo "creating pgcrypto extension"
 psql -ddaq -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
 
+# set timezone to UTC
+psql -ddaq -c "ALTER DATABASE daq SET TIME ZONE 'UTC';"
+
 echo "creating monitoring table"
 psql -ddaq -c "create table monitoring (time timestamp with time zone NOT NULL, device text NOT NULL, data JSONB NOT NULL);"
 
