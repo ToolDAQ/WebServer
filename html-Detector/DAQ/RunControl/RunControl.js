@@ -16,6 +16,8 @@ if (document.readyState !== 'loading'){
 }
 
 var servicePromise;
+var serviceError = false;
+
 function Init(){
 	console.log("Initialising page");
 
@@ -26,7 +28,14 @@ function Init(){
 	// to start the search for the service (this lets us access the result as soon as it's available)
 	servicePromise = new Promise(FindRunControlService);
 	// we don't strictly need the result right now, but this will silence any errors
-	servicePromise.then(null,(reason)=>{});
+	servicePromise.then(() => {
+		serviceError = false;
+		ToggleButtons(false);
+	}, (reason) => {
+			serviceError = true;
+			ToggleButtons(true);
+			console.error("Failed to find service:", reason);
+	});
 	// keep it updated by in the background
 	// (the first fire of setInterval is after an initial delay interval)
 	setInterval(FindRunControlService, 20000); // every 20s
@@ -63,13 +72,20 @@ function ToggleButtons(disable) {
 	}
 }
 
+var statusTimeoutId = null;
+
 function SetStatusMessage(message, duration = 5000) {
 	const responseDiv = document.getElementById('response');
 	responseDiv.value = message;
 
+	if (statusTimeoutId !== null) {
+		clearTimeout(statusTimeoutId);
+	}
+
 	// Set a timeout to clear the message after `duration` milliseconds (default is 5 seconds)
-	setTimeout(() => {
+	statusTimeoutId = setTimeout(() => {
 			responseDiv.value = ''; // Clear status message
+			statusTimeoutId = null;
 	}, duration);
 }
 
@@ -266,7 +282,6 @@ async function FindRunControlService(resolve, reject){
 
 	try {
 		SetStatusMessage('Locating RunControl Service...', 5000);
-		ToggleButtons(true);
 
 		// FIXME make a 'GetService' in functions.js that returns IP, port and status all at once!
 		// get promises that will eventually return IP and port
