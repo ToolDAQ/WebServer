@@ -1,5 +1,5 @@
 // Import necessary functions from functions.js
-import { GetPSQLTable } from '/includes/functions.js';
+import { GetPSQLTable, HashPassword } from '/includes/functions.js';
 
 // Initialize the page once it's loaded
 if (document.readyState !== 'loading') {
@@ -35,19 +35,24 @@ function addUser(event) {
   const password = document.getElementById("newPassword").value;
   const permissions = document.getElementById("newPermissions").value;
 
-  const query = `
-      INSERT INTO users (username, password, permissions)
-      VALUES ('${username}', crypt('${password}', gen_salt('bf')), '${permissions}');
-  `;
+  HashPassword(password).then(hashedPassword => {
+    const query = `
+        INSERT INTO users (username, password, permissions)
+        VALUES ('${username}', '${hashedPassword}', '${permissions}');
+    `;
 
-  GetPSQLTable(query, "root", "daq", true).then(() => {
-      GetUsers();
+    GetPSQLTable(query, "root", "daq", true).then(() => {
+        GetUsers();
 
-      document.getElementById("addUserForm").reset();
-      const modal = M.Modal.getInstance(document.getElementById('userModal'));
-      modal.close();
+        document.getElementById("addUserForm").reset();
+        const modal = M.Modal.getInstance(document.getElementById('userModal'));
+        modal.close();
+    }).catch(function (error) {
+        console.error("Error adding new user:", error);
+        alert("Error adding new user.");
+    });
   }).catch(function (error) {
-      console.error("Error adding new user:", error);
-      alert("Error adding new user.");
+     console.error("Error hashing password:", error);
+     alert("Error hashing password.");
   });
 }

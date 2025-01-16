@@ -101,8 +101,8 @@ export async function getDataFetchRequest(url, json_or_text="text"){
 	}
 }
 
-export function GetSDTable(filter=null, async=false) { 
-  
+export function GetSDTable(filter=null, async=false) {
+
   function ProcessTable(csv) {
     let table = document.createElement('table');
     table.id = 'SDTable';
@@ -116,14 +116,14 @@ export function GetSDTable(filter=null, async=false) {
       cells[0] = '[' + cells[0] + ']';
       for (let cell of cells) newrow.insertCell().innerText = cell;
     };
-    
+
     return table;
   }
-  
+
   let request = HTTPRequest('GET', '/cgi-bin/tablecontent5.cgi', async);
   if (async) return request.then(ProcessTable);
   return ProcessTable(request);
-  
+
 }
 
 
@@ -639,4 +639,23 @@ export async function DrawRootPlot(div, obj, drawoptions="", width=700, height=4
 	}
 
 	return;
+}
+
+/**
+ * Hashes a password using the Web Crypto API and returns the hash as a hexadecimal string.
+ * @param {string} password - The plain-text password to hash.
+ * @returns {Promise<string>} - A promise that resolves to the hashed password in hexadecimal format.
+ */
+export async function HashPassword(password) {
+  // Encode the password as a Uint8Array
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+
+  // Hash the password using SHA-256
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+
+  // Convert the hash to a hex string
+  return Array.from(new Uint8Array(hashBuffer))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
 }
