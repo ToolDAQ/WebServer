@@ -49,7 +49,8 @@ RUN cd /opt \
 RUN sed -e 's/#LoadModule mpm_prefork_module/LoadModule mpm_prefork_module/' -i /etc/httpd/conf.modules.d/00-mpm.conf \
     && sed -e '/LoadModule mpm_event_module/ s/^#*/#/' -i /etc/httpd/conf.modules.d/00-mpm.conf
 
-RUN echo "unalias cp" >>  /etc/rc.local ;\
+RUN echo "CP=$(type -t cp)" >> /etc/rc.local ;\
+    echo "if [ ! -z "${CP}" ]; then unalias cp; fi" >>  /etc/rc.local ;\
     echo "cp -f /web/httpd.conf /etc/httpd/conf/" >>  /etc/rc.local ;\
     echo "alias cp='cp -i'" >>  /etc/rc.local ;\
     echo "chmod a+x /web/SetupDatabase.sh" >>  /etc/rc.local ;\
@@ -59,7 +60,6 @@ RUN echo "unalias cp" >>  /etc/rc.local ;\
     echo "cd /web && make clean && make" >>  /etc/rc.local ;\
     echo "cd /web/cgi-bin && make clean && make" >>  /etc/rc.local ;\
     echo "/web/SetupDatabase.sh" >> /etc/rc.local ;\
-    echo "sudo -u postgres /usr/bin/pg_ctl start -D /var/lib/pgsql/data -s -o \"-p 5432\" -w -t 300;" >> /etc/rc.local;\
     echo "/opt/middleman/run_middleman.sh &> /dev/null &" >> /etc/rc.local ;\
     echo 'disown $!' >> /etc/rc.local ;\
     echo "/web/Win_Mac_translation_server  &> /dev/null &" >> /etc/rc.local ;\

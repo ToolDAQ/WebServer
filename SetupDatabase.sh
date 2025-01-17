@@ -1,18 +1,50 @@
 #!/bin/bash
 set +x
+systemctl status &>/dev/null
+USE_SYSTEMD=$?
 set -e
+if [ ${USE_SYSTEMD} -eq 0 ]; then
+	echo "running database as systemd unit"
+else
+	echo "running database via pg_ctl"
+fi
 # only take action on first run
 if [ -f /.DBSetupDone ]; then
-	exit 0;
+	
+	# systemd version for baremetal
+	if [ ${USESYSTEMD} -eq 0 ]; then
+		# note no [ ] in following check
+		if ! systemctl is-active --quiet postgresql; then
+			sudo systemctl start postgresql
+		fi
+		exit 0;
+	else
+		# pg_ctl version for containers
+		if [ `pg_ctl -D /var/lib/pgsql/data status &>/dev/null && echo $?` -ne 0 ]; then
+			sudo -u postgres /usr/bin/pg_ctl start -D /var/lib/pgsql/data -s -o "-p 5432" -w -t 300
+		fi
+		exit 0;
+	fi
 fi
 export LC_ALL=C
 echo "Initialising postgresql cluster"
 cd /var/lib/pgsql/
-#sudo chown -R postgres /var/lib/pgsql
-#sudo chown -R postgres /var/run/postgresql
-sudo -u postgres /usr/bin/initdb /var/lib/pgsql/data/
+# --waldir=/todo/replication
+sudo -u postgres /usr/bin/initdb --data-checksums /var/lib/pgsql/data/
+
+# set it up to listen on all network interfaces, rather than (by default) localhost only
+echo "listen_addresses = '*'" | sudo -u postgres tee -a /var/lib/pgsql/data/postgresql.conf
+
 echo "Starting postgres server"
-sudo -u postgres /usr/bin/pg_ctl start -D /var/lib/pgsql/data -s -o "-p 5432" -w -t 300
+if [ ${USE_SYSTEMD} -eq 0 ]; then
+	# systemd version
+	sudo systemctl enable --now postgresql
+else
+	# container version
+	sudo mkdir -p /var/run/postgresql && sudo chown -R postgres /var/run/postgresql
+	sudo -u postgres /usr/bin/pg_ctl start -D /var/lib/pgsql/data -s -o "-p 5432" -w -t 300
+fi
+
 echo "creating root database user"
 sudo -u postgres createuser -s root
 echo "creating 'daq' database"
