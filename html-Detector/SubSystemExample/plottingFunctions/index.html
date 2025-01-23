@@ -1,0 +1,61 @@
+
+<head>
+  <title>ToolDAQ Webpage</title>
+
+</head>
+
+<!--#include virtual="/includes/header.html" -->
+<!--#include virtual="../subheader.html" -->
+<!--#include virtual="/includes/drawer.html" -->
+
+<body>
+  <h1>Plotting Functions</h1>
+  <h2 align="center"> Make Monitoring Plot</h2>
+    <p>Select a device to make its monitoring plot.</p>
+
+    <div style="padding: 20px;">
+        <label for="deviceSelect"><strong>Select Device:</strong></label>
+        <select id="deviceSelect" style="margin-left: 10px; padding: 5px;">
+            <option value="">Loading devices...</option>
+        </select>
+        <button id="loadPlotButton" style="margin-left: 10px; padding: 5px 10px;">Make Plot</button>
+    </div>
+
+    <div id="plotContainer">
+        <p>Select a device and click "Make Plot" to view the monitoring data.</p>
+    </div>
+
+    <hr>
+
+    <section>
+        <h2>Section 2: Get Monitoring Plot</h2>
+        <p>Select a device and fetch monitoring data:</p>
+        <select id="deviceSelectForData"></select>
+        <button id="fetchDataButton">Fetch Data</button>
+        <!-- <div id="dataContainer">
+            <p>Select a device and click "Fetch Data" to display raw monitoring data.</p>
+        </div> -->
+        <div class="mdl-grid">
+          <!-- Data Section -->
+          <div class="mdl-cell mdl-cell--6-col">
+              <h4>Data Table</h4>
+              <div id="dataContainer" style="border: 1px solid #ddd; margin-top: 20px; padding: 10px;">
+                <p>Select a device and click "Fetch Data" to display raw monitoring data.</p>
+              </div>
+          </div>
+
+          <!-- Visualization Section -->
+          <div class="mdl-cell mdl-cell--6-col">
+              <h4>Visualization</h4>
+              <div id="plotDataContainer" style="border: 1px solid #ddd; margin-top: 20px; height: 600px;">
+                  <p>Visualization will appear here.</p>
+              </div>
+          </div>
+      </div>
+    </section>
+
+  <!--#include virtual="/includes/footer.html" -->
+</body>
+
+<script src="https://cdn.plot.ly/plotly-1.8.0.min.js"></script>
+<script type="module" src="./plottingFunctions.js" defer></script>
