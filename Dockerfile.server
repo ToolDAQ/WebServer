@@ -49,8 +49,8 @@ RUN cd /opt \
 RUN sed -e 's/#LoadModule mpm_prefork_module/LoadModule mpm_prefork_module/' -i /etc/httpd/conf.modules.d/00-mpm.conf \
     && sed -e '/LoadModule mpm_event_module/ s/^#*/#/' -i /etc/httpd/conf.modules.d/00-mpm.conf
 
-RUN echo "CP=$(type -t cp)" >> /etc/rc.local ;\
-    echo "if [ ! -z "${CP}" ]; then unalias cp; fi" >>  /etc/rc.local ;\
+RUN echo 'CP=$(type -t cp)' >> /etc/rc.local ;\
+    echo 'if [ ! -z "${CP}" ]; then unalias cp; fi' >>  /etc/rc.local ;\
     echo "cp -f /web/httpd.conf /etc/httpd/conf/" >>  /etc/rc.local ;\
     echo "alias cp='cp -i'" >>  /etc/rc.local ;\
     echo "chmod a+x /web/SetupDatabase.sh" >>  /etc/rc.local ;\
