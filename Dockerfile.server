@@ -28,7 +28,7 @@ RUN cd /opt \
     && git clone https://github.com/ToolDAQ/middleman.git \
     && cd middleman/ \
     && git checkout v3.0 \
-    && ./Setup.sh \
+    && . Setup.sh \
     && make
 
 # docs build fails if index.html is not present, which kills the docker build
