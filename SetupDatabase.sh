@@ -12,7 +12,7 @@ fi
 if [ -f /.DBSetupDone ]; then
 	
 	# systemd version for baremetal
-	if [ ${USESYSTEMD} -eq 0 ]; then
+	if [ ${USE_SYSTEMD} -eq 0 ]; then
 		# note no [ ] in following check
 		if ! systemctl is-active --quiet postgresql; then
 			sudo systemctl start postgresql
@@ -20,7 +20,8 @@ if [ -f /.DBSetupDone ]; then
 		exit 0;
 	else
 		# pg_ctl version for containers
-		if [ `pg_ctl -D /var/lib/pgsql/data status &>/dev/null && echo $?` -ne 0 ]; then
+		STATUS=$(sudo -u postgres pg_ctl -D /var/lib/pgsql/data status &> /dev/null; echo $?)
+		if [ ${STATUS} -eq 3 ]; then
 			sudo -u postgres /usr/bin/pg_ctl start -D /var/lib/pgsql/data -s -o "-p 5432" -w -t 300
 		fi
 		exit 0;
