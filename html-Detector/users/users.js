@@ -33,7 +33,21 @@ function addUser(event) {
 
   const username = document.getElementById("newUsername").value;
   const password = document.getElementById("newPassword").value;
+  const confirmPassword = document.getElementById("confirmPassword").value;
   const permissions = document.getElementById("newPermissions").value;
+
+  if (password !== confirmPassword) {
+    alert("Password and password confirmation do not match.");
+    return;
+  }
+
+  let parsedPermissions;
+  try {
+    parsedPermissions = JSON.parse(permissions);
+  } catch (error) {
+    alert("Permissions must be a valid JSON string.");
+    return;
+  }
 
   HashPassword(password).then(hashedPassword => {
     const query = `
