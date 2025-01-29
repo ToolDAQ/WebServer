@@ -37,7 +37,7 @@ function addUser(event) {
 
   HashPassword(password).then(hashedPassword => {
     const query = `
-        INSERT INTO users (username, password, permissions)
+        INSERT INTO users (username, password_hash, permissions)
         VALUES ('${username}', '${hashedPassword}', '${permissions}');
     `;
 
