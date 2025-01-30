@@ -66,8 +66,9 @@ RUN echo 'CP=$(type -t cp)' >> /etc/rc.local ;\
     echo 'disown $!' >> /etc/rc.local ;\
     echo "/web/Trigger_proxy  &> /dev/null &" >> /etc/rc.local ;\
     echo 'disown $!' >> /etc/rc.local ;\
+    echo "/web/backgroundSD  &> /dev/null &" >> /etc/rc.local ;\
+    echo 'disown $!' >> /etc/rc.local ;\
     echo "httpd" >> /etc/rc.local ;\
-    echo "/web/backgroundSD  &> /dev/null " >> /etc/rc.local ;\
     chmod +x /etc/rc.local
 
 #ENTRYPOINT ["/bin/bash"]
