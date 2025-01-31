@@ -28,7 +28,7 @@ RUN cd /opt \
     && git clone https://github.com/ToolDAQ/middleman.git \
     && cd middleman/ \
     && git checkout v3.0 \
-    && . Setup.sh \
+    && . ./Setup.sh \
     && make
 
 # docs build fails if index.html is not present, which kills the docker build
@@ -50,7 +50,7 @@ RUN sed -e 's/#LoadModule mpm_prefork_module/LoadModule mpm_prefork_module/' -i 
     && sed -e '/LoadModule mpm_event_module/ s/^#*/#/' -i /etc/httpd/conf.modules.d/00-mpm.conf
 
 RUN echo 'CP=$(type -t cp)' >> /etc/rc.local ;\
-    echo 'if [ ! -z "${CP}" ]; then unalias cp; fi' >>  /etc/rc.local ;\
+    echo 'if [ ! -z "${CP}" ] && [ "${CP}" != "file" ]; then unalias cp; fi' >>  /etc/rc.local ;\
     echo "cp -f /web/httpd.conf /etc/httpd/conf/" >>  /etc/rc.local ;\
     echo "alias cp='cp -i'" >>  /etc/rc.local ;\
     echo "chmod a+x /web/SetupDatabase.sh" >>  /etc/rc.local ;\
@@ -66,10 +66,11 @@ RUN echo 'CP=$(type -t cp)' >> /etc/rc.local ;\
     echo 'disown $!' >> /etc/rc.local ;\
     echo "/web/Trigger_proxy  &> /dev/null &" >> /etc/rc.local ;\
     echo 'disown $!' >> /etc/rc.local ;\
-    echo "httpd" >> /etc/rc.local ;\
-    echo "/web/backgroundSD  &> /dev/null " >> /etc/rc.local ;\
+    echo "/web/backgroundSD  &> /dev/null &" >> /etc/rc.local ;\
+    echo 'disown $!' >> /etc/rc.local ;\
+    echo "httpd -DFOREGROUND" >> /etc/rc.local ;\
     chmod +x /etc/rc.local
 
 #ENTRYPOINT ["/bin/bash"]
 #CMD ["-c",". /etc/rc.local"]
-CMD /bin/bash -c '. /etc/rc.local'
+CMD /bin/bash -c '. /etc/rc.local 2>&1 | tee /web/.rclocal.log'
