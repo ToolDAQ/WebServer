@@ -22,6 +22,11 @@ if [ -f /.DBSetupDone ]; then
 		# pg_ctl version for containers
 		STATUS=$(sudo -u postgres pg_ctl -D /var/lib/pgsql/data status &> /dev/null; echo $?)
 		if [ ${STATUS} -eq 3 ]; then
+			if [ -f /var/run/postgresql/.s.PGSQL.5432.lock ]; then
+				echo "removing stale lockfile"
+				sudo rm -f /var/run/postgresql/.s.PGSQL.5432.lock
+			fi
+			echo "running pg_ctl start"
 			sudo -u postgres /usr/bin/pg_ctl start -D /var/lib/pgsql/data -s -o "-p 5432" -w -t 300
 		fi
 		exit 0;
