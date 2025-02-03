@@ -1,18 +1,56 @@
 #!/bin/bash
 set +x
+systemctl status &>/dev/null
+USE_SYSTEMD=$?
 set -e
+if [ ${USE_SYSTEMD} -eq 0 ]; then
+	echo "running database as systemd unit"
+else
+	echo "running database via pg_ctl"
+fi
 # only take action on first run
 if [ -f /.DBSetupDone ]; then
-	exit 0;
+	
+	# systemd version for baremetal
+	if [ ${USE_SYSTEMD} -eq 0 ]; then
+		# note no [ ] in following check
+		if ! systemctl is-active --quiet postgresql; then
+			sudo systemctl start postgresql
+		fi
+		exit 0;
+	else
+		# pg_ctl version for containers
+		STATUS=$(sudo -u postgres pg_ctl -D /var/lib/pgsql/data status &> /dev/null; echo $?)
+		if [ ${STATUS} -eq 3 ]; then
+			if [ -f /var/run/postgresql/.s.PGSQL.5432.lock ]; then
+				echo "removing stale lockfile"
+				sudo rm -f /var/run/postgresql/.s.PGSQL.5432.lock
+			fi
+			echo "running pg_ctl start"
+			sudo -u postgres /usr/bin/pg_ctl start -D /var/lib/pgsql/data -s -o "-p 5432" -w -t 300
+		fi
+		exit 0;
+	fi
 fi
 export LC_ALL=C
 echo "Initialising postgresql cluster"
 cd /var/lib/pgsql/
-#sudo chown -R postgres /var/lib/pgsql
-#sudo chown -R postgres /var/run/postgresql
-sudo -u postgres /usr/bin/initdb /var/lib/pgsql/data/
+# --waldir=/todo/replication
+sudo -u postgres /usr/bin/initdb --data-checksums /var/lib/pgsql/data/
+
+# set it up to listen on all network interfaces, rather than (by default) localhost only
+echo "listen_addresses = '*'" | sudo -u postgres tee -a /var/lib/pgsql/data/postgresql.conf
+
 echo "Starting postgres server"
-sudo -u postgres /usr/bin/pg_ctl start -D /var/lib/pgsql/data -s -o "-p 5432" -w -t 300
+if [ ${USE_SYSTEMD} -eq 0 ]; then
+	# systemd version
+	sudo systemctl enable --now postgresql
+else
+	# container version
+	sudo mkdir -p /var/run/postgresql && sudo chown -R postgres /var/run/postgresql
+	sudo -u postgres /usr/bin/pg_ctl start -D /var/lib/pgsql/data -s -o "-p 5432" -w -t 300
+fi
+
 echo "creating root database user"
 sudo -u postgres createuser -s root
 echo "creating 'daq' database"
@@ -20,6 +58,9 @@ sudo -u postgres psql -c "create database daq with owner=root;"
 
 echo "creating pgcrypto extension"
 psql -ddaq -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
+
+# set timezone to UTC
+psql -ddaq -c "ALTER DATABASE daq SET TIME ZONE 'UTC';"
 
 echo "creating monitoring table"
 psql -ddaq -c "create table monitoring (time timestamp with time zone NOT NULL, device text NOT NULL, data JSONB NOT NULL);"
@@ -46,7 +87,7 @@ echo "creating rootplots table"
 psql -ddaq -c "create table rootplots (name text NOT NULL, draw_options text NOT NULL, time timestamp with time zone NOT NULL, data jsonb NOT NULL, version int NOT NULL, UNIQUE (name, version));"
 
 echo "creating users table"
-psql -ddaq -c "create table users (user_id serial NOT NULL, username text NOT NULL, password text NOT NULL, permissions JSONB, UNIQUE (user_id));"
+psql -ddaq -c "create table users (user_id serial NOT NULL, username text NOT NULL, password_hash text NOT NULL, permissions JSONB, UNIQUE (user_id));"
 
 echo "creating pmt table"
 psql -ddaq -c "create type pmt_location as enum ('bottom', 'barrel', 'top');"

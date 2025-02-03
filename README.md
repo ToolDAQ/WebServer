@@ -4,7 +4,7 @@ to create docker container with webserver in use:
 
 linux:
 
-      docker run --name=WebServer -v local_git_clone_path:/web --mount type=tmpfs,dst=/tmp,tmpfs-size=500M --net=host -dt tooldaq/server
+      docker run --name=WebServer -v local_git_clone_path:/web --mount type=tmpfs,dst=/tmp,tmpfs-size=500M --net=host --cap-add=CAP_AUDIT_WRITE -dt tooldaq/server
 
 Windows / MacOS:
 

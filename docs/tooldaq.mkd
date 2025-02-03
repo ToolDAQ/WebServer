@@ -2,13 +2,14 @@
 
 ## Contents
 
+- [Introduction](#s-introduction)
 - [Generic HTTP request functions](#s-requests)
   - [`request`](#request)
   - [`requestText`](#requestText)
   - [`requestJson`](#requestJson)
   - [`requestCSV`](#requestCSV)
   - [`requestHTML`](#requestHTML)
-- [Database quering](#s-database)
+- [Database querying](#s-database)
   - [`dbJson`](#dbJson)
   - [`dbTable`](#dbTable)
   - [`dbPlot`](#dbPlot)
@@ -25,6 +26,156 @@
   - [`makeControls`](#makeControls)
 - [Miscellaneous](#s-misc)
   - [`makeTable`](#makeTable)
+
+<a name='s-introduction'></a>
+## Introduction
+
+This is a description of functions provided in
+[`tooldaq.js`](../html/includes/tooldaq.js). Their purpose is to provide an
+interface to ToolDAQ backend that can be used to build a web interface for the
+setup at hand. Following sections provide documentation for generic functions
+for [making HTTP requests](#s-requests) and [database querying](#s-database), as
+well as ToolDAQ specific functions for [extracting plots](#s-plotting) from the
+database backend and [querying and controlling](#s-services) devices and services
+connected to ToolDAQ.
+
+Almost all of the functions provided in `tooldaq.js` communicate asynchronously
+with the backend and return objects of type [`Promise`][Promise].
+<details>
+  <summary>A brief introduction to promises</summary>
+
+A `Promise` is an object representing a result of an unfinished computation. It
+provides methods to attach code that will be executed with the result of the
+computation once it becomes available. The purpose of `Promise` is to allow for
+running of several independent computations in parallel and then using their
+results.
+
+You can create a `Promise` by calling its
+[constructor function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/Promise)
+and providing it a function of two arguments, `resolve` and `reject`. Both
+`resolve` and `reject` are expected to be functions of one argument. The
+function provided to the constructor should perform the actual computation. Once
+it is ready to return the result, it should do so by calling the `resolve`
+function. In case the computation could not be finished, i.e., an exception
+occurred, it should call `reject` with the exception object. An example:
+```javascript
+let promise = new Promise(
+  function (resolve, reject) {
+    try {
+      // do computation
+      let result = ...;
+
+      resolve(result);
+    } catch (error) {
+      reject(error);
+    }
+  }
+);
+```
+The code in the function provided to `Promise()` is executed asynchronously,
+after the function that had created the promise has returned, or whenever its
+execution is suspended, for example while waiting for a request to an external
+resource or for some other event. `Promise()` constructor function returns
+immediately.
+
+A promise can be in one of the following states:
+* _pending_: initial state, neither fulfilled nor resolved;
+* _fulfilled_: its `resolve` function has been called;
+* _rejected_: its `reject` function has been called.
+A promise in either _fulfilled_ or _rejected_ state is also referred to as
+_settled_ or _resolved_.
+
+To process the result of a promise, you can attach a function to it by calling its
+[`then()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/then)
+method:
+```javascript
+let promise = ...;
+promise.then(result => void console.log(result))
+```
+The function supplied as the first argument to `then()` will be executed as soon
+as the result is available. `then()` returns a new `Promise`, allowing for
+creation of a chain of functions with the result of one function providing the
+argument for the next function. If any function returns a `Promise`, it will be
+waited for and the next function will be called with its result.
+
+`then()` can be called with two arguments, with the second argument being called
+when the promise failed to produce a result (its `reject` rather than its
+`resolve` argument has been called). The result of the second function will be
+passed down the chain of functions attached by `then()` methods and will be used
+as the eventual result of the promise. The promise will be in the fulfilled
+rather than the rejected state afterwards.
+
+Rejected promises can also be handled with the
+[`catch()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/catch)
+and
+[`finally()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/finally)
+methods which are convenience wrappers around `then()`. See their documentation
+for details.
+
+A more convenient way to work with promises is to use
+[`async`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function)
+and
+[`await`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await)
+keywords. `async` attached to a function makes it to return a `Promise`:
+```javascript
+async function f() { ... }
+```
+is approximately equivalent to
+```javascript
+function f() {
+  return new Promise(
+    function (resolve, reject) {
+      try {
+        let result = ...;
+        resolve(result);
+      } catch (error) {
+        reject(error);
+      };
+    }
+  );
+}
+```
+One important difference is that inside `async` functions the `await` operator
+can be used. When `await` is called on a promise that is pending, the function
+execution is suspended until the promise is settled. If the promise is
+fulfilled, `await` returns its result. If it is rejected, `await` throws an
+exception:
+```javascript
+async function test(fail) {
+  if (fail)
+    throw Error('fail');
+  else
+    return 'success';
+};
+
+async function run_test(arg) {
+  try {
+    console.log('result:', await test(arg));
+  } catch (error) {
+    console.log('error:', error);
+  };
+};
+
+run_test(false); // result: success
+run_test(true);  // error: Error: fail
+```
+
+Suppose that you have obtained a number of promises and you now need to wait
+until all of them are settled. This can be done with the static method
+[`Promise.all`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all)
+which takes an array of promises and returns an promise to return an array of
+their results:
+```javascript
+let promise0 = ...;
+let promise1 = ...;
+let promise2 = ...;
+let results = await Promise.all([promise0, promise1, promise2]);
+// result[0] is now the result of promise0, and so on
+```
+
+See the documentation of the [`Promise`][Promise] object for details and other
+functions to work with promises.
+</details>
 
 <a name='s-requests'></a>
 ## Generic HTTP request functions
@@ -87,6 +238,12 @@ await request(
 await request('/cgi-bin/db-query.cgi', { query: 'invalid sql' })
       .catch(e => e.response.text())
 
+// Promise.all can be used to make a number of requests in parallel
+// and wait until all of them are settled:
+let r0 = request(...);
+let r1 = request(...);
+let r2 = request(...);
+let results = await Promise.all([ r0, r1, r2 ]);
 ```
 
 <a name='requestText'></a>
@@ -153,7 +310,7 @@ type is extracted from Content-type of the server response header.
 See [`request`](#request) for the description of `args` and `options`.
 
 <a name='s-database'></a>
-## Database quering
+## Database querying
 
 <a name='dbJson'></a>
 ### dbJson
@@ -192,7 +349,7 @@ derivative of [`Error`][Error].
 ### dbPlot
 
 ```javascript
-dbPlot(query, template) -> Promise -> [ { name, x, y } ... ]
+dbPlot(query, template) -> Promise -> [ { name, x, y }, { name, x, y2 }, ... ]
 ```
 Sends `query` to the database and returns an array of objects suitable as the
 `data` argument to [Plotly][].[newPlot][Plotly.newPlot] function
@@ -202,8 +359,8 @@ variable. The first column is interpreted as the plot x coordinate. For each
 other column an object is created with the following properties defined:
 
 - `name`: trace name that appears in the legend &mdash; the name of the column as
-  provided in the query.
-- `x`: an array of x coordinates &mdash; values of column 0.
+  provided in the query;
+- `x`: an array of x coordinates &mdash; values of column 0;
 - `y`: an array of y coordinates &mdash; values of the column.
 
 In addition to that, `template` can be used to set default values for all
@@ -218,7 +375,7 @@ derivative of [`Error`][Error].
 
 Example:
 ```javascript
-// Retreive traces for a couple of columns from the monitoring table; see however getMonitoringPlot function below
+// Retrieve traces for a couple of columns from the monitoring table; see however getMonitoringPlot function below
 let plot = dbPlot(
   "select time, data->'temp_1' as \"temperature 1\", data->'temp_2' as \"temperature 2\" from monitoring where device = 'Example'
 );
@@ -294,7 +451,7 @@ await getMonitoringPlot('Example', { columns: /voltage/, from: 'Nov 1, 2024' });
 // Get all temperatures for the last 30 minutes and give the traces a less cryptic name
 await getMonitoringPlot(
   'Example',
-  { 
+  {
     columns: [ [ /temp_(\d+)/, 'temperature $1' ] ],
     from: new Date(Date.now() - 30 * 60 * 60 * 1000)
   }
@@ -523,7 +680,7 @@ Fills an HTML table with data.
 If `data` is an array of objects, then it is assumed that all objects have
 a (mostly) common set of (enumerated) properties, and these properties are
 treated as columns. The set of columns is extracted from the first object, but
-it can be overriden with some settings of `header`. Following `header` values
+it can be overridden with some settings of `header`. Following `header` values
 are supported:
 - `null` or `undefined`: no table header is provided. The set of columns is
   extracted from the first row. If some object in the rest of the table has a

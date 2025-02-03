@@ -17,15 +17,30 @@ function sleep (ms) {
 
 // Check if autoplay for audio is allowed
 function checkAutoplayPermission() {
+    const audioPermission = localStorage.getItem('audioPermission');
+    if (audioPermission === 'granted') {
+        // console.log('Autoplay permission already granted');
+        return;
+    }
+
+    audio.muted = true;
     audio.play().then(() => {
-        console.log('Autoplay is allowed');
+        // console.log('Autoplay is allowed');
+        audio.pause();
+        audio.currentTime = 0;
+        audio.muted = false;
+        localStorage.setItem('audioPermission', 'granted');
     }).catch(() => {
-        showEnableAudioButton();
+        // showEnableAudioButton();
+        if (!document.getElementById('enableAudioButton')) {
+            showEnableAudioButton();
+        }
     });
 }
 
 function showEnableAudioButton() {
     var enableAudioBtn = document.createElement('button');
+    enableAudioBtn.id = 'enableAudioButton';
     enableAudioBtn.innerText = 'Enable Sound';
     enableAudioBtn.style.position = 'fixed';
     enableAudioBtn.style.bottom = '20px';
@@ -37,6 +52,7 @@ function showEnableAudioButton() {
         audio.play().then(() => {
             alert('Audio enabled! Alarm sound will play next time.');
             enableAudioBtn.remove();
+            localStorage.setItem('audioPermission', 'granted');
         }).catch((error) => {
             console.error('Audio playback failed:', error);
         });
