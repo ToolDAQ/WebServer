@@ -2,56 +2,65 @@
 <html>
   <head>
     <title>ToolDAQ | Users</title>
-    <link rel="stylesheet" href="/stylesheets/materialize.min.css">
   </head>
 
   <body>
     <!--#include virtual="/includes/header.html" -->
     <!--#include virtual="subheader.html" -->
     <!--#include virtual="/includes/drawer.html" -->
-    <div class="container">
-      <h4>Users List</h4>
-      <button id="addUserBtn" class="btn waves-effect waves-light modal-trigger" href="#userModal">Add User</button>
-      <table id="usersTable">
-          <thead>
-              <tr>
-                  <th>User ID</th>
-                  <th>Username</th>
-                  <th>Permissions</th>
-              </tr>
-          </thead>
-          <tbody>
-          </tbody>
-      </table>
-  </div>
+    <div class="container" align="center">
+      <h4 class="mdl-typography--text-center">Add New User</h4>
+      <form id="addUserForm" class="mdl-grid">
+        <div class="mdl-cell mdl-cell--12-col mdl-cell--12-col-desktop">
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <input class="mdl-textfield__input" type="text" id="newUsername" required>
+            <label class="mdl-textfield__label" for="newUsername">Username</label>
+          </div>
+        </div>
 
-  <!-- Modal structure for adding a new user -->
-  <div id="userModal" class="modal">
-    <div class="modal-content">
-        <h4>Add New User</h4>
-        <form id="addUserForm">
-            <div class="input-field">
-              <label for="newUsername">Username</label>
-                <input type="text" id="newUsername" required>
-            </div>
-            <div class="input-field">
-              <label for="newPassword">Password</label>
-                <input type="password" id="newPassword" required>
-            </div>
-            <div class="input-field">
-              <label for="newPassword">Confirm Password</label>
-                <input type="password" id="confirmPassword" required>
-            </div>
-            <div class="input-field">
-              <label for="newPermissions">Permissions</label>
-                <textarea type="text" id="newPermissions" rows="8" cols="50" required></textarea><br><br>
-            </div>
-            <button type="submit" class="btn waves-effect waves-light">Add User</button>
-        </form>
+        <div class="mdl-cell mdl-cell--12-col mdl-cell--12-col-desktop">
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <input class="mdl-textfield__input" type="password" id="newPassword" required>
+            <label class="mdl-textfield__label" for="newPassword">Password</label>
+          </div>
+        </div>
+
+        <div class="mdl-cell mdl-cell--12-col mdl-cell--12-col-desktop">
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <input class="mdl-textfield__input" type="password" id="confirmPassword" required>
+            <label class="mdl-textfield__label" for="confirmPassword">Confirm Password</label>
+          </div>
+        </div>
+
+        <div class="mdl-cell mdl-cell--12-col mdl-cell--12-col-desktop">
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <textarea class="mdl-textfield__input" type="text" id="newPermissions" rows="8" placeholder='{"permission": "test"}' required></textarea>
+            <label class="mdl-textfield__label" for="newPermissions">Permissions</label>
+          </div>
+        </div>
+
+        <div class="mdl-cell mdl-cell--12-col mdl-cell--12-col-desktop mdl-typography--text-center">
+          <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+            Add User
+          </button>
+        </div>
+      </form>
+
+      <hr>
+      <h3>Existing Users</h3>
+      <table class="mdl-data-table " id="usersTable">
+        <thead>
+          <tr>
+            <th>User ID</th>
+            <th>Username</th>
+            <th>Permissions</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+        </table>
     </div>
-  </div>
     <!--#include virtual="/includes/footer.html" -->
-    <script src="/stylesheets/materialize.min.js"></script>
-    <script type="module" src="./users.js?v=1" async></script>
+    <script type="module" src="./users.js" async></script>
   </body>
 </html>
