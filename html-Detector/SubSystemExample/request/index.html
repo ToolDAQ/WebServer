@@ -47,10 +47,19 @@
               <code class="language-javascript">
                 import { getRequest } from '/includes/tooldaq.js';
 
-                // Example: Send a GET request
-                const url = 'logs/Example_log';
-                function runRequest() {
-                  request(url).then(response => console.log(response));
+                // Example: Send a query request to the database
+                const url = '/cgi-bin/db-query.cgi';
+                const options = { query: 'select now()', format: 'json' }
+                function runRequest(){
+                  request(url, options).then(response => {
+                    response.json().then(data => {
+                      console.log(data);
+                    }).catch(error => {
+                      console.error('Error parsing JSON:', error);
+                    });
+                  }).catch(error => {
+                    console.error('Error:', error);
+                  });
                 }
               </code>
             </pre>
@@ -67,9 +76,14 @@
             <script>
               function runGetRequestDemo() {
                 import('/includes/tooldaq.js').then(({ request }) => {
-                  const url = 'logs/Example_log';
-                  request(url).then(response => {
-                    document.getElementById('getRequestOutput').innerText = JSON.stringify(response, null, 2);
+                  const url = '/cgi-bin/db-query.cgi';
+                  const options = { query: 'select now()', format: 'json' }
+                  request(url, options).then(response => {
+                    response.json().then(data => {
+                      document.getElementById('getRequestOutput').innerText = JSON.stringify(data);
+                    }).catch(error => {
+                        document.getElementById('getRequestOutput').innerText = 'Error parsing JSON: ' + error.message;
+                    });
                   }).catch(error => {
                     document.getElementById('getRequestOutput').innerText = 'Error: ' + error.message;
                   });
@@ -86,7 +100,8 @@
               <code class="language-javascript">
                 import { request } from '/includes/tooldaq.js';
 
-                request('logs/Example_log').then(response => response.text()).then(text => {
+                const url = '/logs/Example_log';
+                request(url).then(response => response.text()).then(text => {
                   console.log(text);
                 }).catch(error => {
                   console.error('Error:', error);
@@ -104,7 +119,8 @@
                   <code class="language-javascript">
                     function fetchFileContents() {
                       import('/includes/tooldaq.js').then(({ request }) => {
-                        request('logs/Example_log').then(response => response.text()).then(text => {
+                        const url = '/logs/Example_log';
+                        request('/logs/Example_log').then(response => response.text()).then(text => {
                           document.getElementById('fileOutput').innerText = text;
                         }).catch(error => {
                           document.getElementById('fileOutput').innerText = 'Error: ' + error.message;
@@ -123,7 +139,7 @@
             <script>
               function fetchFileContents() {
                 import('/includes/tooldaq.js').then(({ request }) => {
-                  request('logs/Example_log').then(response => response.text()).then(text => {
+                  request('Example_log').then(response => response.text()).then(text => {
                     document.getElementById('fileOutput').innerText = text;
                   }).catch(error => {
                     document.getElementById('fileOutput').innerText = 'Error: ' + error.message;
