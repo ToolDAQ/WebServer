@@ -223,6 +223,40 @@ export function dbTable(query, header) {
   return db(query, 'csv', header).then(response => parseCSV(response.body));
 };
 
+export function dbHtmlTable(query, header) {
+  return dbJson(query).then(data => {
+    const tableData = data;
+
+    let htmlTable = '<table border="1">';
+
+    if (header) {
+      htmlTable += '<thead><tr>';
+      Object.keys(tableData[0]).forEach(key => {
+        htmlTable += `<th>${key}</th>`;
+      });
+      htmlTable += '</tr></thead>';
+    }
+
+    htmlTable += '<tbody>';
+    tableData.forEach(row => {
+      htmlTable += '<tr>';
+      Object.values(row).forEach(value => {
+        if (value && typeof value === 'object') {
+          htmlTable += `<td><pre>${JSON.stringify(value, null, 2)}</pre></td>`;
+        } else {
+          htmlTable += `<td>${value}</td>`;
+        }
+      });
+      htmlTable += '</tr>';
+    });
+    htmlTable += '</tbody>';
+
+    htmlTable += '</table>';
+
+    return htmlTable;
+  });
+};
+
 export function dbPlot(query, template) {
   return dbTable(query, true).then(
     function (table) {
