@@ -56,6 +56,7 @@ function addUser(event) {
     GetPSQLTable(query, "root", "daq", true).then(() => {
       GetUsers();
       document.getElementById("addUserForm").reset();
+      alert(`User ${username} created successfully with permissions: ${permissions}`);
     }).catch(function (error) {
       console.error("Error adding new user:", error);
       alert("Error adding new user.");
