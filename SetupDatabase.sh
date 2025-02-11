@@ -10,7 +10,7 @@ else
 fi
 # only take action on first run
 if [ -f /.DBSetupDone ]; then
-	
+
 	# systemd version for baremetal
 	if [ ${USE_SYSTEMD} -eq 0 ]; then
 		# note no [ ] in following check
@@ -104,6 +104,6 @@ psql -ddaq -c "create table plotlyplots (name text NOT NULL, time timestamp with
 
 # Insert a default user for testing
 echo "Inserting a default user"
-psql -ddaq -c "INSERT INTO users (username, password_hash) VALUES ('dev_user', crypt('dev_password', gen_salt('bf')));"
+psql -ddaq -c "INSERT INTO users (username, password_hash) VALUES ('dev_user', 'c20cc404fe15337ce6d8a5b782576d9a21de03f8707065c8ccf7abb1cc939801');"
 
 touch /.DBSetupDone
