@@ -69,39 +69,44 @@ function FetchLogs() {
 	const query = `SELECT time, severity, message FROM logging WHERE device = '${device}' ORDER BY time DESC LIMIT ${log_line_count}`;
 
 	dbJson(query).then(function (result) {
-			console.log("Logs Result:", result);
-
-			const log_display = document.createElement("div");
-			log_display.classList.add("mdl-shadow--2dp");
-			log_display.style.marginTop = "20px";
-			log_display.style.padding = "20px";
-			log_display.style.minHeight = "100px";
-
-			const closeButton = document.createElement("button");
-			closeButton.textContent = "Close";
-			closeButton.classList.add("mdl-button", "mdl-js-button", "mdl-button--raised", "mdl-button--colored");
-			closeButton.style.float = "right";
-			closeButton.addEventListener("click", function () {
-					log_display.remove();
-			});
-
-			log_display.appendChild(closeButton);
-
-			const header = document.createElement("h5");
-			header.textContent = `Logs for device: ${device}`;
-			log_display.appendChild(header);
-
 			const logContainer = document.getElementById("logs-container");
 			const zeroStateDiv = document.getElementById("zero-div");
+			if (zeroStateDiv) logContainer.removeChild(zeroStateDiv);
+
+			let log_display = document.getElementById(`log-${device}`);
+			if (!log_display) {
+				log_display = document.createElement("div");
+				log_display.id = `log-${device}`;
+				log_display.classList.add("mdl-shadow--2dp");
+				log_display.style.marginTop = "20px";
+				log_display.style.padding = "20px";
+				log_display.style.minHeight = "100px";
+
+				const closeButton = document.createElement("button");
+				closeButton.textContent = "Close";
+				closeButton.classList.add("mdl-button", "mdl-js-button", "mdl-button--raised", "mdl-button--colored");
+				closeButton.style.float = "right";
+				closeButton.addEventListener("click", function () {
+						log_display.remove();
+				});
+				log_display.appendChild(closeButton);
+
+				const header = document.createElement("h5");
+				header.textContent = `Logs for device: ${device}`;
+				header.style.marginBottom = "10px";
+				log_display.appendChild(header);
+				logContainer.appendChild(log_display);
+			}
+			else {
+				const existingLogs = log_display.querySelectorAll("p");
+				existingLogs.forEach(log => log.remove());
+			}
 
 			if (result.length === 0) {
 					const noLogsMessage = document.createElement("p");
 					noLogsMessage.textContent = 'No logs available for this device.';
 					log_display.appendChild(noLogsMessage);
 			} else {
-        if (zeroStateDiv) {
-					logContainer.removeChild(zeroStateDiv);
-				}
 				result.forEach(function (log) {
 					const log_entry = document.createElement("p");
 					log_entry.textContent = `${log.time} | Severity: ${log.severity} | Message: ${log.message}`;
@@ -109,7 +114,6 @@ function FetchLogs() {
 				});
 			}
 
-			logContainer.appendChild(log_display);
 	}).catch(function (error) {
 			console.error("Error fetching logs:", error);
 			alert("There was an error fetching the logs.");
