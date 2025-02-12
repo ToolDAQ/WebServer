@@ -1,5 +1,120 @@
 "use strict;"
 import { GetPSQLTable } from "/includes/functions.js";
+import { dbJson } from '/includes/tooldaq.js';
+
+if (document.readyState !== 'loading'){
+	Init();
+} else {
+	document.addEventListener("DOMContentLoaded", function () {
+		Init();
+	});
+}
+
+function Init(){
+	DisplayZeroStateMessage();
+	GetLogItems();
+	document.getElementById("fetch-logs-button").addEventListener("click", FetchLogs);
+}
+
+function DisplayZeroStateMessage() {
+	const logContainer = document.getElementById("logs-container");
+	const zeroStateDiv = document.createElement("div");
+		zeroStateDiv.id = "zero-div";
+    zeroStateDiv.classList.add("mdl-shadow--2dp");
+    zeroStateDiv.style.marginTop = "20px";
+    zeroStateDiv.style.padding = "20px";
+    zeroStateDiv.style.minHeight = "100px";
+    zeroStateDiv.style.backgroundColor = "#f1f1f1";
+
+    zeroStateDiv.innerHTML = `
+			<p style="text-align: center; font-size: 16px; color: #666;">
+				No logs to display yet.<br>
+				Select a device and specify the number of logs you want to see, then click <strong>Show Logs</strong> to get started.
+				<br> You can repeat this process for different devices.
+			</p>
+    `;
+
+    logContainer.appendChild(zeroStateDiv);
+}
+
+function GetLogItems() {
+	const query = "SELECT distinct(device) from logging";
+	dbJson(query).then(function (result) {
+		const log_select = document.getElementById("log-selector");
+		log_select.innerHTML = '<option value="" disabled selected>Select log item</option>';
+
+		result.forEach(function (item) {
+			const option = document.createElement("option");
+			option.value = item.device;
+			option.textContent = item.device;
+			log_select.appendChild(option);
+		});
+
+		componentHandler.upgradeElement(log_select);
+	}).catch(function (error) {
+		console.error("Error fetching log items:", error);
+		alert("There was an error fetching the log items.");
+	});
+}
+
+function FetchLogs() {
+	const device = document.getElementById("log-selector").value;
+	let log_line_count = document.getElementById("log-line-count").value;
+
+	if (!device || !log_line_count || isNaN(log_line_count) || log_line_count <= 0) {
+		alert("Please select a valid device and specify a valid number of log lines.");
+		return;
+	}
+
+	const query = `SELECT time, severity, message FROM logging WHERE device = '${device}' ORDER BY time DESC LIMIT ${log_line_count}`;
+
+	dbJson(query).then(function (result) {
+			console.log("Logs Result:", result);
+
+			const log_display = document.createElement("div");
+			log_display.classList.add("mdl-shadow--2dp");
+			log_display.style.marginTop = "20px";
+			log_display.style.padding = "20px";
+			log_display.style.minHeight = "100px";
+
+			const closeButton = document.createElement("button");
+			closeButton.textContent = "Close";
+			closeButton.classList.add("mdl-button", "mdl-js-button", "mdl-button--raised", "mdl-button--colored");
+			closeButton.style.float = "right";
+			closeButton.addEventListener("click", function () {
+					log_display.remove();
+			});
+
+			log_display.appendChild(closeButton);
+
+			const header = document.createElement("h5");
+			header.textContent = `Logs for device: ${device}`;
+			log_display.appendChild(header);
+
+			const logContainer = document.getElementById("logs-container");
+			const zeroStateDiv = document.getElementById("zero-div");
+
+			if (result.length === 0) {
+					const noLogsMessage = document.createElement("p");
+					noLogsMessage.textContent = 'No logs available for this device.';
+					log_display.appendChild(noLogsMessage);
+			} else {
+        if (zeroStateDiv) {
+					logContainer.removeChild(zeroStateDiv);
+				}
+				result.forEach(function (log) {
+					const log_entry = document.createElement("p");
+					log_entry.textContent = `${log.time} | Severity: ${log.severity} | Message: ${log.message}`;
+					log_display.appendChild(log_entry);
+				});
+			}
+
+			logContainer.appendChild(log_display);
+	}).catch(function (error) {
+			console.error("Error fetching logs:", error);
+			alert("There was an error fetching the logs.");
+	});
+}
 
 var log_output=document.getElementById("log_output");
 var update = setInterval(GetLogSources, 5000); // Run the GetLogSources() function every minute
