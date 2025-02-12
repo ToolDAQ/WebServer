@@ -82,6 +82,19 @@ function FetchLogs() {
 				log_display.style.padding = "20px";
 				log_display.style.minHeight = "100px";
 
+				const buttonContainer = document.createElement("div");
+				buttonContainer.style.display = "flex";
+				buttonContainer.style.justifyContent = "space-between";
+				buttonContainer.style.marginBottom = "10px";
+
+				const refreshButton = document.createElement("button");
+				refreshButton.textContent = "Refresh";
+				refreshButton.classList.add("mdl-button", "mdl-js-button", "mdl-button--raised");
+				refreshButton.style.backgroundColor = "#2196F3";
+				refreshButton.addEventListener("click", function () {
+					RefreshLogs(device, log_line_count);
+				});
+
 				const closeButton = document.createElement("button");
 				closeButton.textContent = "Close";
 				closeButton.classList.add("mdl-button", "mdl-js-button", "mdl-button--raised", "mdl-button--colored");
@@ -89,7 +102,9 @@ function FetchLogs() {
 				closeButton.addEventListener("click", function () {
 						log_display.remove();
 				});
-				log_display.appendChild(closeButton);
+				buttonContainer.appendChild(refreshButton);
+				buttonContainer.appendChild(closeButton);
+				log_display.appendChild(buttonContainer);
 
 				const header = document.createElement("h5");
 				header.textContent = `Logs for device: ${device}`;
@@ -97,26 +112,68 @@ function FetchLogs() {
 				log_display.appendChild(header);
 				logContainer.appendChild(log_display);
 			}
-			else {
-				const existingLogs = log_display.querySelectorAll("p");
-				existingLogs.forEach(log => log.remove());
-			}
+			const log_display_content = log_display.querySelectorAll("p");
+			const existingLogs = Array.from(log_display_content).map(p => p.textContent);
 
-			if (result.length === 0) {
-					const noLogsMessage = document.createElement("p");
-					noLogsMessage.textContent = 'No logs available for this device.';
-					log_display.appendChild(noLogsMessage);
-			} else {
-				result.forEach(function (log) {
+			let newLogs = [];
+			result.forEach(log => {
+				const logText = `${log.time} | Severity: ${log.severity} | Message: ${log.message}`;
+				if (!existingLogs.includes(logText)) {
+					newLogs.push(logText);
+				}
+			});
+
+			if (newLogs.length > 0) {
+				newLogs.forEach(logText => {
 					const log_entry = document.createElement("p");
-					log_entry.textContent = `${log.time} | Severity: ${log.severity} | Message: ${log.message}`;
+					log_entry.textContent = logText;
 					log_display.appendChild(log_entry);
 				});
+			} else if (log_display_content.length === 0) {
+				const noLogsMessage = document.createElement("p");
+				noLogsMessage.textContent = "No logs available for this device.";
+				log_display.appendChild(noLogsMessage);
 			}
 
 	}).catch(function (error) {
 			console.error("Error fetching logs:", error);
 			alert("There was an error fetching the logs.");
+	});
+}
+
+function RefreshLogs(device, log_line_count) {
+	const query = `SELECT time, severity, message FROM logging WHERE device = '${device}' ORDER BY time DESC LIMIT ${log_line_count}`;
+
+	dbJson(query).then(function (result) {
+		console.log(`Refreshing logs for ${device}...`);
+
+		let log_display = document.getElementById(`log-${device}`);
+
+		if (!log_display) return;
+
+		const log_display_content = log_display.querySelectorAll("p");
+		const existingLogs = Array.from(log_display_content).map(p => p.textContent);
+
+		let newLogs = [];
+		result.forEach(log => {
+			const logText = `${log.time} | Severity: ${log.severity} | Message: ${log.message}`;
+			if (!existingLogs.includes(logText)) {
+				newLogs.push(logText);
+			}
+		});
+
+		if (newLogs.length > 0) {
+			newLogs.forEach(logText => {
+				const log_entry = document.createElement("p");
+				log_entry.textContent = logText;
+				log_display.appendChild(log_entry);
+			});
+		} else {
+			alert(`No new logs for ${device}.`);
+		}
+	}).catch(function (error) {
+		console.error("Error refreshing logs:", error);
+		alert("There was an error refreshing the logs.");
 	});
 }
 
