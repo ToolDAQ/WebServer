@@ -15,11 +15,9 @@
   <div class="mdl-layout__content">
       <div class="page-content">
           <h2>Log Viewer</h2>
-
           <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-              <select class="mdl-textfield__input" id="log-selector" required>
-                <!-- Options will be populated dynamically -->
-              </select>
+            <input type="text" id="log-device-input" class="mdl-textfield__input" placeholder="Type to search device..." autocomplete="off">
+            <div id="device-suggestions" class="autocomplete-list"></div>
           </div>
 
           <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">

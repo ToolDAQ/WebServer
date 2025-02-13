@@ -16,6 +16,39 @@ function Init(){
 	document.getElementById("fetch-logs-button").addEventListener("click", FetchLogs);
 }
 
+function SetupAutocomplete() {
+	const input = document.getElementById("log-device-input");
+	const suggestionBox = document.getElementById("device-suggestions");
+
+	input.addEventListener("input", function () {
+		const searchText = input.value.toLowerCase();
+		suggestionBox.innerHTML = "";
+
+		if (!searchText) return;
+
+		const filteredDevices = window.deviceList.filter(device =>
+			device.toLowerCase().includes(searchText)
+		);
+
+		filteredDevices.forEach(device => {
+			const suggestion = document.createElement("div");
+			suggestion.textContent = device;
+			suggestion.addEventListener("click", function () {
+				input.value = device;
+				suggestionBox.innerHTML = "";
+			});
+			suggestionBox.appendChild(suggestion);
+		});
+	});
+
+	// Hide suggestions on click outside
+	document.addEventListener("click", function (e) {
+		if (!input.contains(e.target) && !suggestionBox.contains(e.target)) {
+			suggestionBox.innerHTML = "";
+		}
+	});
+}
+
 function DisplayZeroStateMessage() {
 	const logContainer = document.getElementById("logs-container");
 	const zeroStateDiv = document.createElement("div");
@@ -40,26 +73,18 @@ function DisplayZeroStateMessage() {
 function GetLogItems() {
 	const query = "SELECT distinct(device) from logging";
 	dbJson(query).then(function (result) {
-		const log_select = document.getElementById("log-selector");
-		log_select.innerHTML = '<option value="" disabled selected>Select log item</option>';
-
-		result.forEach(function (item) {
-			const option = document.createElement("option");
-			option.value = item.device;
-			option.textContent = item.device;
-			log_select.appendChild(option);
-		});
-
-		componentHandler.upgradeElement(log_select);
+		window.deviceList = result.map(item => item.device) || [];
+		SetupAutocomplete();
 	}).catch(function (error) {
 		console.error("Error fetching log items:", error);
 		alert("There was an error fetching the log items.");
+		window.deviceList = [];
 	});
 }
 
 function FetchLogs() {
-	const device = document.getElementById("log-selector").value;
-	let log_line_count = document.getElementById("log-line-count").value;
+	const device = document.getElementById("log-device-input").value.trim();
+	let log_line_count = parseInt(document.getElementById("log-line-count").value, 10);
 
 	if (!device || !log_line_count || isNaN(log_line_count) || log_line_count <= 0) {
 		alert("Please select a valid device and specify a valid number of log lines.");
@@ -69,72 +94,71 @@ function FetchLogs() {
 	const query = `SELECT time, severity, message FROM logging WHERE device = '${device}' ORDER BY time DESC LIMIT ${log_line_count}`;
 
 	dbJson(query).then(function (result) {
-			const logContainer = document.getElementById("logs-container");
-			const zeroStateDiv = document.getElementById("zero-div");
-			if (zeroStateDiv) logContainer.removeChild(zeroStateDiv);
+		const logContainer = document.getElementById("logs-container");
+		const zeroStateDiv = document.getElementById("zero-div");
+		if (zeroStateDiv) logContainer.removeChild(zeroStateDiv);
 
-			let log_display = document.getElementById(`log-${device}`);
-			if (!log_display) {
-				log_display = document.createElement("div");
-				log_display.id = `log-${device}`;
-				log_display.classList.add("mdl-shadow--2dp");
-				log_display.style.marginTop = "20px";
-				log_display.style.padding = "20px";
-				log_display.style.minHeight = "100px";
+		let log_display = document.getElementById(`log-${device}`);
+		if (!log_display) {
+			log_display = document.createElement("div");
+			log_display.id = `log-${device}`;
+			log_display.classList.add("mdl-shadow--2dp");
+			log_display.style.marginTop = "20px";
+			log_display.style.padding = "20px";
+			log_display.style.minHeight = "100px";
 
-				const buttonContainer = document.createElement("div");
-				buttonContainer.style.display = "flex";
-				buttonContainer.style.justifyContent = "space-between";
-				buttonContainer.style.marginBottom = "10px";
+			const buttonContainer = document.createElement("div");
+			buttonContainer.style.display = "flex";
+			buttonContainer.style.justifyContent = "space-between";
+			buttonContainer.style.marginBottom = "10px";
 
-				const refreshButton = document.createElement("button");
-				refreshButton.textContent = "Refresh";
-				refreshButton.classList.add("mdl-button", "mdl-js-button", "mdl-button--raised");
-				refreshButton.style.backgroundColor = "#2196F3";
-				refreshButton.addEventListener("click", function () {
-					RefreshLogs(device, log_line_count);
-				});
-
-				const closeButton = document.createElement("button");
-				closeButton.textContent = "Close";
-				closeButton.classList.add("mdl-button", "mdl-js-button", "mdl-button--raised", "mdl-button--colored");
-				closeButton.style.float = "right";
-				closeButton.addEventListener("click", function () {
-						log_display.remove();
-				});
-				buttonContainer.appendChild(refreshButton);
-				buttonContainer.appendChild(closeButton);
-				log_display.appendChild(buttonContainer);
-
-				const header = document.createElement("h5");
-				header.textContent = `Logs for device: ${device}`;
-				header.style.marginBottom = "10px";
-				log_display.appendChild(header);
-				logContainer.appendChild(log_display);
-			}
-			const log_display_content = log_display.querySelectorAll("p");
-			const existingLogs = Array.from(log_display_content).map(p => p.textContent);
-
-			let newLogs = [];
-			result.forEach(log => {
-				const logText = `${log.time} | Severity: ${log.severity} | Message: ${log.message}`;
-				if (!existingLogs.includes(logText)) {
-					newLogs.push(logText);
-				}
+			const refreshButton = document.createElement("button");
+			refreshButton.textContent = "Refresh";
+			refreshButton.classList.add("mdl-button", "mdl-js-button", "mdl-button--raised", "refresh-button");
+			refreshButton.style.backgroundColor = "#2196F3";
+			refreshButton.addEventListener("click", function () {
+				RefreshLogs(device, log_line_count);
 			});
 
-			if (newLogs.length > 0) {
-				newLogs.forEach(logText => {
-					const log_entry = document.createElement("p");
-					log_entry.textContent = logText;
-					log_display.appendChild(log_entry);
-				});
-			} else if (log_display_content.length === 0) {
-				const noLogsMessage = document.createElement("p");
-				noLogsMessage.textContent = "No logs available for this device.";
-				log_display.appendChild(noLogsMessage);
-			}
+			const closeButton = document.createElement("button");
+			closeButton.textContent = "Close";
+			closeButton.classList.add("mdl-button", "mdl-js-button", "mdl-button--raised", "mdl-button--colored");
+			closeButton.style.float = "right";
+			closeButton.addEventListener("click", function () {
+					log_display.remove();
+			});
+			buttonContainer.appendChild(refreshButton);
+			buttonContainer.appendChild(closeButton);
+			log_display.appendChild(buttonContainer);
 
+			const header = document.createElement("h5");
+			header.textContent = `Logs for device: ${device}`;
+			header.style.marginBottom = "10px";
+			log_display.appendChild(header);
+			logContainer.appendChild(log_display);
+		}
+		const log_display_content = log_display.querySelectorAll("p");
+		const existingLogs = Array.from(log_display_content).map(p => p.textContent);
+
+		let newLogs = [];
+		result.forEach(log => {
+			const logText = `${log.time} | Severity: ${log.severity} | Message: ${log.message}`;
+			if (!existingLogs.includes(logText)) {
+				newLogs.push(logText);
+			}
+		});
+
+		if (newLogs.length > 0) {
+			newLogs.forEach(logText => {
+				const log_entry = document.createElement("p");
+				log_entry.textContent = logText;
+				log_display.appendChild(log_entry);
+			});
+		} else if (log_display_content.length === 0) {
+			const noLogsMessage = document.createElement("p");
+			noLogsMessage.textContent = "No logs available for this device.";
+			log_display.appendChild(noLogsMessage);
+		}
 	}).catch(function (error) {
 			console.error("Error fetching logs:", error);
 			alert("There was an error fetching the logs.");
@@ -142,11 +166,16 @@ function FetchLogs() {
 }
 
 function RefreshLogs(device, log_line_count) {
+	const log_display = document.getElementById(`log-${device}`);
+	if (!log_display) return;
+
+	const refreshButton = log_display.querySelector(".refresh-button");
+	refreshButton.disabled = true;
+	refreshButton.textContent = "Refreshing...";
+
 	const query = `SELECT time, severity, message FROM logging WHERE device = '${device}' ORDER BY time DESC LIMIT ${log_line_count}`;
 
 	dbJson(query).then(function (result) {
-		console.log(`Refreshing logs for ${device}...`);
-
 		let log_display = document.getElementById(`log-${device}`);
 
 		if (!log_display) return;
@@ -168,12 +197,16 @@ function RefreshLogs(device, log_line_count) {
 				log_entry.textContent = logText;
 				log_display.appendChild(log_entry);
 			});
+			log_display.scrollTop = log_display.scrollHeight;
 		} else {
 			alert(`No new logs for ${device}.`);
 		}
 	}).catch(function (error) {
 		console.error("Error refreshing logs:", error);
 		alert("There was an error refreshing the logs.");
+	}).finally(() => {
+		refreshButton.disabled = false;
+		refreshButton.textContent = "Refresh";
 	});
 }
 
