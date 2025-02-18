@@ -378,7 +378,7 @@ export function getMonitoringPlot(device, options) {
         };
       };
 
-      let x = table.map(row => new Date(row[0].replace(/[+-]\d{2}$/, 'Z$&')));
+      let x = table.map(row => row[0] ? new Date(row[0]) : null);
 
       return Object.values(y).sort(
         function (a, b) {
