@@ -49,8 +49,11 @@
             <pre>
               <code class="language-javascript">
                 import { getMonitoringPlot } from '/includes/tooldaq.js';
-                const device = "middleman_1";
-                const options = { from: '2025-01-01T00:00:00Z' } // { title: 'Monitoring Plot' };
+                const device = "test_device";
+                const options = {
+                  from: '2025-02-18 12:59:13.588877+00',
+                  to: new Date(),
+                  template: { mode: 'lines+markers' } };
                 getMonitoringPlot(device, options).then(plots => console.log(plots));
               </code>
             </pre>
@@ -68,8 +71,11 @@
                 &lt;script&gt;
                   function runGetMonitoringPlot() {
                     import('/includes/tooldaq.js').then(({ getMonitoringPlot }) => {
-                      const device = "middleman_1";
-                      const options = { from: '2025-01-01T00:00:00Z' };
+                      const device = "test_device";
+                      const options = {
+                        from: '2025-02-18 12:59:13.588877+00',
+                        to: new Date(),
+                        template: { mode: 'lines+markers' } };
                       getMonitoringPlot(device, options)
                         .then(plots => {
                           document.getElementById('getMonitoringPlotOutput').innerText = JSON.stringify(plots, null, 2);
@@ -93,8 +99,11 @@
             <script>
               function runGetMonitoringPlotDemo() {
                 import('/includes/tooldaq.js').then(({ getMonitoringPlot }) => {
-                  const device = "middleman_1";
-                  const options = { limit: 100 };
+                  const device = "test_device";
+                  const options = {
+                    from: '2025-02-18 12:59:13.588877+00',
+                    to: new Date(),
+                    template: { mode: 'lines+markers' } };
                   getMonitoringPlot(device, options)
                     .then(plots => {
                       document.getElementById('getMonitoringPlotOutput').innerText = JSON.stringify(plots, null, 2);
@@ -138,8 +147,12 @@
                   <code class="language-javascript">
                     function runMakeMonitoringPlot() {
                       import('/includes/tooldaq.js').then(({ makeMonitoringPlot }) => {
-                        const device = "middleman_1";
-                        const options = { from: '2025-01-01T00:00:00Z' };
+                        const device = "test_device";
+                        const options = {
+                          xaxis: { title: 'Time' },
+                          yaxis: { title: 'Sensor Values' },
+                          showlegend: true,
+                        };
                         const layout = { title: "Sensor Data" };
                         makeMonitoringPlot("monitoringPlotContainer", device, options, layout);
                       });
@@ -162,8 +175,12 @@
             <script>
               function runMakeMonitoringPlotDemo() {
                 import('/includes/tooldaq.js').then(({ makeMonitoringPlot }) => {
-                  const device = "middleman_1";
-                  const options = { from: '2025-01-01T00:00:00Z' };
+                  const device = "test_device";
+                  const options = {
+                    xaxis: { title: 'Time' },
+                    yaxis: { title: 'Sensor Values' },
+                    showlegend: true,
+                  };
                   const layout = { title: "Sensor Data" };
                   makeMonitoringPlot("makeMonitoringPlotOutput", device, options, layout);
                 });
@@ -185,7 +202,7 @@
             <pre>
               <code class="language-javascript">
                 import { getPlotlyPlot } from '/includes/tooldaq.js';
-                const name = "example_plot";
+                const name = "plotly1";
                 const version = 1;
                 function runGetPlotlyPlot() {
                   getPlotlyPlot(name, version).then(plot => console.log(plot));
@@ -248,8 +265,8 @@
                 import { makePlotlyPlot } from '/includes/tooldaq.js';
 
                 const divId = 'plotlyContainer';
-                const plotName = 'example_plot';
-                const plotVersion = '1.0';
+                const plotName = 'plotly1';
+                const plotVersion = 1;
                 function runMakePlotlyPlot() {
                   makePlotlyPlot(divId, plotName, plotVersion);
                 }
