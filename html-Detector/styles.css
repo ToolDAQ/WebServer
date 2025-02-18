@@ -87,6 +87,16 @@ a img{
     font-size: 14px;
   }
 
+  .mdl-navigation__link:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+  }
+
+  .mdl-layout__tab:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+  }
+
   .android-navigation-container {
     /* Simple hack to make the overflow happen to the left instead... */
     direction: rtl;
