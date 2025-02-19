@@ -48,7 +48,7 @@ function StartAutoRefresh() {
         feedback.style.color = "#d32f2f";
         feedback.textContent = "⚠️ Minimum refresh interval should be a number greater 15 seconds! Using default (120 seconds).";
     } else {
-        feedback.style.color = "#00796b"; // Teal for success
+        feedback.style.color = "#00796b";
         feedback.textContent = `✅ Auto-refresh set to ${refreshInterval} seconds.`;
     }
 
@@ -208,6 +208,7 @@ function FetchLogs() {
 					log_display.remove();
 					CheckLogDivs();
 			});
+			const exportButton = AddExportButton(log_display, device);
 			controlsContainer.appendChild(logCountInput);
 			controlsContainer.appendChild(refreshButton);
 			controlsContainer.appendChild(closeButton);
@@ -319,6 +320,34 @@ function CheckLogDivs() {
 	const logContainers = document.querySelectorAll("[id^='log-']");
 	const refreshAllButton = document.getElementById("refresh-all-button");
 	refreshAllButton.style.display = logContainers.length > 0 ? "inline-block" : "none";
+}
+
+function AddExportButton(log_display, device) {
+	const exportButton = document.createElement("button");
+	exportButton.textContent = "Export Logs";
+	exportButton.classList.add("mdl-button", "mdl-js-button", "mdl-button--raised", "mdl-button--colored");
+	exportButton.style.marginLeft = "10px";
+	exportButton.addEventListener("click", function () {
+		ExportLogs(device, log_display);
+	});
+
+	log_display.appendChild(exportButton);
+}
+
+function ExportLogs(device, log_display) {
+	const logs = Array.from(log_display.querySelectorAll("p")).map(p => p.textContent).join("\n");
+	if (!logs) {
+		alert("No logs to export.");
+		return;
+	}
+
+	const blob = new Blob([logs], { type: "text/plain" });
+	const link = document.createElement("a");
+	link.href = URL.createObjectURL(blob);
+	link.download = `${device}-logs.txt`;
+	document.body.appendChild(link);
+	link.click();
+	document.body.removeChild(link);
 }
 
 var log_output=document.getElementById("log_output");
