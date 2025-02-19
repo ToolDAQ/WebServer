@@ -25,6 +25,17 @@
               <label class="mdl-textfield__label" for="log-line-count">Number of lines</label>
           </div>
 
+          <label>
+            <input type="checkbox" id="auto-refresh-checkbox">
+            Enable Auto Refresh
+          </label>
+
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" id="auto-refresh-container" style="display: none;">
+            <input class="mdl-textfield__input" type="number" id="log-update-interval" min="15">
+            <label class="mdl-textfield__label" for="log-update-interval">Log refresh frequency in seconds</label>
+            <p id="refresh-feedback" style="color: #00796b; font-size: 14px; margin-top: 5px;"></p>
+          </div>
+
           <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" id="fetch-logs-button">
               Show Logs
           </button>

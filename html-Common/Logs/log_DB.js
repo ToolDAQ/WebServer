@@ -10,10 +10,73 @@ if (document.readyState !== 'loading'){
 	});
 }
 
+let autoRefreshInterval = null;
+
 function Init(){
 	DisplayZeroStateMessage();
 	GetLogItems();
 	document.getElementById("fetch-logs-button").addEventListener("click", FetchLogs);
+	CreateRefreshAllButton();
+
+	const autoRefreshCheckbox = document.getElementById("auto-refresh-checkbox");
+	autoRefreshCheckbox.addEventListener("change", function () {
+		const intervalContainer = document.getElementById("auto-refresh-container");
+		intervalContainer.style.display = this.checked ? "block" : "none";
+
+		if (this.checked) {
+				StartAutoRefresh();
+		} else {
+				StopAutoRefresh();
+		}
+	});
+	const intervalInput = document.getElementById("log-update-interval");
+	intervalInput.addEventListener("input", function () {
+		if (autoRefreshCheckbox.checked) {
+				StartAutoRefresh();
+		}
+	});
+}
+
+function StartAutoRefresh() {
+    StopAutoRefresh(); // Clear any existing interval
+    const intervalInput = document.getElementById("log-update-interval");
+    const feedback = document.getElementById("refresh-feedback");
+		let refreshInterval = parseInt(intervalInput.value, 10);
+
+    if (isNaN(refreshInterval) || refreshInterval < 15) {
+        refreshInterval = 120;
+        feedback.style.color = "#d32f2f";
+        feedback.textContent = "⚠️ Minimum refresh interval should be a number greater 15 seconds! Using default (120 seconds).";
+    } else {
+        feedback.style.color = "#00796b"; // Teal for success
+        feedback.textContent = `✅ Auto-refresh set to ${refreshInterval} seconds.`;
+    }
+
+    autoRefreshInterval = setInterval(() => {
+        RefreshAllLogs();
+    }, refreshInterval * 1000);
+}
+
+function StopAutoRefresh() {
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+    }
+}
+
+function CreateRefreshAllButton() {
+	const refreshAllButton = document.createElement("button");
+	refreshAllButton.id = "refresh-all-button";
+	refreshAllButton.textContent = "Refresh All";
+	refreshAllButton.classList.add("mdl-button", "mdl-js-button", "mdl-button--raised");
+	refreshAllButton.style.backgroundColor = "#4CAF50"; // Green color
+	refreshAllButton.style.marginLeft = "10px";
+	refreshAllButton.style.display = "none";
+
+	refreshAllButton.addEventListener("click", RefreshAllLogs);
+
+	const fetchLogsButton = document.getElementById("fetch-logs-button");
+	fetchLogsButton.insertAdjacentElement("afterend", refreshAllButton);
 }
 
 function SetupAutocomplete() {
@@ -24,7 +87,7 @@ function SetupAutocomplete() {
 		const searchText = input.value.toLowerCase();
 		suggestionBox.innerHTML = "";
 
-		if (!searchText) return;
+		if (!window.deviceList || window.deviceList.length === 0 || !searchText) return;
 
 		const filteredDevices = window.deviceList.filter(device =>
 			device.toLowerCase().includes(searchText)
@@ -106,18 +169,35 @@ function FetchLogs() {
 			log_display.style.marginTop = "20px";
 			log_display.style.padding = "20px";
 			log_display.style.minHeight = "100px";
+			log_display.style.overflowY = "auto";
+			log_display.style.maxHeight = "300px";
 
-			const buttonContainer = document.createElement("div");
-			buttonContainer.style.display = "flex";
-			buttonContainer.style.justifyContent = "space-between";
-			buttonContainer.style.marginBottom = "10px";
+			const controlsContainer = document.createElement("div");
+			controlsContainer.style.display = "flex";
+			controlsContainer.style.justifyContent = "space-between";
+			controlsContainer.style.marginBottom = "10px";
+
+			const logCountInput = document.createElement("input");
+			logCountInput.type = "number";
+			logCountInput.min = "1";
+			logCountInput.value = log_line_count;
+			logCountInput.style.width = "60px";
+			logCountInput.style.marginRight = "10px";
+			logCountInput.style.padding = "5px";
+			logCountInput.classList.add("log-count-input");
 
 			const refreshButton = document.createElement("button");
 			refreshButton.textContent = "Refresh";
 			refreshButton.classList.add("mdl-button", "mdl-js-button", "mdl-button--raised", "refresh-button");
 			refreshButton.style.backgroundColor = "#2196F3";
 			refreshButton.addEventListener("click", function () {
-				RefreshLogs(device, log_line_count);
+				// RefreshLogs(device, log_line_count);
+				const newLogCount = parseInt(logCountInput.value, 10);
+				if (!isNaN(newLogCount) && newLogCount > 0) {
+					RefreshLogs(device, newLogCount);
+				} else {
+					alert("Please enter a valid number of log lines.");
+				}
 			});
 
 			const closeButton = document.createElement("button");
@@ -126,10 +206,12 @@ function FetchLogs() {
 			closeButton.style.float = "right";
 			closeButton.addEventListener("click", function () {
 					log_display.remove();
+					CheckLogDivs();
 			});
-			buttonContainer.appendChild(refreshButton);
-			buttonContainer.appendChild(closeButton);
-			log_display.appendChild(buttonContainer);
+			controlsContainer.appendChild(logCountInput);
+			controlsContainer.appendChild(refreshButton);
+			controlsContainer.appendChild(closeButton);
+			log_display.appendChild(controlsContainer);
 
 			const header = document.createElement("h5");
 			header.textContent = `Logs for device: ${device}`;
@@ -140,25 +222,35 @@ function FetchLogs() {
 		const log_display_content = log_display.querySelectorAll("p");
 		const existingLogs = Array.from(log_display_content).map(p => p.textContent);
 
-		let newLogs = [];
+		log_display.querySelectorAll("p").forEach(p => p.remove());
 		result.forEach(log => {
-			const logText = `${log.time} | Severity: ${log.severity} | Message: ${log.message}`;
-			if (!existingLogs.includes(logText)) {
-				newLogs.push(logText);
-			}
+			const log_entry = document.createElement("p");
+			log_entry.textContent = `${log.time} | Severity: ${log.severity} | Message: ${log.message}`;
+			log_display.appendChild(log_entry);
 		});
 
-		if (newLogs.length > 0) {
-			newLogs.forEach(logText => {
-				const log_entry = document.createElement("p");
-				log_entry.textContent = logText;
-				log_display.appendChild(log_entry);
-			});
-		} else if (log_display_content.length === 0) {
-			const noLogsMessage = document.createElement("p");
-			noLogsMessage.textContent = "No logs available for this device.";
-			log_display.appendChild(noLogsMessage);
-		}
+		CheckLogDivs();
+
+		log_display.scrollTop = log_display.scrollHeight;
+		// let newLogs = [];
+		// result.forEach(log => {
+		// 	const logText = `${log.time} | Severity: ${log.severity} | Message: ${log.message}`;
+		// 	if (!existingLogs.includes(logText)) {
+		// 		newLogs.push(logText);
+		// 	}
+		// });
+
+		// if (newLogs.length > 0) {
+		// 	newLogs.forEach(logText => {
+		// 		const log_entry = document.createElement("p");
+		// 		log_entry.textContent = logText;
+		// 		log_display.appendChild(log_entry);
+		// 	});
+		// } else if (log_display_content.length === 0) {
+		// 	const noLogsMessage = document.createElement("p");
+		// 	noLogsMessage.textContent = "No logs available for this device.";
+		// 	log_display.appendChild(noLogsMessage);
+		// }
 	}).catch(function (error) {
 			console.error("Error fetching logs:", error);
 			alert("There was an error fetching the logs.");
@@ -197,6 +289,7 @@ function RefreshLogs(device, log_line_count) {
 				log_entry.textContent = logText;
 				log_display.appendChild(log_entry);
 			});
+			CheckLogDivs();
 			log_display.scrollTop = log_display.scrollHeight;
 		} else {
 			alert(`No new logs for ${device}.`);
@@ -208,6 +301,24 @@ function RefreshLogs(device, log_line_count) {
 		refreshButton.disabled = false;
 		refreshButton.textContent = "Refresh";
 	});
+}
+
+function RefreshAllLogs() {
+	const logContainers = document.querySelectorAll("[id^='log-']");
+	logContainers.forEach(logDiv => {
+		const device = logDiv.id.replace("log-", "");
+		const logCountInput = logDiv.querySelector(".log-count-input");
+		if (!logCountInput) return;
+		const logCount = parseInt(logCountInput.value, 10) || 10;
+
+		RefreshLogs(device, logCount);
+	});
+}
+
+function CheckLogDivs() {
+	const logContainers = document.querySelectorAll("[id^='log-']");
+	const refreshAllButton = document.getElementById("refresh-all-button");
+	refreshAllButton.style.display = logContainers.length > 0 ? "inline-block" : "none";
 }
 
 var log_output=document.getElementById("log_output");
