@@ -80,6 +80,11 @@ a img{
     background: transparent;
     color: #767777;
   }
+  
+  .mdl-layout__drawer-button:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+   }
 
   .android-header .mdl-navigation__link {
     color: #757575;
@@ -89,12 +94,12 @@ a img{
 
   .mdl-navigation__link:hover {
     background-color: rgba(0, 0, 0, 0.1);
-    border-radius: 4px;
-  }
+    border-radius: 15px;
+   }
 
   .mdl-layout__tab:hover {
     background-color: rgba(0, 0, 0, 0.1);
-    border-radius: 4px;
+    border-radius: 15px;
   }
 
   .android-navigation-container {
@@ -476,7 +481,6 @@ a img{
     position: relative;
     top: 6px;
   }
-
 
 .android-link-menu:hover {
   cursor: pointer;

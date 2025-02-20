@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-body {
+ body {
   margin: 0;
 }
 
@@ -80,11 +80,26 @@ a img{
     background: transparent;
     color: #767777;
   }
+  
+  .mdl-layout__drawer-button:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+   }
 
   .android-header .mdl-navigation__link {
     color: #757575;
     font-weight: 700;
     font-size: 14px;
+  }
+
+  .mdl-navigation__link:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+   }
+
+  .mdl-layout__tab:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
   }
 
   .android-navigation-container {
@@ -467,7 +482,6 @@ a img{
     top: 6px;
   }
 
-
 .android-link-menu:hover {
   cursor: pointer;
 }
@@ -548,4 +562,41 @@ a img{
   .android-footer .mdl-mega-footer--bottom-section {
     display: none;
   }
+}
+
+/*
+body, html {
+  height: 100%;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f4f4f9;
+}
+*/
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.card {
+  width: 100%;
+  max-width: 400px;
+  padding: 2rem;
+}
+
+.logo {
+  margin-bottom: 2rem;
+}
+
+.card-title {
+  text-align: center;
+}
+
+.forgot-password {
+  display: block;
+  text-align: center;
+  margin-top: 1rem;
 }
