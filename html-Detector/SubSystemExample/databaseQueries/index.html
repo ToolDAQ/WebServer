@@ -26,10 +26,10 @@
             databases. These functions include:
           </p>
           <ul>
-            <li><strong>dbJson(query):</strong> Executes a SQL query and returns the result as JSON.</li>
-            <li><strong>dbTable(query, header):</strong> Executes a SQL query and displays the result as an array of array.</li>
-            <li><strong>dbHtmlTable(query, header):</strong> Executes a SQL query and displays the result as an HTML table.</li>
-            <li><strong>dbPlot(query, template):</strong> Executes a SQL query and creates a plot from the results.</li>
+            <li><a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#dbJson" target="_blank">dbJson(query)</a> Executes a SQL query and returns the result as JSON.</li>
+            <li><a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#dbtable" target="_blank">dbTable(query, header):</a> Executes a SQL query and returns the result as an array of array.</li>
+            <li><a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#dbtable" target="_blank">dbHtmlTable(query, header):</a> Executes a SQL query and displays the result as an HTML table.</li>
+            <li><a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#dbPlot" target="_blank">dbPlot(query, template):</a> Executes a SQL query and creates a plot from the results.</li>
           </ul>
           <p>Below are detailed explanations and examples for each function:</p>
           <div id="db-json-example">
@@ -103,7 +103,7 @@
             <h3>dbTable(query, header)</h3>
             <p>
               <strong>Description:</strong>  Executes a SQL query and displays the result as an array of array that can be used to make a HTML table displaying the
-              results.
+              results. dbTable returns an array of array, and makeTable can be used to display it.
               This is helpful when you want to present query results in a user-friendly tabular format. <br>
               If <strong>header</strong> is truthy, the first row will contain column names as provided in the query. <br>
                <strong>query</strong> is a string with an SQL query. Parameters interpolation and string escaping are currently not supported.
