@@ -122,53 +122,15 @@
               <code class="language-javascript">
                 import { dbTable } from '/includes/tooldaq.js';
                 const query = "SELECT * FROM monitoring LIMIT 10";
-                const headers = ["Time", "Device", "Data"]; // Example headers
+                const headers = ["Time", "Device", "Data"];
                 function runDbTableDemo() {
-                  dbTable(query, headers).then(data => {
-                  console.log("dbTable result:", data);
-                  displayTable(data, headers);
+                  dbTable(query, true).then(data => {
+                    const tableContainer = document.getElementById("dbTableOutput");
+                    const table = makeTable(null, data, headers);
+                    tableContainer.appendChild(table);
+                  }).catch(error => {
+                    document.getElementById('dbTableOutput').innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
                   });
-                }
-
-                function displayTable(data, headers) {
-                  const container = document.getElementById("tableContainer");
-                  container.innerHTML = ""; // Clear previous content
-
-                  if (!data || data.length === 0) {
-                    container.innerHTML = "<p>No data available.</p>";
-                    return;
-                  }
-
-                  let table = document.createElement("table");
-                  table.classList.add("mdl-data-table", "mdl-js-data-table", "mdl-shadow--2dp");
-
-                  // Create table header
-                  let thead = document.createElement("thead");
-                  let headerRow = document.createElement("tr");
-                  headers.forEach(header => {
-                    let th = document.createElement("th");
-                    th.textContent = header;
-                    th.classList.add("mdl-data-table__cell--non-numeric");
-                    headerRow.appendChild(th);
-                  });
-                  thead.appendChild(headerRow);
-                  table.appendChild(thead);
-
-                  // Create table body
-                  let tbody = document.createElement("tbody");
-                  data.forEach(row => {
-                    let tr = document.createElement("tr");
-                    row.forEach(cell => {
-                      let td = document.createElement("td");
-                      td.textContent = cell;
-                      td.classList.add("mdl-data-table__cell--non-numeric");
-                      tr.appendChild(td);
-                    });
-                    tbody.appendChild(tr);
-                  });
-                  table.appendChild(tbody);
-
-                  container.appendChild(table);
                 }
               </code>
             </pre>
@@ -182,18 +144,20 @@
                 class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
                 Run dbTable Demo
               </button>
-              <div id="dbTableOutput" class="mdl-typography--body-1"></div>
+              <div id="dbTableOutput" class="mdl-typography--body-1"> </div>
             </div>
 
             <script>
               function runDbTableDemo() {
-                import('/includes/tooldaq.js').then(({ dbTable }) => {
+                import('/includes/tooldaq.js').then(({ dbTable, makeTable }) => {
                   const query = "SELECT * FROM monitoring LIMIT 10";
                   const headers = ["Time", "Device", "Data"];
 
-                  dbTable(query, headers).then(data => {
+                  dbTable(query, false).then(data => {
                     console.log("dbTable result:", data);
-                    displayTable(data, headers);
+                    const tableContainer = document.getElementById("dbTableOutput");
+                    const table = makeTable(null, data, headers);
+                    tableContainer.appendChild(table);
                   }).catch(error => {
                     document.getElementById('dbTableOutput').innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
                   });
@@ -325,13 +289,19 @@
               <code class="language-javascript">
                 import { dbPlot } from '/includes/tooldaq.js';
 
-                const query = "select time, data->'humidity' as "humidity", data->'temperature' as "temperature" from monitoring where device ='test_device'";
+                const query = "SELECT time, data->'humidity' as \"humidity\", data->'temperature' as \"temperature\" FROM monitoring ORDER BY time LIMIT 50";
                 const template = { type: 'scatter', mode: 'lines+markers' };
 
                 function runDbPlot() {
                     dbPlot(query, template).then(plots => {
-                        Plotly.newPlot('plotContainer', plots);
-                        });
+                      if (!plots || plots.length === 0) {
+                        throw new Error("No data returned for plotting.");
+                      }
+                      Plotly.newPlot('plotContainer', plots);
+                    })
+                    .catch(error => {
+                      document.getElementById('plotContainer').innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
+                    });
                 }
               </code>
             </pre>
@@ -348,10 +318,11 @@
               <strong>Output:</strong> A plot will be rendered in a container element with the ID
               <code>plotContainer</code>.
             </p>
-            <div id="plotContainer" class="demo-container mdl-shadow--2dp">
+            <div class="demo-container">
               <button onclick="runDbPlotDemo()" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
                 Run dbPlot Demo
               </button>
+              <div id="plotContainer"></div>
             </div>
 
             <script>
