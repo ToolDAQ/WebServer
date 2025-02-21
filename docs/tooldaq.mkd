@@ -346,22 +346,6 @@ escaping are currently not supported.
 In case of a database error, the function throws a `DBError` which is a
 derivative of [`Error`][Error].
 
-<a name='dbHtmlTable'></a>
-### dbHtmlTable
-
-```javascript
-dbHtmlTable(query, header) -> Promise -> string
-```
-Sends `query` to the database, retrieves the result in JSON format, and returns an HTML string representing the query results in a table format.
-
-If header is truthy, the first row of the table will contain column names as provided in the query.
-
-query is a string containing an SQL query. Parameters interpolation and string escaping are currently not supported.
-
-Each cell in the table will display the corresponding data value. If the value is an object (such as a nested JSON), it will be formatted and displayed as a JSON string within the table.
-
-In case of a database error, the function throws a DBError which is a derivative of [`Error`][Error].
-
 <a name='dbPlot'></a>
 ### dbPlot
 

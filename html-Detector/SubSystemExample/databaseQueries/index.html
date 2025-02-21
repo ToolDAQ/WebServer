@@ -28,7 +28,6 @@
           <ul>
             <li><a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#dbJson" target="_blank">dbJson(query)</a> Executes a SQL query and returns the result as JSON.</li>
             <li><a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#dbtable" target="_blank">dbTable(query, header):</a> Executes a SQL query and returns the result as an array of array.</li>
-            <li><a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#dbtable" target="_blank">dbHtmlTable(query, header):</a> Executes a SQL query and displays the result as an HTML table.</li>
             <li><a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#dbPlot" target="_blank">dbPlot(query, template):</a> Executes a SQL query and creates a plot from the results.</li>
           </ul>
           <p>Below are detailed explanations and examples for each function:</p>
@@ -203,71 +202,6 @@
 
                   container.appendChild(table);
                 }
-              }
-            </script>
-            <hr>
-          </div>
-
-          <div id="db-html-table-example">
-            <h3>dbHtmlTable(query, header)</h3>
-            <p>
-              <strong>Description:</strong> Executes a SQL query and dynamically generates an HTML table displaying the
-              results.
-              This is helpful when you want to present query results in a user-friendly tabular format. <br>
-              If <strong>header</strong> is truthy, the first row will contain column names as provided in the query. <br>
-               <strong>query</strong> is a string with an SQL query. Parameters interpolation and string escaping are currently not supported.
-            </p>
-            <p><strong>Example:</strong></p>
-            <pre>
-              <code class="language-html">
-                &lt;div id="tableContainer" class="demo-container mdl-shadow--2dp"&gt;&lt;/div&gt;
-                  &lt;button onclick="runDbHtmlTable()"
-                    class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored"&gt;
-                    Run dbTable Demo
-                  &lt;/button&gt;
-                  &lt;div id="dbTableOutput" class="mdl-typography--body-1"&gt;&lt;/div&gt;
-                &lt;/div&gt;
-              </code>
-              <code class="language-javascript">
-                import { dbTable } from '/includes/tooldaq.js';
-                const query = "SELECT * FROM monitoring LIMIT 10";
-                const headers = ["Time", "Device", "Data"]; // Example headers
-                function runDbHtmlTable() {
-                  dbHtmlTable(query, headers).then(data => {
-                    console.log("dbTable result:", data);
-                    const container = document.getElementById("tableContainer");
-                    container.innerHTML = data;
-                  });
-                }
-              </code>
-            </pre>
-            <p>
-              <strong>Output:</strong> The query results will be displayed in an HTML table within a container element
-              with
-              the ID <code>tableContainer</code>.
-            </p>
-            <div id="dbHtmlTableContainer" class="demo-container mdl-shadow--2dp">
-              <button onclick="runDbHtmlTableDemo()"
-                class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
-                Run dbHtmlTable Demo
-              </button>
-              <div id="dbHtmlTableOutput" class="mdl-typography--body-1"></div>
-            </div>
-
-            <script>
-              function runDbHtmlTableDemo() {
-                import('/includes/tooldaq.js').then(({ dbHtmlTable }) => {
-                  const query = "SELECT * FROM monitoring LIMIT 10";
-                  const headers = ["Time", "Device", "Data"];
-
-                  dbHtmlTable(query, headers).then(data => {
-                    console.log("dbHTmlTable result:", data);
-                    const container = document.getElementById("dbHtmlTableContainer");
-                    container.innerHTML = data;
-                  }).catch(error => {
-                    document.getElementById('dbTableOutput').innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
-                  });
-                });
               }
             </script>
             <hr>
