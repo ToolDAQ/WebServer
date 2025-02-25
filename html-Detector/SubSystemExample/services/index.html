@@ -21,8 +21,14 @@
           <hr>
           <h2 class="mdl-typography--headline">Services Functions</h2>
           <hr>
-          <p>The services functions in ToolDAQ.js provide functionalities to interact with and manage services. Below
-            are examples of each function</p>
+          <p>The services functions in ToolDAQ.js provide functionalities to interact with and manage services. </p>
+          <ul>
+            <li><a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#getservices" target="_blank">getServices(filter):</a> Returns an array of services matching the filter.</li>
+            <li><a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#getservice" target="_blank">getService(name):</a> Returns a service matching name.</li>
+            <li><a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#sendcommand" target="_blank">sendCommand(service, command, ...args):</a> Sends a command to a service and returns the service reply.</li>
+            <li><a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#getcontrols" target="_blank">getControls(service):</a> Queries a service for slow controls that it supports.</li>
+          </ul>
+          <p>Below are examples of each function</p>
           <div id="get-services-example">
             <h3><a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#getservices" target="_blank">getServices(filter)</a></h3>
             <p>

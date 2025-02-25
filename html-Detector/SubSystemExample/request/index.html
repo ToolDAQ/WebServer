@@ -21,7 +21,14 @@
         <div id="request-functions">
           <h2>Request Functions</h2>
           <p>The request functions in ToolDAQ.js provide functionalities to interact with services and
-            endpoints. Below are examples of each function</p>
+            endpoints.</p>
+          <ul>
+            <li>
+              <a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#request" target="_blank"> getRequest(url, args, options) </a>
+              Sends an HTTP request to url and returns a Promise to return a Response object.
+              This is a low-level function, see below for functions that make a request and process the Response.
+            </li>
+          </ul>
           <div id="get-request-example">
             <h3><a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#request" target="_blank">getRequest(url, args, options)</a></h3>
             <p>
