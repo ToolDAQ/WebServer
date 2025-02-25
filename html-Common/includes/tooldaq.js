@@ -40,6 +40,7 @@ class CSVParseError extends Error {};
 
 async function parseCSV(stream) {
   let result = [];
+  if (stream == null) return result;
   let row    = [];
   let cell   = [];
 
@@ -73,7 +74,10 @@ async function parseCSV(stream) {
     throw new CSVParseError(message);
   };
 
-  for await (let chunk of stream)
+  let reader = stream.getReader();
+  while (true) {
+      let chunk = (await reader.read()).value;
+      if (chunk === undefined) break;
     for (let byte of chunk) {
       if (byte == 0x22 /* " */) {
         if (start) {
@@ -120,7 +124,7 @@ async function parseCSV(stream) {
           cell.push(byte);
       };
     }
-
+  };
   return result;
 };
 
@@ -313,7 +317,7 @@ export function getMonitoringPlot(device, options) {
         };
       } else {
         for (let column of fixed)
-          y[column] = {
+          y[column.key] = {
             index: column.index,
             name:  column.name,
             data:  new Array(table.length)
@@ -340,7 +344,7 @@ export function getMonitoringPlot(device, options) {
         };
       };
 
-      let x = table.map(row => new Date(row[0].replace(/[+-]\d{2}$/, 'Z$&')));
+      let x = table.map(row => row[0] ? new Date(row[0]) : null);
 
       return Object.values(y).sort(
         function (a, b) {

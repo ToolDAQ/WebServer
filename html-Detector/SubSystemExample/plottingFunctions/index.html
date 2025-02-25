@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>tooldaq.js Documentation | ToolDAQ WebServer</title>
+  <link rel="stylesheet" href="/stylesheets/prism.min.css">
+  <link rel="stylesheet" href="/stylesheets/examples.css">
+  <script src="/stylesheets/prism.min.js"></script>
+  <script src="/stylesheets/prism-javascript.min.js"></script>
+</head>
+
+<body>
+  <!--#include virtual="/includes/header.html" -->
+  <!--#include virtual="../subheader.html" -->
+  <!--#include virtual="/includes/drawer.html" -->
+
+  <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+    <main class="mdl-layout__content">
+      <div class="content">
+        <div id="plotting-functions">
+          <h2>Plotting Functions</h2>
+          <p>
+            The <strong>Plotting Functions</strong> in ToolDAQ.js allow you to generate and display plots easily.
+            These functions are useful for visualizing data from the monitoring system and predefined Plotly plots.
+          </p>
+          <ul>
+            <li><a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#getMonitoringPlot" target="_blank">getMonitoringPlot(device, options):</a> Retrieves monitoring data as an array of Plotly
+              plot objects.</li>
+            <li><a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#makeMonitoringPlot" target="_blank">makeMonitoringPlot(div, device, options, layout):</a> Generates a plot and fills the
+              specified div.</li>
+            <li><a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#getPlotlyPlot" target="_blank">getPlotlyPlot(name, version):</a> Retrieves a saved Plotly plot.</li>
+            <li><a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#makePlotlyPlot" target="_blank">makePlotlyPlot(div, name, version):</a> Renders a saved Plotly plot inside a specified div.
+            </li>
+          </ul>
+          <p>Below are detailed explanations and examples for each function:</p>
+
+          <!-- getMonitoringPlot Example -->
+          <div id="get-monitoring-plot-example">
+            <h3>getMonitoringPlot(device, options)</h3>
+            <p>
+              <strong>Description:</strong> Retrieves monitoring data from the system and returns an array of Plotly
+              plot objects. <br>
+              <strong>Parameters:</strong> <br>
+              <code>device</code> (string): The name of the device to retrieve monitoring data for. <br>
+              <code>options</code> (object): An object containing parameters for the request. options can be null in
+              which case all monitoring data is returned <br>
+            </p>
+            <p><strong>Example:</strong></p>
+            <pre>
+              <code class="language-javascript">
+                import { getMonitoringPlot } from '/includes/tooldaq.js';
+                const device = "test_device";
+                const options = {
+                  from: '2025-02-18 12:59:13.588877+00',
+                  to: new Date(),
+                  template: { mode: 'lines+markers' } };
+                getMonitoringPlot(device, options).then(plots => console.log(plots));
+              </code>
+            </pre>
+            <p><strong>Output:</strong> Logs the retrieved plot data to the console.</p>
+            <p>
+              You can also add as script tag directly to your HTML file: and utilise the function as shown below:
+            </p>
+            <pre>
+              <code class="language-html">
+                &lt;button onclick="runGetMonitoringPlot()" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored"&gt;
+                  Run getMonitoringPlot
+                &lt;/button&gt;
+                &lt;div id="getMonitoringPlotOutput" class="mdl-typography--body-1"&gt;&lt;/div&gt;
+
+                &lt;script&gt;
+                  function runGetMonitoringPlot() {
+                    import('/includes/tooldaq.js').then(({ getMonitoringPlot }) => {
+                      const device = "test_device";
+                      const options = {
+                        from: '2025-02-18 12:59:13.588877+00',
+                        to: new Date(),
+                        template: { mode: 'lines+markers' } };
+                      getMonitoringPlot(device, options)
+                        .then(plots => {
+                          document.getElementById('getMonitoringPlotOutput').innerText = JSON.stringify(plots, null, 2);
+                        })
+                        .catch(error => {
+                          document.getElementById('getMonitoringPlotOutput').innerText = 'Error: ' + error.message;
+                        });
+                    });
+                  }
+                &lt;/script&gt;
+              </code>
+            </pre>
+            <div class="demo-container">
+              <button onclick="runGetMonitoringPlotDemo()"
+                class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+                Run getMonitoringPlot Demo
+              </button>
+              <div id="getMonitoringPlotOutput" class="mdl-typography--body-1"></div>
+            </div>
+
+            <script>
+              function runGetMonitoringPlotDemo() {
+                import('/includes/tooldaq.js').then(({ getMonitoringPlot }) => {
+                  const device = "test_device";
+                  const options = {
+                    from: '2025-02-18 12:59:13.588877+00',
+                    to: new Date(),
+                    template: { mode: 'lines+markers' } };
+                  getMonitoringPlot(device, options)
+                    .then(plots => {
+                      document.getElementById('getMonitoringPlotOutput').innerText = JSON.stringify(plots, null, 2);
+                    })
+                    .catch(error => {
+                      document.getElementById('getMonitoringPlotOutput').innerText = 'Error: ' + error.message;
+                    });
+                });
+              }
+            </script>
+            <hr>
+          </div>
+
+          <!-- makeMonitoringPlot Example -->
+          <div id="make-monitoring-plot-example">
+            <h3>makeMonitoringPlot(div, device, options, layout)</h3>
+            <p>
+              <strong>Description:</strong> Retrieves monitoring data and renders a plot inside the specified div. <br>
+              <strong>Parameters:</strong> <br>
+              <code>div</code> (string): The ID of the div element to render the plot in. <br>
+              <code>device</code> (string): The name of the device to retrieve monitoring data for. <br>
+              <code>options</code> (object): An object containing parameters for the request. options can be null in
+              which case all monitoring data is returned <br>
+              <code>layout</code> (object): An object containing layout options for the plot.
+            </p>
+            <p><strong>Example:</strong></p>
+            <pre>
+              <code class="language-javascript">
+                import { makeMonitoringPlot } from '/includes/tooldaq.js';
+                const device = "middleman_1";
+                const options = { from: '2025-01-01T00:00:00Z' };
+                const layout = { title: "Sensor Data" };
+                makeMonitoringPlot("monitoringPlotContainer", device, options, layout);
+              </code>
+            </pre>
+            <p>You can also embed the script in your html using the snippet below</p>
+            <pre>
+              <code class="language-html">
+                &lt;div id="monitoringPlotContainer" class="demo-container mdl-shadow--2dp"&gt;&lt;/div&gt;
+                &lt;script&gt;
+                  <code class="language-javascript">
+                    function runMakeMonitoringPlot() {
+                      import('/includes/tooldaq.js').then(({ makeMonitoringPlot }) => {
+                        const device = "test_device";
+                        const options = {
+                          xaxis: { title: 'Time' },
+                          yaxis: { title: 'Sensor Values' },
+                          showlegend: true,
+                        };
+                        const layout = { title: "Sensor Data" };
+                        makeMonitoringPlot("monitoringPlotContainer", device, options, layout);
+                      });
+                    }
+                  </code>
+                &lt;/script&gt;
+              </code>
+            </pre>
+            <p><strong>Output:</strong> A plot will be rendered inside the div with the ID
+              <code>monitoringPlotContainer</code>.
+            </p>
+            <div id="monitoringPlotContainer" class="demo-container mdl-shadow--2dp">
+              <button onclick="runMakeMonitoringPlotDemo()"
+                class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+                Run makeMonitoringPlot Demo
+              </button>
+              <div id="makeMonitoringPlotOutput"></div>
+            </div>
+
+            <script>
+              function runMakeMonitoringPlotDemo() {
+                import('/includes/tooldaq.js').then(({ makeMonitoringPlot }) => {
+                  const device = "test_device";
+                  const options = {
+                    xaxis: { title: 'Time' },
+                    yaxis: { title: 'Sensor Values' },
+                    showlegend: true,
+                  };
+                  const layout = { title: "Sensor Data" };
+                  makeMonitoringPlot("makeMonitoringPlotOutput", device, options, layout);
+                });
+              }
+            </script>
+            <hr>
+          </div>
+
+          <!-- getPlotlyPlot Example -->
+          <div id="get-plotly-plot-example">
+            <h3>getPlotlyPlot(name, version)</h3>
+            <p>
+              <strong>Description:</strong> Retrieves a saved Plotly plot from the database. <br>
+              <strong>Parameters:</strong> <br>
+              <code>name</code> (string): The name of the plot to retrieve. <br>
+              <code>version</code> (number): The version of the plot to retrieve.
+            </p>
+            <p><strong>Example:</strong></p>
+            <pre>
+              <code class="language-javascript">
+                import { getPlotlyPlot } from '/includes/tooldaq.js';
+                const name = "plotly1";
+                const version = 1;
+                function runGetPlotlyPlot() {
+                  getPlotlyPlot(name, version).then(plot => console.log(plot));
+                }
+              </code>
+              <code class="language-html">
+                &lt;button onclick="runGetPlotlyPlot()" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored"&gt;
+                  Run getPlotlyPlot
+                &lt;/button&gt;
+                &lt;div id="getPlotlyPlotOutput" class="mdl-typography--body-1"&gt;&lt;/div&gt;
+              </code>
+            </pre>
+            <p><strong>Output:</strong> Logs the retrieved plot data to the console.</p>
+            <div class="demo-container">
+              <button onclick="runGetPlotlyPlotDemo()"
+                class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+                Run getPlotlyPlot Demo
+              </button>
+              <div id="getPlotlyPlotOutput" class="mdl-typography--body-1"></div>
+            </div>
+
+            <script>
+              function runGetPlotlyPlotDemo() {
+                import('/includes/tooldaq.js').then(({ getPlotlyPlot }) => {
+                  const name = "plotly1";
+                  const version = 1;
+                  getPlotlyPlot(name, version)
+                    .then(plot => {
+                      document.getElementById('getPlotlyPlotOutput').innerText = JSON.stringify(plot, null, 2);
+                    })
+                    .catch(error => {
+                      document.getElementById('getPlotlyPlotOutput').innerText = 'Error: ' + error.message;
+                    });
+                });
+              }
+            </script>
+            <hr>
+          </div>
+
+          <!-- makePlotlyPlot Example -->
+          <div id="make-plotly-plot-example">
+            <h3>makePlotlyPlot(div, name, version)</h3>
+            <p>
+              <strong>Description:</strong> Calls <code>getPlotlyPlot</code> to retrieve a Plotly plot and renders it
+              inside the specified <code>div</code> element. <br>
+              <strong>Parameters:</strong> <br>
+              <code>div</code> (string): The ID of the div element to render the plot in. <br>
+              <code>name</code> (string): The name of the plot to retrieve. <br>
+              <code>version</code> (number): The version of the plot to retrieve.
+            </p>
+            <p><strong>Example:</strong></p>
+            <pre>
+              <code class="language-html">
+                &lt;button onclick="runMakePlotlyPlot()" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored"&gt;
+                  Run makePlotlyPlot
+                &lt;/button&gt;
+                &lt;div id="plotlyContainer" class="demo-container mdl-shadow--2dp"&gt;&lt;/div&gt;
+              </code>
+              <code class="language-javascript">
+                import { makePlotlyPlot } from '/includes/tooldaq.js';
+
+                const divId = 'plotlyContainer';
+                const plotName = 'plotly1';
+                const plotVersion = 1;
+                function runMakePlotlyPlot() {
+                  makePlotlyPlot(divId, plotName, plotVersion);
+                }
+              </code>
+            </pre>
+            <p>
+              <strong>Output:</strong> The plot will be rendered inside the <code>div</code> element with the ID
+              <code>plotlyContainer</code>.
+            </p>
+            <div id="plotlyContainer" class="demo-container mdl-shadow--2dp">
+              <button onclick="runMakePlotlyPlotDemo()"
+                class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+                Run makePlotlyPlot Demo
+              </button>
+              <div id="makePlotlyPlotOutput"></div>
+            </div>
+            <script>
+              function runMakePlotlyPlotDemo() {
+                import('/includes/tooldaq.js').then(({ makePlotlyPlot }) => {
+                  const divId = 'makePlotlyPlotOutput';
+                  const plotName = 'plotly1';
+                  const plotVersion = 1;
+
+                  makePlotlyPlot(divId, plotName, plotVersion)
+                    .catch(error => {
+                      document.getElementById('makePlotlyPlotOutput').innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
+                      console.error("makePlotlyPlot Error:", error);
+                    });
+                });
+              }
+            </script>
+            <hr>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <!--#include virtual="/includes/footer.html" -->
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</body>
+
+</html>

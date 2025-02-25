@@ -12,6 +12,7 @@
 - [Database querying](#s-database)
   - [`dbJson`](#dbJson)
   - [`dbTable`](#dbTable)
+  - [`dbHtmlTable](#dbHtmltable)
   - [`dbPlot`](#dbPlot)
 - [Plotting functions](#s-plotting)
   - [`getMonitoringPlot`](#getMonitoringPlot)

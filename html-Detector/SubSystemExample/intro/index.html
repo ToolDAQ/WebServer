@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>tooldaq.js Documentation | ToolDAQ WebServer</title>
+  <link rel="stylesheet" href="/stylesheets/prism.min.css">
+  <link rel="stylesheet" href="/stylesheets/examples.css">
+  <script src="/stylesheets/prism.min.js"></script>
+  <script src="/stylesheets/prism-javascript.min.js"></script>
+</head>
+
+<body>
+  <!--#include virtual="/includes/header.html" -->
+  <!--#include virtual="../subheader.html" -->
+  <!--#include virtual="/includes/drawer.html" -->
+
+  <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+    <main class="mdl-layout__content">
+      <div class="content mdl-typography--text-center">
+        <h1>ToolDAQ.js Examples and Getting Started Guide</h1>
+        <p>This is your guide to using <strong>tooldaq.js</strong>;
+          a JavaScript library for interacting with the back-end services for monitoring and data systems, providing
+          functionalities for database queries, requests and data visualization.. ToolDAQ.js provides functionalities
+          for:
+        </p>
+        <ul class="mdl-typography--text-left">
+          <li><strong>Database Queries:</strong> Retrieve and manage data from ToolDAQ databases efficiently.</li>
+          <li><strong>Requests:</strong> Handle requests to interact with external services and endpoints.</li>
+          <li><strong>Data Visualization:</strong> Create plots and visualizations for data analysis.</li>
+          <li><strong>Service Management:</strong> Interact with and manage ToolDAQ services for seamless integration.</li>
+          <li><strong>Utilities:</strong> Miscellaneous helper functions to enhance development workflows.</li>
+        </ul>
+      </div>
+      <div class="content">
+        <hr>
+        <h2>The functions have organised into the following groups for easy navigation</h2>
+        <p>They explore each of these function groups, providing examples and interactive demos for easier/better understanding.</p>
+        <ul>
+          <li><a href="/SubSystemExample/databaseQueries" class="documentation-link">Database Query Operations</a></li>
+          <li><a href="/SubSystemExample/request" class="documentation-link">Request Functions</a></li>
+          <li><a href="/SubSystemExample/plottingFunctions" class="documentation-link">Plotting and Visualization Functions</a></li>
+          <li><a href="/SubSystemExample/services" class="documentation-link">Service Functions</a></li>
+        </ul>
+        <hr>
+        <div id="setup">
+          <h2>Basic Setup</h2>
+          <p>
+            To use <strong>ToolDAQ.js</strong> in your project, follow these steps:
+          </p>
+          <ol>
+            <li><strong>Set Up Your JavaScript File:</strong> Create a new JavaScript file (e.g., <code>app.js</code>)
+              where you'll write your code.</li>
+            <li><strong>Import ToolDAQ.js Functions:</strong> Use the ES6 <code>import</code> syntax to include the
+              functions you need from <code>tooldaq.js</code>. For example:
+              <pre class="mdl-typography--body-2">
+                <code class="language-javascript">import { dbJson } from '/includes/tooldaq.js';</code>
+              </pre>
+
+              If you need multiple functions, you can import them all at once:
+              <pre class="mdl-typography--body-2">
+                <code  class="language-javascript">import { dbJson, dbTable, dbPlot } from '/includes/tooldaq.js';</code>
+              </pre>
+            </li>
+            <li><strong>Link Your JavaScript File to Your HTML Page:</strong> Add the following line to your HTML file
+              to
+              include your <code>app.js</code>:
+              <pre class="mdl-typography--body-2">
+                <code  class="language-html">
+                  &lt;html lang="en"&gt;
+                    &lt;head&gt;
+                      &lt;title&gt;ToolDAQ.js WebPage&lt;/title&gt;
+                    &lt;/head&gt;
+                    &lt;body&gt;
+                      &lt;!--#include virtual="/includes/header.html" --&gt;
+                      &lt;!--#include virtual="../subheader.html" --&gt;
+                      &lt;!--#include virtual="/includes/drawer.html" --&gt;
+
+                      &lt;h1&gt;ToolDAQ.js WebPage&lt;/h1&gt;
+
+                      &lt;!--#include virtual="/includes/footer.html" --&gt;
+                      &lt;script src="app.js"&gt;&lt;/script&gt;
+                    &lt;/body&gt;
+                  &lt;/html&gt;
+                </code>
+              </pre>
+            </li>
+          </ol>
+          <p>Once you've completed these steps, you're ready to start using ToolDAQ.js!</p>
+        </div>
+      </div>
+    </main>
+  </div>
+  <!--#include virtual="/includes/footer.html" -->
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</body>
+
+</html>

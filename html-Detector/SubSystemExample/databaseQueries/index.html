@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>tooldaq.js Documentation | ToolDAQ WebServer</title>
+  <link rel="stylesheet" href="/stylesheets/prism.min.css">
+  <link rel="stylesheet" href="/stylesheets/examples.css">
+  <script src="/stylesheets/prism.min.js"></script>
+  <script src="/stylesheets/prism-javascript.min.js"></script>
+</head>
+
+<body>
+  <!--#include virtual="/includes/header.html" -->
+  <!--#include virtual="../subheader.html" -->
+  <!--#include virtual="/includes/drawer.html" -->
+
+  <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+    <main class="mdl-layout__content">
+      <div class="content">
+        <div id="database-query">
+          <hr>
+          <h2>Database Query Operations</h2>
+          <hr>
+          <p>
+            The <strong>Database Query Operations</strong> functions are designed to help you interact with ToolDAQ
+            databases. These functions include:
+          </p>
+          <ul>
+            <li><a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#dbJson" target="_blank">dbJson(query)</a> Executes a SQL query and returns the result as JSON.</li>
+            <li><a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#dbtable" target="_blank">dbTable(query, header):</a> Executes a SQL query and returns the result as an array of array.</li>
+            <li><a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#dbPlot" target="_blank">dbPlot(query, template):</a> Executes a SQL query and creates a plot from the results.</li>
+          </ul>
+          <p>Below are detailed explanations and examples for each function:</p>
+          <div id="db-json-example">
+            <h3>dbJson(query)</h3>
+            <p>
+              <strong>Description:</strong> Executes a SQL query and returns the result as a JSON object.
+              This is useful when you need structured data to work with programmatically.
+            </p>
+            <p><strong>Example:</strong></p>
+            <pre>
+              <code  class="language-javascript">
+                import { dbJson } from '/includes/tooldaq.js';
+                const query = "SELECT * FROM monitoring LIMIT 10";
+                dbJson(query).then(result => console.log(result));
+              </code>
+            </pre>
+            <p>
+              <strong>Output:</strong> The result of the query will be logged to the browser console as JSON.
+            </p>
+            <p> You can also use a script tag embedded in your html as follows:</p>
+            <pre>
+              <code class="language-html">
+                &lt;button onclick="runDbJson()"
+                  class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored"&gt;
+                  Run runDbJson
+                &lt;/button&gt;
+                &lt;div id="dbJsonOutput" class="mdl-typography--body-1"&gt;&lt;/div&gt;
+
+                &lt;script&gt;
+                  <code class="language-javascript">
+                    function runDbJson() {
+                      import('/includes/tooldaq.js').then(({ dbJson }) => {
+                        const query = "SELECT * FROM monitoring LIMIT 1";
+                        dbJson(query)
+                          .then(result => {
+                            document.getElementById('dbJsonOutput').innerText = JSON.stringify(result, null, 2);
+                          })
+                          .catch(error => {
+                            document.getElementById('dbJsonOutput').innerText = 'Error: ' + error.message;
+                          });
+                      });
+                    }
+                  </code>
+                &lt;/script&gt;
+              </code>
+            </pre>
+            <div class="demo-container">
+              <button onclick="runDbJsonDemo()" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+                Run dbJson Demo
+              </button>
+              <div id="dbJsonOutput" class="mdl-typography--body-1"></div>
+            </div>
+
+            <script>
+              function runDbJsonDemo() {
+                import('/includes/tooldaq.js').then(({ dbJson }) => {
+                  const query = "SELECT * FROM monitoring LIMIT 1";
+                  dbJson(query)
+                    .then(result => {
+                      document.getElementById('dbJsonOutput').innerText = JSON.stringify(result, null, 2);
+                    })
+                    .catch(error => {
+                      document.getElementById('dbJsonOutput').innerText = 'Error: ' + error.message;
+                    });
+                });
+              }
+            </script>
+            <hr>
+          </div>
+          <div id="db-table-example">
+            <h3>dbTable(query, header)</h3>
+            <p>
+              <strong>Description:</strong>  Executes a SQL query and displays the result as an array of array that can be used to make a HTML table displaying the
+              results.<a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#makeTable" target="_blank"> makeTable()</a> can be used to display it.
+              This is helpful when you want to present query results in a user-friendly tabular format. <br>
+              If <strong>header</strong> is truthy, the first row will contain column names as provided in the query. <br>
+               <strong>query</strong> is a string with an SQL query. Parameters interpolation and string escaping are currently not supported.
+            </p>
+            <p><strong>Example:</strong></p>
+            <pre>
+              <code class="language-html">
+                &lt;div id="tableContainer" class="demo-container mdl-shadow--2dp"&gt;&lt;/div&gt;
+                  &lt;button onclick="runDbTable()"
+                    class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored"&gt;
+                    Run dbTable Demo
+                  &lt;/button&gt;
+                  &lt;div id="dbTableOutput" class="mdl-typography--body-1"&gt;&lt;/div&gt;
+                &lt;/div&gt;
+              </code>
+              <code class="language-javascript">
+                import { dbTable } from '/includes/tooldaq.js';
+                const query = "SELECT * FROM monitoring LIMIT 10";
+                const headers = ["Time", "Device", "Data"];
+                function runDbTableDemo() {
+                  dbTable(query, true).then(data => {
+                    const tableContainer = document.getElementById("dbTableOutput");
+                    const table = makeTable(null, data, headers);
+                    tableContainer.appendChild(table);
+                  }).catch(error => {
+                    document.getElementById('dbTableOutput').innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
+                  });
+                }
+              </code>
+            </pre>
+            <p>
+              <strong>Output:</strong> The query results will be displayed in an HTML table within a container element
+              with
+              the ID <code>tableContainer</code>.
+            </p>
+            <div id="tableContainer" class="demo-container mdl-shadow--2dp">
+              <button onclick="runDbTableDemo()"
+                class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+                Run dbTable Demo
+              </button>
+              <div id="dbTableOutput" class="mdl-typography--body-1"> </div>
+            </div>
+
+            <script>
+              function runDbTableDemo() {
+                import('/includes/tooldaq.js').then(({ dbTable, makeTable }) => {
+                  const query = "SELECT * FROM monitoring LIMIT 10";
+                  const headers = ["Time", "Device", "Data"];
+
+                  dbTable(query, false).then(data => {
+                    console.log("dbTable result:", data);
+                    const tableContainer = document.getElementById("dbTableOutput");
+                    const table = makeTable(null, data, headers);
+                    tableContainer.appendChild(table);
+                  }).catch(error => {
+                    document.getElementById('dbTableOutput').innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
+                  });
+                });
+
+                function displayTable(data, headers) {
+                  const container = document.getElementById("tableContainer");
+                  container.innerHTML = ""; // Clear previous content
+
+                  if (!data || data.length === 0) {
+                    container.innerHTML = "<p>No data available.</p>";
+                    return;
+                  }
+
+                  let table = document.createElement("table");
+                  table.classList.add("mdl-data-table", "mdl-js-data-table", "mdl-shadow--2dp");
+
+                  // Create table header
+                  let thead = document.createElement("thead");
+                  let headerRow = document.createElement("tr");
+                  headers.forEach(header => {
+                    let th = document.createElement("th");
+                    th.textContent = header;
+                    th.classList.add("mdl-data-table__cell--non-numeric");
+                    headerRow.appendChild(th);
+                  });
+                  thead.appendChild(headerRow);
+                  table.appendChild(thead);
+
+                  // Create table body
+                  let tbody = document.createElement("tbody");
+                  data.forEach(row => {
+                    let tr = document.createElement("tr");
+                    row.forEach(cell => {
+                      let td = document.createElement("td");
+                      td.textContent = cell;
+                      td.classList.add("mdl-data-table__cell--non-numeric");
+                      tr.appendChild(td);
+                    });
+                    tbody.appendChild(tr);
+                  });
+                  table.appendChild(tbody);
+
+                  container.appendChild(table);
+                }
+              }
+            </script>
+            <hr>
+          </div>
+
+          <div id="db-plot-example">
+            <h3>dbPlot(query, template)</h3>
+            <p>
+              <strong>Description:</strong> Executes a SQL query and generates a plot from the query results.
+              This is ideal for visualisations and plots.
+            </p>
+            <p>
+              <strong>Parameters:</strong> <br>
+              <strong>query</strong> is a string with an SQL query. Parameters interpolation and string escaping are currently not supported. <br>
+                <strong>template</strong> can be used to set default values for all returned traces. It should be an object (possibly null)
+            </p>
+            <p><strong>Example:</strong></p>
+            <pre>
+              <code class="language-javascript">
+                import { dbPlot } from '/includes/tooldaq.js';
+
+                const query = "SELECT time, data->'humidity' as \"humidity\", data->'temperature' as \"temperature\" FROM monitoring WHERE device ='test_device' ORDER BY time LIMIT 50";
+                const template = { type: 'scatter', mode: 'lines+markers' };
+
+                function runDbPlot() {
+                    dbPlot(query, template).then(plots => {
+                      if (!plots || plots.length === 0) {
+                        throw new Error("No data returned for plotting.");
+                      }
+                      Plotly.newPlot('plotContainer', plots);
+                    })
+                    .catch(error => {
+                      document.getElementById('plotContainer').innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
+                    });
+                }
+              </code>
+            </pre>
+            <pre>
+              <code class="language-html">
+                &lt;div id="plotContainer" class="demo-container mdl-shadow--2dp"&gt;&lt;/div&gt;
+                &lt;button onclick="runDbPlot()"
+                  class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored"&gt;
+                  Run dbPlot
+                &lt;/button&gt;
+              </code>
+            </pre>
+            <p>
+              <strong>Output:</strong> A plot will be rendered in a container element with the ID
+              <code>plotContainer</code>.
+            </p>
+            <div class="demo-container">
+              <button onclick="runDbPlotDemo()" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+                Run dbPlot Demo
+              </button>
+              <div id="plotContainer"></div>
+            </div>
+
+            <script>
+              function runDbPlotDemo() {
+                import('/includes/tooldaq.js').then(({ dbPlot }) => {
+                  const query = "SELECT time, data->'humidity' as \"humidity\", data->'temperature' as \"temperature\" FROM monitoring WHERE device ='test_device' ORDER BY time LIMIT 50";
+                  const template = { type: 'scatter', mode: 'lines+markers' };
+
+                  dbPlot(query, template)
+                    .then(plots => {
+                      console.log("dbPlot data:", plots);
+                      if (!plots || plots.length === 0) {
+                        throw new Error("No data returned for plotting.");
+                      }
+                      Plotly.newPlot('plotContainer', plots);
+                    })
+                    .catch(error => {
+                      document.getElementById('plotContainer').innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
+                      console.error("dbPlot Error:", error);
+                    });
+                });
+              }
+            </script>
+            <hr>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <!--#include virtual="/includes/footer.html" -->
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</body>
+</html>
