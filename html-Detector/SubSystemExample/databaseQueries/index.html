@@ -223,7 +223,7 @@
               <code class="language-javascript">
                 import { dbPlot } from '/includes/tooldaq.js';
 
-                const query = "SELECT time, data->'humidity' as \"humidity\", data->'temperature' as \"temperature\" FROM monitoring ORDER BY time LIMIT 50";
+                const query = "SELECT time, data->'humidity' as \"humidity\", data->'temperature' as \"temperature\" FROM monitoring WHERE device ='test_device' ORDER BY time LIMIT 50";
                 const template = { type: 'scatter', mode: 'lines+markers' };
 
                 function runDbPlot() {
@@ -262,7 +262,7 @@
             <script>
               function runDbPlotDemo() {
                 import('/includes/tooldaq.js').then(({ dbPlot }) => {
-                  const query = "SELECT time, data->'humidity' as \"humidity\", data->'temperature' as \"temperature\" FROM monitoring ORDER BY time LIMIT 50";
+                  const query = "SELECT time, data->'humidity' as \"humidity\", data->'temperature' as \"temperature\" FROM monitoring WHERE device ='test_device' ORDER BY time LIMIT 50";
                   const template = { type: 'scatter', mode: 'lines+markers' };
 
                   dbPlot(query, template)
