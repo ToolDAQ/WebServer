@@ -7,13 +7,42 @@
 <!--#include virtual="../subheader.html" -->
 
 <div id="logtabbar" class="mdl-layout__tab-bar mdl-js-ripple-effect is-casting-shadow mdl-js-ripple-effect--ignore-events" data-upgraded=",MaterialRipple">  <!--class="mdl-layout__tab-bar mdl-js-ripple-effect" >-->
-</div>  
+</div>
 
 <!--#include virtual="/includes/drawer.html" -->
 
+<div class="mdl-layout mdl-js-layout">
+  <div class="mdl-layout__content">
+      <div class="page-content">
+          <h2>Log Viewer</h2>
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <input type="text" id="log-device-input" class="mdl-textfield__input" placeholder="Type to search device..." autocomplete="off">
+            <div id="device-suggestions" class="autocomplete-list"></div>
+          </div>
 
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+              <input class="mdl-textfield__input" type="number" id="log-line-count" min="1" required>
+              <label class="mdl-textfield__label" for="log-line-count">Number of lines</label>
+          </div>
 
-<div id="log_output">
+          <label>
+            <input type="checkbox" id="auto-refresh-checkbox">
+            Enable Auto Refresh
+          </label>
+
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" id="auto-refresh-container" style="display: none;">
+            <input class="mdl-textfield__input" type="number" id="log-update-interval" min="15">
+            <label class="mdl-textfield__label" for="log-update-interval">Log refresh frequency in seconds</label>
+            <p id="refresh-feedback" style="color: #00796b; font-size: 14px; margin-top: 5px;"></p>
+          </div>
+
+          <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" id="fetch-logs-button">
+              Show Logs
+          </button>
+
+          <div id="logs-container"></div>
+      </div>
+  </div>
 </div>
 
 <!--#include virtual="/includes/footer.html" -->
