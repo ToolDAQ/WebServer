@@ -273,8 +273,6 @@ function RefreshLogs(device, log_line_count) {
 			});
 			CheckLogDivs();
 			log_display.scrollTop = log_display.scrollHeight;
-		} else {
-			alert(`No new logs for ${device}.`);
 		}
 	}).catch(function (error) {
 		console.error("Error refreshing logs:", error);
