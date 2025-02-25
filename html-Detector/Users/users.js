@@ -17,7 +17,7 @@ function Init() {
 }
 
 function GetUsers() {
-  const query = "SELECT user_id, username, permissions FROM users ORDER BY username";
+  const query = "SELECT user_id, username, permissions FROM users ORDER BY user_id DESC LIMIT 20";
   GetPSQLTable(query, "root", "daq", true).then(function (result) {
     const usersTable = document.getElementById("usersTable");
     usersTable.innerHTML = result;
