@@ -49,8 +49,8 @@ function fetchNetworkData() {
               let row = `<tr>
                   <td>${device.ip}</td>
                   <td>${device.mac}</td>
-                  <td>${device.name || 'Unknown'}</td>
-                  <td>${device.os || 'Unknown'}</td>
+                  <td>${device.name}</td>
+                  <td>${device.os}</td>
               </tr>`;
               tableBody.innerHTML += row;
           });
@@ -58,5 +58,5 @@ function fetchNetworkData() {
       .catch(err => console.error("Error fetching data:", err));
 }
 
-// setInterval(fetchNetworkData, 10000);
+setInterval(fetchNetworkData, 10000);
 window.onload = fetchNetworkData;
