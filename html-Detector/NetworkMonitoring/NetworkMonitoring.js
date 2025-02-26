@@ -1,6 +1,6 @@
 let pingInterval;
 
-document.getElementById('pingButton').addEventListener('click', function() {
+document.getElementById('pingButton').addEventListener('click', function () {
     const ip = document.getElementById('ipAddress').value.trim();
 
     if (!ip) {
@@ -24,7 +24,7 @@ document.getElementById('pingButton').addEventListener('click', function() {
         });
 });
 
-document.getElementById('stopPingButton').addEventListener('click', function() {
+document.getElementById('stopPingButton').addEventListener('click', function () {
     clearInterval(pingInterval);
     document.getElementById('pingButton').disabled = false;
     document.getElementById('stopPingButton').style.display = 'none';
@@ -32,14 +32,14 @@ document.getElementById('stopPingButton').addEventListener('click', function() {
 });
 
 function fetchNetworkData() {
-  fetch('/cgi-bin/scan_network.cgi')
-      .then(response => response.json())
-      .then(data => {
-        console.log("Data fetched:", data);
-          let tableBody = document.getElementById("network-table-body");
-          tableBody.innerHTML = "";
-          data.forEach(device => {
-              let row = `<tr>
+    fetch('/cgi-bin/scan_network.cgi')
+        .then(response => response.json())
+        .then(data => {
+            console.log("Data fetched:", data);
+            let tableBody = document.getElementById("network-table-body");
+            tableBody.innerHTML = "";
+            data.forEach(device => {
+                let row = `<tr>
                   <td>${device.ip}</td>
                   <td>${device.mac}</td>
                   <td>${device.name}</td>
@@ -52,17 +52,17 @@ function fetchNetworkData() {
                       <div class="device-feedback" id="feedback-${device.ip}"></div>
                   </td>
               </tr>`;
-              tableBody.innerHTML += row;
-          });
-          document.querySelectorAll('.ping-device').forEach(button => {
-            button.addEventListener('click', handlePingDevice);
-          });
+                tableBody.innerHTML += row;
+            });
+            document.querySelectorAll('.ping-device').forEach(button => {
+                button.addEventListener('click', handlePingDevice);
+            });
 
-          document.querySelectorAll('.port-scan').forEach(button => {
-            button.addEventListener('click', handlePortScan);
-          });
-      })
-      .catch(err => console.error("Error fetching data:", err));
+            document.querySelectorAll('.port-scan').forEach(button => {
+                button.addEventListener('click', handlePortScan);
+            });
+        })
+        .catch(err => console.error("Error fetching data:", err));
 }
 
 function handlePingDevice(event) {
@@ -78,7 +78,7 @@ function handlePingDevice(event) {
         .catch(error => {
             feedbackDiv.innerHTML = 'Error: Could not reach the device.';
         });
-  }
+}
 
 function handlePortScan(event) {
     const ip = event.target.getAttribute('data-ip');
@@ -108,7 +108,7 @@ function handlePortScan(event) {
             console.error("Error scanning ports:", error);
             feedbackDiv.innerHTML = 'Error: Could not scan ports.';
         });
-  }
+}
 
 setInterval(fetchNetworkData, 30000);
 window.onload = fetchNetworkData;
