@@ -31,7 +31,7 @@
 ## Introduction
 
 This is a description of functions provided in
-[`tooldaq.js`](../html/includes/tooldaq.js). Their purpose is to provide an
+[`tooldaq.js`](../html-Common/includes/tooldaq.js). Their purpose is to provide an
 interface to ToolDAQ backend that can be used to build a web interface for the
 setup at hand. Following sections provide documentation for generic functions
 for [making HTTP requests](#s-requests) and [database querying](#s-database), as

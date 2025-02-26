@@ -27,9 +27,10 @@
 'use strict';
 
 class RequestError extends Error {
-  constructor(message, response) {
+  constructor(message, response, responseText) {
     super(message);
-    this.response = response;
+    this.response     = response;
+    this.responseText = responseText;
   }
 };
 
@@ -154,11 +155,13 @@ export function request(url, args, options) {
   return fetch(url, options).then(
     async function (response) {
       if (!response.ok) {
-        let message = await response.text();
+        let text = await response.text();
+        let message = text;
         if (message != null && message != '') message = ': ' + message;
         throw new RequestError(
           `Request ${response.url} failed with status ${response.status} ${response.statusText}${message}`,
-          response
+          response,
+          text
         );
       };
       return response;
@@ -201,8 +204,7 @@ function db(query, format, header) {
   return request('/cgi-bin/db-query.cgi', args).catch(
     async function (error) {
       if (error instanceof RequestError && error.response.status == 400) {
-        let message = await error.response.text();
-        throw new DBError(`Bad query ${query}: ${message}`, { cause: error });
+        throw new DBError(`Bad query ${query}: ${error.responseText}`, { cause: error });
       } else
         throw error;
     }

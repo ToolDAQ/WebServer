@@ -1,5 +1,5 @@
 // auth.js
-import { GetPSQLTable } from '/includes/functions.js';
+import { GetPSQLTable, HashPassword } from '/includes/functions.js';
 
 export function authenticateUser() {
     let uname = document.getElementById('uname').value.trim();
@@ -10,10 +10,9 @@ export function authenticateUser() {
         return;
     }
 
-    let query = `SELECT username FROM users WHERE username = '${uname}' AND password_hash = crypt('${password}', password_hash);`
-
-    GetPSQLTable(query, "root", "daq", true)
-        .then((response) => {
+    HashPassword(password).then(hashedPassword => {
+        let query = `SELECT username FROM users WHERE username = '${uname}' AND password_hash = '${hashedPassword}';`
+        GetPSQLTable(query, "root", "daq", true).then((response) => {
             const parser = new DOMParser();
             const doc = parser.parseFromString(response, 'text/html');
 
@@ -30,6 +29,10 @@ export function authenticateUser() {
             console.error("Error during authentication:", error);
             alert("An error occurred during authentication. Please try again.");
         });
+    }).catch(function (error) {
+        console.error("Error hashing password:", error);
+        alert("Error hashing password.");
+    });
 }
 
 document.getElementById("submit").onclick = function (event) {
