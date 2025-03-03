@@ -30,13 +30,20 @@ for ip in $device_list; do
             os="Unknown"
         fi
 
+        mac=$(nmap -sn "$ip" | grep -i "mac address" | awk '{print $3}')
+
+        # If no MAC address is found, set to "N/A"
+        if [ -z "$mac" ]; then
+            mac="N/A"
+        fi
+
         # Formatting the JSON output
         if [ "$first_entry" = false ]; then
             echo ","
         fi
         first_entry=false
 
-        echo "  {\"ip\": \"$ip\", \"mac\": \"N/A\", \"name\": \"$name\", \"os\": \"$os\"}"
+        echo "  {\"ip\": \"$ip\", \"mac\": \"$mac\", \"name\": \"$name\", \"os\": \"$os\"}"
     fi
 done
 
