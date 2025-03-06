@@ -58,7 +58,7 @@ elif [[ $format = csv ]]; then
   psql -qAc "\\copy ($query) to stdout with csv $header"
 fi 2>&1 |
   {
-    IFS= read line
+    IFS= read -r line
     if [[ $line =~ ^ERROR: ]] || [[ $line =~ ^psql: ]]; then
       echo 'Content-type: text/plain'
       echo 'Status: 400'

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>tooldaq.js Documentation | ToolDAQ WebServer</title>
+  <link rel="stylesheet" href="/stylesheets/prism.min.css">
+  <link rel="stylesheet" href="/stylesheets/examples.css">
+  <script src="/stylesheets/prism.min.js"></script>
+  <script src="/stylesheets/prism-javascript.min.js"></script>
+</head>
+
+<body>
+  <!--#include virtual="/includes/header.html" -->
+  <!--#include virtual="../subheader.html" -->
+  <!--#include virtual="/includes/drawer.html" -->
+
+  <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+    <main class="mdl-layout__content">
+      <div class="content">
+        <div id="services-functions">
+          <hr>
+          <h2 class="mdl-typography--headline">Services Functions</h2>
+          <hr>
+          <p>The services functions in ToolDAQ.js provide functionalities to interact with and manage services. </p>
+          <ul>
+            <li><a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#getservices" target="_blank">getServices(filter):</a> Returns an array of services matching the filter.</li>
+            <li><a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#getservice" target="_blank">getService(name):</a> Returns a service matching name.</li>
+            <li><a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#sendcommand" target="_blank">sendCommand(service, command, ...args):</a> Sends a command to a service and returns the service reply.</li>
+            <li><a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#getcontrols" target="_blank">getControls(service):</a> Queries a service for slow controls that it supports.</li>
+          </ul>
+          <p>Below are examples of each function</p>
+          <div id="get-services-example">
+            <h3><a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#getservices" target="_blank">getServices(filter)</a></h3>
+            <p>
+              <strong>Description:</strong> Retrieves a list of available services.
+            </p>
+            <p>
+              <strong>Arguments:</strong>
+              <ul>
+                <li><code>filter</code> (string): Accepts an optional filter parameter. The filter can be applied to the list of services.</li>
+              </ul>
+            </p>
+            <p><strong>Example:</strong></p>
+            <pre>
+              <code class="language-html">
+                &lt;button onclick="runGetServices()"
+                  class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored"&gt;
+                  Run getServices
+                &lt;/button&gt;
+                &lt;div id="getServicesOutput" class="mdl-typography--body-1"&gt;&lt;/div&gt;
+              </code>
+              <code class="language-javascript">
+                import { getServices } from '/includes/tooldaq.js';
+
+                // Retrieve all services
+                function runGetServices() {
+                  getServices().then(
+                    document.getElementById('getServicesOutput').innerText = JSON.stringify(services, null, 2);
+                  );
+                }
+              </code>
+            </pre>
+            <p><strong>Output:</strong> Logs the filtered list of services to the console.</p>
+
+            <div class="demo-container">
+              <button onclick="runGetServicesDemo()"
+                class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+                Run getServices Demo
+              </button>
+              <div id="getServicesOutput" class="mdl-typography--body-1"></div>
+            </div>
+
+            <script>
+              function runGetServicesDemo() {
+                import('/includes/tooldaq.js').then(({ getServices }) => {
+                  getServices().then(services => {
+                    document.getElementById('getServicesOutput').innerText = JSON.stringify(services, null, 2);
+                  }).catch(error => {
+                    document.getElementById('getServicesOutput').innerText = 'Error: ' + error.message;
+                  });
+                });
+              }
+            </script>
+            <hr>
+          </div>
+          <div id="get-service-example">
+            <h3><a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#getservice" target="_blank">getService(name)</a></h3>
+            <p>
+              <strong>Description:</strong> Retrieves a specific service by name. Returns null if the service is not
+              found.
+            </p>
+            <p>
+              <strong>Arguments:</strong>
+              <ul>
+                <li><code>name</code> (string): The name of the service to retrieve.</li>
+              </ul>
+            </p>
+            <p><strong>Example:</strong></p>
+            <pre>
+              <code class="language-javascript">
+                import { getService } from '/includes/tooldaq.js';
+
+                // Retrieve a specific service
+                const serviceName = 'middleman_1';
+                function runGetService() {
+                  getService(serviceName).then(service => console.log(service));
+                }
+              </code>
+            </pre>
+            <pre>
+              <code class="language-html">
+                &lt;button onclick="runGetService()"
+                  class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored"&gt;
+                  Run getService
+                &lt;/button&gt;
+                &lt;div id="getServiceOutput" class="mdl-typography--body-1"&gt;&lt;/div&gt;
+              </code>
+            </pre>
+            <p><strong>Output:</strong> Logs the service details to the console.</p>
+
+            <div class="demo-container">
+              <button onclick="runGetServiceDemo()"
+                class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+                Run getService Demo
+              </button>
+              <div id="getServiceOutput" class="mdl-typography--body-1"></div>
+            </div>
+            <script>
+              function runGetServiceDemo() {
+                import('/includes/tooldaq.js').then(({ getServices }) => {
+                  const serviceName = 'middleman_1';
+                  getServices(serviceName).then(service => {
+                    document.getElementById('getServiceOutput').innerText = JSON.stringify(service, null, 2);
+                  }).catch(error => {
+                    document.getElementById('getServiceOutput').innerText = 'Error: ' + error.message;
+                  });
+                });
+              }
+            </script>
+            <hr>
+          </div>
+          <div id="send-command-example">
+            <h3><a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#sendcommand" target="_blank">sendCommand(service, command, ...args)</a></h3>
+            <p>
+              <strong>Description:</strong> Sends a command to a specified service. You can send any command with
+              arguments to the service's command interface.
+            </p>
+            <p>
+              <strong>Arguments:</strong>
+              <ul>
+                <li><code>service</code> (object): The service to send the command to.</li>
+                <li><code>command</code> (string): The command to send to the service.</li>
+                <li><code>...args</code> (any): The arguments to include in the command.</li>
+              </ul>
+            <p><strong>Example:</strong></p>
+            <pre>
+              <code class="language-javascript">
+                import { sendCommand } from '/includes/tooldaq.js';
+
+                // Example: Send a command to the service
+                const service = { ip: '172.17.0.2', port: '24011' };
+                const command = 'Status';
+                sendCommand(service, command).then(response => console.log(response));
+              </code>
+            </pre>
+            <p><strong>Output:</strong> Logs the response from the service to the console.</p>
+
+            <p> You can also use a script tag embedded in your html as follows:</p>
+            <pre>
+              <code class="language-html">
+                &lt;button onclick="runSendCommand()"
+                  class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored"&gt;
+                  Run sendCommand
+                &lt;/button&gt;
+                &lt;div id="sendCommandOutput" class="mdl-typography--body-1"&gt;&lt;/div&gt;
+
+                &lt;script&gt;
+                  <code class="language-javascript">
+                    function runSendCommand() {
+                      import('/includes/tooldaq.js').then(({ sendCommand }) => {
+                        const service = { ip: '172.17.0.2', port: '24011' };
+                        const command = 'Status';
+                        sendCommand(service, command).then(response => {
+                          document.getElementById('sendCommandOutput').innerText = JSON.stringify(response, null, 2);
+                        }).catch(error => {
+                          document.getElementById('sendCommandOutput').innerText = 'Error: ' + error.message;
+                        });
+                      });
+                    }
+                  </code>
+                &lt;/script&gt;
+              </code>
+            </pre>
+
+            <div class="demo-container">
+              <button onclick="runSendCommandDemo()"
+                class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+                Run sendCommand Demo
+              </button>
+              <div id="sendCommandOutput" class="mdl-typography--body-1"></div>
+            </div>
+
+            <script>
+              function runSendCommandDemo() {
+                import('/includes/tooldaq.js').then(({ sendCommand }) => {
+                  const service = { ip: '172.17.0.2', port: '24011' };
+                  const command = 'Status';
+                  sendCommand(service, command).then(response => {
+                    document.getElementById('sendCommandOutput').innerText = JSON.stringify(response, null, 2);
+                  }).catch(error => {
+                    document.getElementById('sendCommandOutput').innerText = 'Error: ' + error.message;
+                  });
+                });
+              }
+            </script>
+            <hr>
+          </div>
+          <div id="get-controls-example">
+            <h3><a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#getcontrols" target="_blank">getControls(service)</a></h3>
+            <p>
+              <strong>Description:</strong> Retrieves the control interface (as JSON) for a specified service.
+            </p>
+            <p>
+              <strong>Arguments:</strong>
+              <ul>
+                <li><code>service</code> (object): The service to retrieve the control interface for.</li>
+              </ul>
+            </p>
+            <p><strong>Example:</strong></p>
+            <pre>
+              <code class="language-javascript">
+                import { getControls } from '/includes/tooldaq.js';
+
+                // Retrieve the controls for a service
+                const service = { ip: '172.17.0.2', port: '24011' };
+                function runGetControls() {
+                  // getControls(service).then(controls => console.log(controls));
+                  document.getElementById('getControlsOutput').innerText = JSON.stringify(controls, null, 2);
+                }
+              </code>
+            </pre>
+            <pre>
+              <code class="language-html">
+                &lt;button onclick="runGetControls()"
+                  class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored"&gt;
+                  Run getControls
+                &lt;/button&gt;
+                &lt;div id="getControlsOutput" class="mdl-typography--body-1"&gt;&lt;/div&gt;
+              </code>
+            </pre>
+            <p><strong>Output:</strong> Logs the retrieved controls for the service to the console.</p>
+
+            <div class="demo-container">
+              <button onclick="runGetControlsDemo()"
+                class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+                Run getControls Demo
+              </button>
+              <div id="getControlsOutput" class="mdl-typography--body-1"></div>
+            </div>
+
+            <script>
+              function runGetControlsDemo() {
+                import('/includes/tooldaq.js').then(({ getControls }) => {
+                  const service = { ip: '172.17.0.2', port: '24011' };
+                  getControls(service).then(controls => {
+                    document.getElementById('getControlsOutput').innerText = JSON.stringify(controls, null, 2);
+                  }).catch(error => {
+                    document.getElementById('getControlsOutput').innerText = 'Error: ' + error.message;
+                  });
+                });
+              }
+            </script>
+            <hr>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+  <!--#include virtual="/includes/footer.html" -->
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</body>
+
+</html>

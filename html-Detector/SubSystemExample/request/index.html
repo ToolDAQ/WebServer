@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>tooldaq.js Documentation | ToolDAQ WebServer</title>
+  <link rel="stylesheet" href="/stylesheets/prism.min.css">
+  <link rel="stylesheet" href="/stylesheets/examples.css">
+  <script src="/stylesheets/prism.min.js"></script>
+  <script src="/stylesheets/prism-javascript.min.js"></script>
+</head>
+
+<body>
+  <!--#include virtual="/includes/header.html" -->
+  <!--#include virtual="../subheader.html" -->
+  <!--#include virtual="/includes/drawer.html" -->
+
+  <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+    <main class="mdl-layout__content">
+      <div class="content">
+        <hr>
+        <div id="request-functions">
+          <h2>Request Functions</h2>
+          <p>The request functions in ToolDAQ.js provide functionalities to interact with services and
+            endpoints.</p>
+          <ul>
+            <li>
+              <a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#request" target="_blank"> getRequest(url, args, options) </a>
+              Sends an HTTP request to url and returns a Promise to return a Response object.
+              This is a low-level function, see below for functions that make a request and process the Response.
+            </li>
+          </ul>
+          <div id="get-request-example">
+            <h3><a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#request" target="_blank">getRequest(url, args, options)</a></h3>
+            <p>
+              <strong>Description:</strong> Sends a GET request to the specified URL and returns the response. <br>
+              <strong>Arguments:</strong>
+              <ul>
+                <li><code>url</code> (string): The URL to send the request to.</li>
+                <li><code>args</code> (object): The arguments to include in the request.</li>
+                <li><code>options</code> (object): The options to include in the request.</li>
+              </ul>
+            </p>
+            <p><strong>Example:</strong></p>
+            <pre>
+              <code class="language-html">
+                &lt;button onclick="runRequest()"
+                  class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored"&gt;
+                  Run getRequest
+                &lt;/button&gt;
+                &lt;div id="getRequestOutput" class="mdl-typography--body-1"&gt;&lt;/div&gt;
+              </code>
+            </pre>
+            <pre>
+              <code class="language-javascript">
+                import { getRequest } from '/includes/tooldaq.js';
+
+                // Example: Send a query request to the database
+                const url = '/cgi-bin/db-query.cgi';
+                const options = { query: 'select now()', format: 'json' }
+                function runRequest(){
+                  request(url, options).then(response => {
+                    response.json().then(data => {
+                      console.log(data);
+                    }).catch(error => {
+                      console.error('Error parsing JSON:', error);
+                    });
+                  }).catch(error => {
+                    console.error('Error:', error);
+                  });
+                }
+              </code>
+            </pre>
+            <p><strong>Output:</strong> Logs the response from the request to the console.</p>
+
+            <div class="demo-container">
+              <button onclick="runGetRequestDemo()"
+                class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+                Run getRequest Demo
+              </button>
+              <div id="getRequestOutput" class="mdl-typography--body-1"></div>
+            </div>
+
+            <script>
+              function runGetRequestDemo() {
+                import('/includes/tooldaq.js').then(({ request }) => {
+                  const url = '/cgi-bin/db-query.cgi';
+                  const options = { query: 'select now()', format: 'json' }
+                  request(url, options).then(response => {
+                    response.json().then(data => {
+                      document.getElementById('getRequestOutput').innerText = JSON.stringify(data);
+                    }).catch(error => {
+                        document.getElementById('getRequestOutput').innerText = 'Error parsing JSON: ' + error.message;
+                    });
+                  }).catch(error => {
+                    document.getElementById('getRequestOutput').innerText = 'Error: ' + error.message;
+                  });
+                });
+              }
+            </script>
+            <hr>
+          </div>
+
+          <div id="fetch-file">
+            <h3><a class="documentation-link" href="https://github.com/ToolDAQ/WebServer/blob/master/docs/tooldaq.mkd#request" target="_blank">Fetch File Contents</a></h3>
+            <p>Reads the contents of a log file.</p>
+            <pre>
+              <code class="language-javascript">
+                import { request } from '/includes/tooldaq.js';
+
+                const url = '/logs/Example_log';
+                request(url).then(response => response.text()).then(text => {
+                  console.log(text);
+                }).catch(error => {
+                  console.error('Error:', error);
+                });
+              </code>
+            </pre>
+            <pre>
+              <code class="language-html">
+                &lt;button onclick="fetchFileContents()" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored"&gt;
+                  Run
+                &lt;/button&gt;
+                &lt;div id="fileOutput"&gt;&lt;/div&gt;
+
+                &lt;script&gt;
+                  <code class="language-javascript">
+                    function fetchFileContents() {
+                      import('/includes/tooldaq.js').then(({ request }) => {
+                        const url = '/logs/Example_log';
+                        request('/logs/Example_log').then(response => response.text()).then(text => {
+                          document.getElementById('fileOutput').innerText = text;
+                        }).catch(error => {
+                          document.getElementById('fileOutput').innerText = 'Error: ' + error.message;
+                        });
+                      });
+                    }
+                  </code>
+                &lt;/script&gt;
+              </code>
+            </pre>
+            <div class="demo-container">
+              <button onclick="fetchFileContents()" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">Run fetchFileContents</button>
+              <div id="fileOutput"></div>
+            </div>
+
+            <script>
+              function fetchFileContents() {
+                import('/includes/tooldaq.js').then(({ request }) => {
+                  request('Example_log').then(response => response.text()).then(text => {
+                    document.getElementById('fileOutput').innerText = text;
+                  }).catch(error => {
+                    document.getElementById('fileOutput').innerText = 'Error: ' + error.message;
+                  });
+                });
+              }
+            </script>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+  <!--#include virtual="/includes/footer.html" -->
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</body>
+
+</html>

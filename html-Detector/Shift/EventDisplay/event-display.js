@@ -1,3 +1,6 @@
+// maps detector axes to 2d view axes
+const map2d = { x: 'x', y: 'z' };
+
 {
   let gui = {};
   for (let field of [ 'error', 'events', 'info', 'interval' ])
@@ -297,24 +300,28 @@ get_csv(
       for (let i of [ 'id', 'x', 'y', 'z' ])
         pmt[i] = Number(pmt[i]);
 
-    let ymin = pmts[0].y;
+    let X = map2d.x;
+    let Y = map2d.y;
+    let Z = [ 'x', 'y', 'z' ].find(z => z != X && z != Y);
+
+    let ymin = pmts[0][Y];
     let ymax = ymin;
-    let r    = pmts[0].z;
+    let r    = pmts[0][Z];
     let pmt_map = {};
     for (let i = 0; i < pmts.length; ++i) {
-      if (pmts[i].y > ymax)
-        ymax = pmts[i].y;
-      else if (pmts[i].y < ymin)
-        ymin = pmts[i].y;
-      if (pmts[i].z > r) r = pmts[i].z;
+      if (pmts[i][Y] > ymax)
+        ymax = pmts[i][Y];
+      else if (pmts[i][Y] < ymin)
+        ymin = pmts[i][Y];
+      if (pmts[i][Z] > r) r = pmts[i][Z];
       pmt_map[pmts[i].id] = i;
     };
 
     let locations2d = pmts.map(
       function (t) {
-        if (t.location == 'top')    return { x: t.x, y: ymax + r - t.z };
-        if (t.location == 'bottom') return { x: t.x, y: ymin - r + t.z };
-        return { x: r * Math.atan2(t.x, t.z), y: t.y };
+        if (t.location == 'top')    return { x: t[X], y: ymax + r - t[Z] };
+        if (t.location == 'bottom') return { x: t[X], y: ymin - r + t[Z] };
+        return { x: r * Math.atan2(t[X], t[Z]), y: t[Y] };
       }
     );
 
