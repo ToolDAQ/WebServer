@@ -3,6 +3,8 @@
 *.d
 *.a
 *~
+*.DS_Store
+node_modules
 include
 lib
 */a.out
