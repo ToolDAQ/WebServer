@@ -11,7 +11,7 @@ checkAutoplayPermission();
 
 CheckAlarms();
 
-function sleep (ms) {
+function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
@@ -28,7 +28,6 @@ function checkAutoplayPermission() {
         // console.log('Autoplay is allowed');
         audio.pause();
         audio.currentTime = 0;
-        audio.muted = false;
         localStorage.setItem('audioPermission', 'granted');
     }).catch(() => {
         // showEnableAudioButton();
@@ -36,6 +35,7 @@ function checkAutoplayPermission() {
             showEnableAudioButton();
         }
     });
+    audio.muted = false;
 }
 
 function showEnableAudioButton() {
@@ -48,7 +48,7 @@ function showEnableAudioButton() {
     enableAudioBtn.style.zIndex = '1000';
     document.body.appendChild(enableAudioBtn);
 
-    enableAudioBtn.addEventListener('click', function() {
+    enableAudioBtn.addEventListener('click', function () {
         audio.play().then(() => {
             alert('Audio enabled! Alarm sound will play next time.');
             enableAudioBtn.remove();
@@ -74,7 +74,7 @@ function CheckAlarms() {
     if (checking_alarm_footer) return;
     checking_alarm_footer = true;
 
-    GetPSQLTable("select device from alarms where silenced=0", "root", "daq", true).then(function(result) {
+    GetPSQLTable("select device from alarms where silenced=0", "root", "daq", true).then(function (result) {
         var table = document.createElement('table');
         table.innerHTML = result;
 
@@ -109,7 +109,7 @@ function AlarmOff() {
 
 // Function to play the alarm sound with fallback for Safari
 function playAlarmSound() {
-	audio.load();
+    audio.load();
     audio.play().catch((error) => {
         console.log('Audio playback blocked:', error);
     });
