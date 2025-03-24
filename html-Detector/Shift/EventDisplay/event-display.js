@@ -392,6 +392,7 @@ get_csv(
     display.layout = {
       margin: { t: 0, b: 0 },
       legend: { y: 0.5, yanchor: 'top' },
+      scene:  { camera: { up: { [X]: 0, [Y]: 1, [Z]: 0 } } },
       updatemenus: [
         {
           y:       0.8,
