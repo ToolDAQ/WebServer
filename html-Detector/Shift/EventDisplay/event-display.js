@@ -2,7 +2,10 @@
 const map2d = { x: 'x', y: 'z' };
 
 {
-  let gui = {};
+  let gui = {
+    div: document.getElementById('event-display')
+  };
+
   for (let field of [ 'error', 'events', 'info', 'interval' ])
     gui[field] = document.getElementById(field);
 
@@ -131,7 +134,7 @@ function last_click() {
 function plot_mode_changed() {
   display.mode = selected_plot_mode();
   update_hits();
-  Plotly.newPlot('event-display', display[display.mode].traces, display.layout);
+  Plotly.react(display.gui.div, display[display.mode].traces, display.layout);
 };
 
 function plot_data_changed() {
@@ -139,7 +142,7 @@ function plot_data_changed() {
   let marker = display[display.mode].hits.marker;
   for (let i = 0; i < display.event.data.length; ++i)
     marker.color[i] = display.event.data[i][display.data];
-  Plotly.restyle('event-display', { marker: marker });
+  Plotly.restyle(display.gui.div, { marker: marker });
 };
 
 function event_selected(select) {
@@ -181,13 +184,24 @@ function update_hits() {
   if ('z' in data.hits) data.hits.z = hits_coordinate('z');
 
   data.hits.marker.color = display.event.data.map(hit => hit[display.data]);
-  display.marker_sizes[1] = data.hits.marker.color;
+
+  if (data.hits.marker.dynamic) update_marker_size();
 
   data.hits.text = display.event.data.map(
     hit => data.tubes.text[display.pmts[hit.pmt]]
          + `<br>value: ${hit[display.data]}`
   );
   data.hits.hoverinfo = 'text';
+};
+
+function update_marker_size() {
+  let marker = display['2d'].hits.marker;
+  let scale = marker.color.reduce((m, x) => Math.max(m, x), 0);
+  if (scale > 0) {
+    scale = 15 / scale;
+    marker.size = marker.color.map(x => x * scale);
+  } else
+    marker.size = marker.color;
 };
 
 function get_csv(api, args, callback) {
@@ -274,7 +288,7 @@ function load_event(index) {
         display['2d'].traces.push(display['2d'].hits);
         display['3d'].traces.push(display['3d'].hits);
       };
-      Plotly.react('event-display', data.traces, display.layout);
+      Plotly.react(display.gui.div, data.traces, display.layout);
 
       toggle_controls(index);
       update_info();
@@ -358,7 +372,8 @@ get_csv(
       marker: {
         size:  5,
         color: [],
-        colorscale: 'Viridis'
+        colorscale: 'Viridis',
+        dynamic: false
       },
       event: null
     };
@@ -381,12 +396,6 @@ get_csv(
     display.data   = selected_plot_data();
     display.event  = null;
 
-    // A hack to tie marker color and marker size arrays when the "Dynamic"
-    // button below is clicked. See update_hits(). How to bind to
-    // plotly_buttonclicked for this button? I cannot find the documentation on
-    // this event.
-    display.marker_sizes = [ 5, 5 ];
-    
     display.layout = {
       margin: { t: 0, b: 0 },
       legend: { y: 0.5, yanchor: 'top' },
@@ -418,14 +427,24 @@ get_csv(
           yanchor: 'top',
           buttons: [
             {
-              method: 'restyle',
-              args:   [ 'marker.size', [ 5, 5 ] ],
-              label:  'Fixed size'
+              method: 'skip',
+              label: 'Fixed size',
+              action: function () {
+                hits2d.marker.dynamic = false;
+                hits2d.marker.size    = 5;
+                Plotly.restyle(display.gui.div, { 'marker.size' : 5 })
+              }
             },
             {
-              method: 'restyle',
-              args:   [ 'marker.size', display.marker_sizes ],
-              label:  'Dynamic'
+              method: 'skip',
+              label: 'Dynamic',
+              action: function() {
+                hits2d.marker.dynamic = true;
+                update_marker_size();
+                Plotly.restyle(
+                  display.gui.div, { 'marker.size': [ 1, hits2d.marker.size ] }
+                );
+              }
             }
           ]
         },
@@ -490,9 +509,17 @@ get_csv(
     };
 
     Plotly.newPlot(
-      'event-display',
+      display.gui.div,
       display[display.mode].traces,
       display.layout
+    );
+
+    display.gui.div.on(
+      'plotly_buttonclicked',
+      function ({button}) {
+        let action = button._input.action;
+        if (action) action();
+      }
     );
 
     display.update = {};
