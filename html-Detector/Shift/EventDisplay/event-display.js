@@ -156,10 +156,8 @@ function set_update_interval() {
     display.interval = value;
     update.time = time;
     time = time - Date.now();
-    console.log(time);
     if (time < 0) time = 0;
     update.handle = setTimeout(update.render, time);
-    console.log(update);
   } else
     display.interval = value;
 };
