@@ -54,9 +54,9 @@ function button_disable(button) {
   button_enable(button, false);
 };
 
-function toggle_controls(event_index) {
+function toggle_controls() {
   let pause    = display.events;
-  let previous = display.events && event_index > 0;
+  let previous = display.events && display.gui.events.selectedIndex > 0;
   let controls = display.gui.controls;
   button_enable(controls.first,    previous);
   button_enable(controls.previous, previous);
@@ -96,7 +96,7 @@ function first_click() {
 
 function previous_click() {
   pause(true);
-  load_event(display.event.evnt - 1);
+  load_event(display.gui.events.selectedIndex - 1);
 };
 
 function pause_click() {
@@ -107,7 +107,7 @@ function next_click() {
   cancel_next_frame();
 
   if (display.event) {
-    let index = display.event.evnt + 1;
+    let index = display.gui.events.selectedIndex + 1;
     if (index < display.events.length) {
       load_event(index);
       return;
@@ -148,7 +148,7 @@ function plot_data_changed() {
 
 function event_selected(select) {
   pause(true);
-  load_event(select[select.selectedIndex].getAttribute('name'));
+  load_event(select.selectedIndex);
 };
 
 function set_update_interval() {
@@ -254,10 +254,8 @@ function load_events(last = false) {
         display.gui.events.length = 0;
         for (let [i, event] of events.entries()) {
           let option = new Option();
-          option.setAttribute('name', event.evnt);
           option.innerText = event.evnt + '\t' + event.time;
           display.gui.events.appendChild(option);
-          event.option = i;
           if (display.event && display.event.evnt == event.evnt)
             display.gui.events.selectedIndex = i;
         };
@@ -282,7 +280,7 @@ function load_event(index) {
       event.data = JSON.parse(event.data);
 
       display.event = event;
-      display.gui.events.selectedIndex = display.events[index].option;
+      display.gui.events.selectedIndex = index;
 
       update_hits();
 
@@ -293,7 +291,7 @@ function load_event(index) {
       };
       Plotly.react(display.gui.div, data.traces, display.layout);
 
-      toggle_controls(index);
+      toggle_controls();
       update_info();
 
       set_next_frame(
