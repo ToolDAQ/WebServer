@@ -142,7 +142,8 @@ function plot_data_changed() {
   let marker = display[display.mode].hits.marker;
   for (let i = 0; i < display.event.data.length; ++i)
     marker.color[i] = display.event.data[i][display.data];
-  Plotly.restyle(display.gui.div, { marker: marker });
+  update_marker_size();
+  Plotly.restyle(display.gui.div, { marker: marker }, [ 1 ]);
 };
 
 function event_selected(select) {
@@ -185,7 +186,7 @@ function update_hits() {
 
   data.hits.marker.color = display.event.data.map(hit => hit[display.data]);
 
-  if (data.hits.marker.dynamic) update_marker_size();
+  update_marker_size();
 
   data.hits.text = display.event.data.map(
     hit => data.tubes.text[display.pmts[hit.pmt]]
@@ -196,6 +197,8 @@ function update_hits() {
 
 function update_marker_size() {
   let marker = display['2d'].hits.marker;
+  if (!marker.dynamic) return;
+
   let scale = marker.color.reduce((m, x) => Math.max(m, x), 0);
   if (scale > 0) {
     scale = 15 / scale;
