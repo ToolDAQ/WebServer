@@ -340,6 +340,8 @@ get_csv(
       }
     );
 
+    let default_marker_sizes = [ 2, 5 ]
+
     let tubes2d = {
       name: 'Tubes',
       x:    locations2d.map(l => l.x),
@@ -347,8 +349,8 @@ get_csv(
       type: 'scatter',
       mode: 'markers',
       marker: {
-        size:  5,
-        color: 'rgb(127, 127, 127)'
+        size:  default_marker_sizes[0],
+        color: '#aaa'
       },
       text: pmts.map(t => `id: ${t.id}<br>x: ${t.x}<br>y: ${t.y}<br>z: ${t.z}`),
       hoverinfo: 'text'
@@ -373,7 +375,7 @@ get_csv(
       type: 'scatter',
       mode: 'markers',
       marker: {
-        size:  5,
+        size:  default_marker_sizes[1],
         color: [],
         colorscale: 'Viridis',
         dynamic: false
@@ -435,7 +437,7 @@ get_csv(
               action: function () {
                 hits2d.marker.dynamic = false;
                 hits2d.marker.size    = 5;
-                Plotly.restyle(display.gui.div, { 'marker.size' : 5 })
+                Plotly.restyle(display.gui.div, { 'marker.size' : default_marker_sizes })
               }
             },
             {
