@@ -399,6 +399,18 @@ get_csv(
     display.data   = selected_plot_data();
     display.event  = null;
 
+    function color_button(label, background, marker) {
+      return {
+        method: 'update',
+        args: [
+          { ['marker.color']: marker },
+          { paper_bgcolor: background, plot_bgcolor: background },
+          [ 0 ]
+        ],
+        label
+      };
+    };
+
     display.layout = {
       margin: { t: 0, b: 0 },
       legend: { y: 0.5, yanchor: 'top' },
@@ -408,21 +420,9 @@ get_csv(
           y:       0.8,
           yanchor: 'top',
           buttons: [
-            {
-              method: 'relayout',
-              args:   [ 'paper_bgcolor', '#fff' ],
-              label:  'white'
-            },
-            {
-              method: 'relayout',
-              args:   [ 'paper_bgcolor', '#aaa' ],
-              label:  'gray'
-            },
-            {
-              method: 'relayout',
-              args:   [ 'paper_bgcolor', '#000' ],
-              label:  'black'
-            }
+            color_button('white', '#fff', tubes2d.marker.color),
+            color_button('gray', '#aaa', '#fff'),
+            color_button('black', '#000', '#fff')
           ]
         },
         {
