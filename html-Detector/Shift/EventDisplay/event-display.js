@@ -240,7 +240,8 @@ function load_events(last = false) {
       let index;
       if (last) {
         index = events.length - 1;
-        if (display.event.evnt >= events[index].evnt) index = -1;
+        if (display.event && display.event.evnt >= events[index].evnt)
+          index = -1;
       } else if (display.event)
         index = events.findIndex(e => e.evnt > display.event.evnt);
       else if (events.length > 0)
@@ -526,6 +527,6 @@ get_csv(
     );
 
     display.update = {};
-    load_events();
+    load_events(true);
   }
 );
