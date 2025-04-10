@@ -1,5 +1,5 @@
-let usertime=document.getElementById("usertime");
-let exptime=document.getElementById("exptime");
+let usertime=document.getElementById("utctime");
+let exptime=document.getElementById("localtime");
 let user=document.getElementById("user");
 
 function getTimeInTimezones() {
@@ -10,7 +10,7 @@ function getTimeInTimezones() {
 
     // Get the time in the defined timezone
     exptime.innerText = new Date().toLocaleTimeString(undefined, {
-        timeZone: "Europe/London"
+        timeZone: 'UTC'
     });
 
 }
