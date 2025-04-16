@@ -11,6 +11,9 @@ RUN yum install -y                   \
                 procps-ng            \
                 psmisc               \
                 emacs                \
+                libpcap-devel        \
+                iputils              \
+                iproute              \
  && yum clean all                    \
  && rm -rf /var/cache/yum
 
