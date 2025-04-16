@@ -27,13 +27,13 @@ if [ -s /tmp/nmap_output.txt ]; then
                 name="Unknown"
             fi
 
-            os=$(echo "$nmap_output" | grep -A 20 "Nmap scan report for $ip" | grep "OS details" | awk -F: '{print $2}' | sed 's/^ //')
+            os=$(echo "$nmap_output" | grep -A 15 "Nmap scan report for $ip" | grep "OS details" | awk -F: '{print $2}' | sed 's/^ //')
             if [ -z "$os" ]; then
                 os="Unknown"
             fi
             os=$(echo "$os" | tr -s '\n' ' ')
 
-            mac=$(echo "$nmap_output" | grep -A 20 "Nmap scan report for $ip" | grep -i "mac address" | awk '{print $3}')
+            mac=$(echo "$nmap_output" | grep -A 15 "Nmap scan report for $ip" | grep -i "mac address" | awk '{print $3}')
             if [ -z "$mac" ]; then
                 mac="N/A"
             fi

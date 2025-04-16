@@ -1,6 +1,6 @@
 .container {
   width: 90%;
-  max-width: 800px;
+  /* max-width: 800px; */
   background: white;
   margin: 20px auto;
   padding: 20px;
@@ -74,4 +74,25 @@ h2 {
 .scan-btn {
   background-color: #4caf50;
   color: white;
+}
+
+table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+th,
+td {
+  word-wrap: break-word;
+  white-space: normal;
+  word-break: break-word;
+}
+
+td {
+  padding: 8px;
+}
+
+th,
+td {
+  min-width: 100px;
 }
