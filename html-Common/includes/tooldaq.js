@@ -254,7 +254,7 @@ export function getMonitoringPlot(device, options) {
 
   function encodeDate(date) {
     if (date instanceof Date)
-      return date.toISOString() + date.getTimezoneOffset();
+      return date.toISOString() + date.getTimezoneOffset() / 60;
     return date;
   };
 
