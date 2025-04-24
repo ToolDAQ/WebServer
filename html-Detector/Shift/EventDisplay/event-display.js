@@ -1,6 +1,21 @@
 // maps detector axes to 2d view axes
 const map2d = { x: 'x', y: 'z' };
 
+const marker_sizes = {
+  fixed: {  // marker sizes when "Fixed size" is selected
+    tubes: 20,
+    hits:  25
+  },
+  dynamic: { // marker sizes when "Dynamic" is selected
+    min: 2,
+    max: 30
+  },
+  scale: { // 3D plot markers appear larger than 2D
+    ['2d']: 1,
+    ['3d']: 0.5
+  }
+};
+
 {
   let gui = {
     div: document.getElementById('event-display')
@@ -133,7 +148,20 @@ function last_click() {
 
 function plot_mode_changed() {
   display.mode = selected_plot_mode();
+
+  let scale = marker_sizes.scale[display.mode];
+  if (display.dynamic_marker) {
+    display['2d'].tubes.marker.size = scale * marker_sizes.dynamic.min;
+    if (display[display.mode].hits.event === display.event)
+      update_marker_size();
+  } else {
+    let sizes = marker_sizes.fixed;
+    display['2d'].tubes.marker.size = scale * sizes.tubes;
+    display['2d'].hits.marker.size  = scale * sizes.hits;
+  };
+
   update_hits();
+
   Plotly.react(display.gui.div, display[display.mode].traces, display.layout);
 };
 
@@ -196,15 +224,18 @@ function update_hits() {
 };
 
 function update_marker_size() {
+  if (!display.dynamic_marker) return;
   let marker = display['2d'].hits.marker;
-  if (!marker.dynamic) return;
+
+  let mode_scale = marker_sizes.scale[display.mode];
 
   let scale = marker.color.reduce((m, x) => Math.max(m, x), 0);
   if (scale > 0) {
-    scale = 15 / scale;
-    marker.size = marker.color.map(x => x * scale);
+    let sizes = marker_sizes.dynamic;
+    scale = (sizes.max - sizes.min) / scale;
+    marker.size = marker.color.map(x => (x * scale + sizes.min) * mode_scale);
   } else
-    marker.size = marker.color;
+    marker.size = marker.color * mode_scale;
 };
 
 function get_csv(api, args, callback) {
@@ -240,7 +271,8 @@ function load_events(last = false) {
       let index;
       if (last) {
         index = events.length - 1;
-        if (display.event.evnt >= events[index].evnt) index = -1;
+        if (display.event && display.event.evnt >= events[index].evnt)
+          index = -1;
       } else if (display.event)
         index = events.findIndex(e => e.evnt > display.event.evnt);
       else if (events.length > 0)
@@ -330,6 +362,12 @@ get_csv(
       pmt_map[pmts[i].id] = i;
     };
 
+    display.pmts  = pmt_map;
+    display.mode  = selected_plot_mode();
+    display.data  = selected_plot_data();
+    display.event = null;
+    display.dynamic_marker = false;
+
     let locations2d = pmts.map(
       function (t) {
         if (t.location == 'top')    return { x: t[X], y: ymax + r - t[Z] };
@@ -338,16 +376,17 @@ get_csv(
       }
     );
 
-    let default_marker_sizes = [ 2, 5 ]
-
     let tubes2d = {
       name: 'Tubes',
       x:    locations2d.map(l => l.x),
       y:    locations2d.map(l => l.y),
       type: 'scatter',
       mode: 'markers',
+      // tubes2d and tubes3d share the marker object. marker.size is updated
+      // whenever display.mode or display.dynamic_marker is changed. Ditto for
+      // hits2d and hits3d
       marker: {
-        size:  default_marker_sizes[0],
+        size:  marker_sizes.fixed.tubes * marker_sizes.scale[display.mode],
         color: '#aaa'
       },
       text: pmts.map(t => `id: ${t.id}<br>x: ${t.x}<br>y: ${t.y}<br>z: ${t.z}`),
@@ -373,10 +412,9 @@ get_csv(
       type: 'scatter',
       mode: 'markers',
       marker: {
-        size:  default_marker_sizes[1],
+        size:  marker_sizes.fixed.hits * marker_sizes.scale[display.mode],
         color: [],
         colorscale: 'Viridis',
-        dynamic: false
       },
       event: null
     };
@@ -394,10 +432,6 @@ get_csv(
 
     display['2d']  = { tubes: tubes2d, hits: hits2d, traces: [ tubes2d ] };
     display['3d']  = { tubes: tubes3d, hits: hits3d, traces: [ tubes3d ] };
-    display.pmts   = pmt_map;
-    display.mode   = selected_plot_mode();
-    display.data   = selected_plot_data();
-    display.event  = null;
 
     function color_button(label, background, marker) {
       return {
@@ -433,19 +467,28 @@ get_csv(
               method: 'skip',
               label: 'Fixed size',
               action: function () {
-                hits2d.marker.dynamic = false;
-                hits2d.marker.size    = 5;
-                Plotly.restyle(display.gui.div, { 'marker.size' : default_marker_sizes })
+                display.dynamic_marker = false;
+                let scale = marker_sizes.scale[display.mode];
+                let sizes = marker_sizes.fixed;
+                tubes2d.marker.size = scale * sizes.tubes;
+                hits2d.marker.size  = scale * sizes.hits;
+                Plotly.restyle(
+                  display.gui.div,
+                  { 'marker.size': [ tubes2d.marker.size, hits2d.marker.size ] }
+                )
               }
             },
             {
               method: 'skip',
               label: 'Dynamic',
               action: function() {
-                hits2d.marker.dynamic = true;
+                display.dynamic_marker = true;
+                tubes2d.marker.size = marker_sizes.scale[display.mode]
+                                    * marker_sizes.dynamic.min;
                 update_marker_size();
                 Plotly.restyle(
-                  display.gui.div, { 'marker.size': [ 1, hits2d.marker.size ] }
+                  display.gui.div,
+                  { 'marker.size': [ tubes2d.marker.size, hits2d.marker.size ] }
                 );
               }
             }
@@ -526,6 +569,8 @@ get_csv(
     );
 
     display.update = {};
-    load_events();
+    load_events(true);
+    window.event_display = display;
   }
+
 );
