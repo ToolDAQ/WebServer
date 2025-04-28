@@ -1,361 +1,364 @@
 // html/runConfig/runConfig.js
-// Description: JavaScript for the configuration page.
+// Description: JavaScript for the run configuration page.
 
 import { GetPSQLTable } from '/includes/functions.js';
 import { dbJson } from '/includes/tooldaq.js';
 
-let editor;
-let viewerEditor;
-let currentViewedDevice = null;
-let currentViewedVersion = null;
+let deviceEditor;
+let runConfigEditor;
+let modalEditor;
+
+let deviceOptionMap = new Map();
+let configOptionMap = new Map();
+let selectedConfig = null;
 
 if (document.readyState !== 'loading') {
     Init();
 } else {
-    document.addEventListener("DOMContentLoaded", function () {
-        Init();
-    });
+    document.addEventListener("DOMContentLoaded", Init);
 }
 
 function Init() {
     GetConfigs();
-    GetDeviceConfigs();
+    setupEditors();
+    setupEventListeners();
+    loadDeviceList();
+    loadConfigOptions();
+}
 
-    editor = ace.edit("jsonEditor");
-    editor.setTheme("ace/theme/github");
-    editor.session.setMode("ace/mode/json");
-    editor.setValue(JSON.stringify({
-        "devices": ["device_a", "device_b"]
-    }, null, 2), -1);
+function setupEditors() {
+    deviceEditor = ace.edit("deviceJsonViewer");
+    deviceEditor.setTheme("ace/theme/chrome");
+    deviceEditor.session.setMode("ace/mode/json");
+    deviceEditor.setReadOnly(false);
+    deviceEditor.setValue("// Select a device", -1);
 
-    setupSearch();
+    runConfigEditor = ace.edit("jsonEditor");
+    runConfigEditor.setTheme("ace/theme/chrome");
+    runConfigEditor.session.setMode("ace/mode/json");
+    runConfigEditor.setValue("// Start a new run config", -1);
 
-    document.querySelectorAll("button").forEach(btn => {
-        // if (btn.innerText === "Save DeviceConfig") btn.addEventListener("click", saveDeviceConfig);
-        if (btn.innerText === "View") btn.addEventListener("click", showJsonTable);
-    });
+    modalEditor = ace.edit("modalEditor");
+    modalEditor.setTheme("ace/theme/github");
+    modalEditor.session.setMode("ace/mode/json");
+}
 
-    const dialog = document.getElementById("jsonImportModal");
+function setupEventListeners() {
+    document.getElementById("saveDeviceConfigBtn").addEventListener("click", saveDeviceConfig);
+    document.getElementById("addConfigBtn").addEventListener("click", saveRunConfig);
+    // document.getElementById("jsonImportRunBtn").addEventListener("click", () => openJsonImportModal("run"));
+    // document.getElementById("jsonImportDeviceBtn").addEventListener("click", () => openJsonImportModal("device"));
+    document.getElementById("importPasteBtn").addEventListener("click", importJsonFromModal);
+    document.getElementById("showJsonTableBtn").addEventListener("click", showJsonTable);
 
-    document.querySelector("#importPasteBtn").addEventListener("click", () => {
-        try {
-            const jsonData = JSON.parse(modalEditor.getValue());
-            let editor = ace.edit("deviceJsonViewer");
-            editor.setValue(JSON.stringify(jsonData, null, 2), -1);
-            // syncDeviceCheckboxes(jsonData.devices || []);
-            dialog.close();
-        } catch (err) {
-            alert("Invalid JSON input.");
+    document.getElementById("deviceSearchBox").addEventListener("change", handleDeviceSearchSelection);
+    document.getElementById("configSearchBox").addEventListener("change", handleConfigSearchSelection);
+}
+
+function loadDeviceList() {
+    const query = "SELECT device, version FROM device_config ORDER BY time DESC LIMIT 100";
+    dbJson(query).then(result => {
+        const deviceListContainer = document.getElementById("deviceList");
+        const deviceSuggestions = document.getElementById("deviceSuggestions");
+
+        deviceListContainer.innerHTML = "";
+        // deviceSuggestions.innerHTML = "";
+        deviceOptionMap.clear();
+
+        result.forEach((row, index) => {
+            const deviceId = `device_${index}`;
+
+            const label = document.createElement("label");
+            label.className = "mdl-checkbox mdl-js-checkbox";
+            label.setAttribute("for", deviceId);
+
+            const input = document.createElement("input");
+            input.type = "checkbox";
+            input.id = deviceId;
+            input.className = "mdl-checkbox__input";
+            input.setAttribute("data-device", row.device);
+            input.setAttribute("data-version", row.version);
+            input.addEventListener("change", updateDevicesInRunConfig);
+
+            const span = document.createElement("span");
+            span.className = "mdl-checkbox__label";
+            span.innerText = `${row.device} (v${row.version})`;
+
+            label.appendChild(input);
+            label.appendChild(span);
+            deviceListContainer.appendChild(label);
+            deviceListContainer.appendChild(document.createElement("br"));
+
+            const option = document.createElement("option");
+            option.value = `${row.device} (v${row.version})`;
+            deviceSuggestions.appendChild(option);
+
+            deviceOptionMap.set(option.value, { device: row.device, version: row.version });
+        });
+
+        if (window.componentHandler) {
+            componentHandler.upgradeDom();
         }
     });
-
-    document.querySelector("#jsonImportModal .close").addEventListener("click", () => {
-        dialog.close();
-    });
-    document.getElementById("addConfigBtn").addEventListener("click", saveConfig);
-    document.getElementById("showJsonTableBtn").addEventListener("click", showJsonTable);
-    document.getElementById("jsonImportBtn").addEventListener("click", openJsonImportModal);
-    document.getElementById("saveDeviceConfigBtn").addEventListener("click", saveDeviceConfig);
-
-
-    setupDeviceSearchViewer();
 }
 
-function GetDeviceConfigs() {
-    import('/includes/tooldaq.js').then(({ dbJson }) => {
-        const query = "SELECT device, version FROM device_config ORDER BY time DESC LIMIT 100";
-        dbJson(query)
-            .then(result => {
-                const deviceListContainer = document.getElementById("deviceList");
-                deviceListContainer.innerHTML = ""; // Clear old content
+function loadConfigOptions() {
+    const query = "SELECT config_id, name, version, description, author FROM configurations ORDER BY time DESC";
+    dbJson(query).then(result => {
+        const configList = document.getElementById("configSuggestions");
+        configList.innerHTML = "";
+        configOptionMap.clear();
 
-                result.forEach((row, index) => {
-                    const deviceId = `device_${index}`;
-                    const label = document.createElement("label");
-                    label.className = "mdl-checkbox mdl-js-checkbox";
-                    label.setAttribute("for", deviceId);
+        result.forEach(row => {
+            const option = document.createElement("option");
+            option.value = `${row.name} (v${row.version})`;
+            configList.appendChild(option);
 
-                    const input = document.createElement("input");
-                    input.type = "checkbox";
-                    input.id = deviceId;
-                    input.className = "mdl-checkbox__input";
-                    input.setAttribute("data-device", row.device);
-                    input.setAttribute("data-version", row.version);
-
-                    // input.addEventListener("change", updateDevicesInJsonEditor);
-                    input.addEventListener("change", () => {
-                        // updateDevicesInJsonEditor();
-                        updateDeviceConfigInJsonEditor();
-                        updateDeviceSearchBox();
-                    });
-
-                    const span = document.createElement("span");
-                    span.className = "mdl-checkbox__label";
-                    span.innerText = `${row.device} (v${row.version})`;
-
-                    label.appendChild(input);
-                    label.appendChild(span);
-
-                    deviceListContainer.appendChild(label);
-                    deviceListContainer.appendChild(document.createElement("br"));
-                });
-
-                if (window.componentHandler) {
-                    componentHandler.upgradeDom();
-                }
-            })
-            .catch(error => {
-                console.error("Error fetching device configurations:", error);
-            });
+            configOptionMap.set(option.value, row);
+        });
     });
 }
 
-function GetConfigs() {
-    const query = "SELECT * FROM configurations ORDER BY time DESC LIMIT 10";
-    GetPSQLTable(query, "root", "daq", true).then(function (result) {
-        const deviceConfigOutput = document.getElementById("deviceConfigOutput");
-        deviceConfigOutput.innerHTML = result;
-    }).catch(function (error) {
-        console.error("Error fetching device configurations:", error);
-    });
-}
+function handleConfigSearchSelection() {
+    const selectedText = document.getElementById("configSearchBox").value;
+    const match = configOptionMap.get(selectedText);
 
-function saveConfig() {
-    const name = document.getElementById("configName").value.trim();
-    const version = parseInt(document.getElementById("version").value) || 0;
-    const description = document.getElementById("configDescription").value.trim();
-    const author = document.getElementById("configAuthor")?.value || "anonymous";
-    const editorContent = ace.edit("jsonEditor").getValue();
-
-    let data;
-    try {
-        data = JSON.stringify(JSON.parse(editorContent));
-    } catch (e) {
-        alert("Please fix the JSON before saving.");
+    if (!match) {
+        selectedConfig = null;
         return;
     }
 
-    const queryInsert = `
-        INSERT INTO configurations (time, name, version, description, author, data)
-        VALUES (now(), '${name}', (SELECT COALESCE(MAX(version)+1,0) FROM configurations WHERE name='${name}'),
-                '${description}', '${author}', '${data}'::jsonb);
-      `;
+    const query = `SELECT data FROM configurations WHERE name='${match.name}' AND version=${match.version} LIMIT 1`;
+    dbJson(query).then(result => {
+        const configData = result?.[0]?.data;
+        if (configData) {
+            runConfigEditor.setValue(JSON.stringify(configData, null, 2), -1);
+            document.getElementById("runNo").value = match.config_id;
+            document.getElementById("configName").value = match.name;
+            document.getElementById("version").value = match.version;
+            document.getElementById("configDescription").value = match.description || "";
+            selectedConfig = match;
+        }
+    });
+}
 
-    GetPSQLTable(queryInsert, "root", "daq", true).then(() => {
-        alert("Configuration saved successfully.");
+function handleDeviceSearchSelection() {
+    const selectedText = document.getElementById("deviceSearchBox").value;
+    const match = deviceOptionMap.get(selectedText);
+
+    if (!match) {
+        deviceEditor.setValue("// No matching device selected", -1);
+        return;
+    }
+
+    const query = `SELECT data FROM device_config WHERE device='${match.device}' AND version=${match.version} LIMIT 1`;
+    dbJson(query).then(result => {
+        const configData = result?.[0]?.data;
+        if (configData) {
+            deviceEditor.setValue(JSON.stringify(configData, null, 2), -1);
+        } else {
+            deviceEditor.setValue("// No data found for selected device", -1);
+        }
+    }).catch(err => {
+        console.error("Device config fetch error:", err);
+        deviceEditor.setValue("// Error loading data", -1);
+    });
+}
+
+function updateDevicesInDeviceEditor() {
+    try {
+        const current = JSON.parse(editor.getValue());
+
+        const selectedInputs = Array.from(document.querySelectorAll(".mdl-checkbox__input:checked"));
+        const selectedDevices = selectedInputs.map(input => input.getAttribute("data-device"));
+
+        current.devices = selectedDevices;
+        deviceEditor.setValue(JSON.stringify(current, null, 2), -1);
+
+        updateDeviceSuggestions(selectedInputs);
+
+    } catch (e) {
+        console.warn("Invalid JSON in editor; cannot update devices.");
+    }
+}
+
+function updateDeviceSuggestions(selectedInputs) {
+    const deviceSuggestions = document.getElementById("deviceSuggestions");
+    deviceSuggestions.innerHTML = ""; // Clear old options
+
+    selectedInputs.forEach(input => {
+        const device = input.getAttribute("data-device");
+        const version = input.getAttribute("data-version");
+        const displayText = `${device} (v${version})`;
+
+        const option = document.createElement("option");
+        option.value = displayText;
+        deviceSuggestions.appendChild(option);
+    });
+}
+
+
+function updateDevicesInRunConfig() {
+    try {
+        const current = JSON.parse(runConfigEditor.getValue());
+        const selected = Array.from(document.querySelectorAll(".mdl-checkbox__input:checked"))
+            .map(input => input.getAttribute("data-device"));
+        current.devices = selected;
+        runConfigEditor.setValue(JSON.stringify(current, null, 2), -1);
+    } catch (e) {
+        console.warn("Invalid JSON in editor; cannot update devices.");
+    }
+}
+
+function saveRunConfig() {
+    const name = document.getElementById("configName").value.trim();
+    const description = document.getElementById("configDescription").value.trim();
+    const author = "anonymous"; // Replace with actual session user
+
+    if (!name) {
+        alert("Config Name is required.");
+        return;
+    }
+
+    let newJsonData;
+    try {
+        newJsonData = JSON.stringify(JSON.parse(runConfigEditor.getValue()));
+    } catch (e) {
+        alert("Fix the JSON format before saving.");
+        return;
+    }
+
+    // If existing config loaded, compare to see if changes occurred
+    if (selectedConfig) {
+        const query = `SELECT data FROM configurations WHERE name='${selectedConfig.name}' AND version=${selectedConfig.version} LIMIT 1`;
+        dbJson(query).then(result => {
+            const existingData = result?.[0]?.data;
+            if (JSON.stringify(existingData, null, 2).trim() === JSON.stringify(JSON.parse(newJsonData), null, 2).trim()) {
+                alert("No changes detected. Nothing was saved.");
+                return;
+            }
+            saveRunConfigToDb(name, description, author, newJsonData);
+        });
+    } else {
+        saveRunConfigToDb(name, description, author, newJsonData);
+    }
+}
+
+function saveRunConfigToDb(name, description, author, jsonData) {
+    if (!confirm("Save this configuration as a new version?")) return;
+
+    const insertQuery = `
+        INSERT INTO configurations (time, name, version, description, author, data)
+        VALUES (now(), '${name}', (SELECT COALESCE(MAX(version) + 1, 0) FROM configurations WHERE name='${name}'), '${description}', '${author}', '${jsonData}'::jsonb);
+    `;
+
+    GetPSQLTable(insertQuery, "root", "daq", true).then(() => {
+        alert(`Configuration '${name}' saved as new version.`);
         clearForm();
-        document.querySelectorAll(".mdl-checkbox__input").forEach(cb => cb.checked = false);
-        // GetConfigurations?.();
+        loadConfigOptions();
     }).catch(error => {
-        console.error("Error adding configuration:", error);
+        console.error("Save config error:", error);
         alert("Failed to save configuration.");
     });
-};
+}
+
+function saveDeviceConfig() {
+    const selectedText = document.getElementById("deviceSearchBox").value;
+    const match = deviceOptionMap.get(selectedText);
+
+    if (!match) {
+        alert("No valid device selected to save.");
+        return;
+    }
+
+    const { device, version } = match;
+    const newContent = deviceEditor.getValue();
+
+    const fetchQuery = `SELECT data FROM device_config WHERE device='${device}' AND version=${version} LIMIT 1`;
+    dbJson(fetchQuery).then(result => {
+        const savedData = JSON.stringify(result[0].data, null, 2);
+
+        if (savedData.trim() === newContent.trim()) {
+            alert("No changes detected. Nothing was saved.");
+            return;
+        }
+
+        if (!confirm(`Save as a new version of ${device}?`)) return;
+
+        const insertQuery = `
+            INSERT INTO device_config (time, device, version, author, description, data)
+            VALUES (
+                now(),
+                '${device}',
+                (SELECT COALESCE(MAX(version),0)+1 FROM device_config WHERE device='${device}'),
+                'user',
+                'New version created by editing',
+                '${newContent}'::jsonb
+            );
+        `;
+
+        GetPSQLTable(insertQuery, "root", "daq", true).then(() => {
+            alert(`New version of ${device} saved successfully.`);
+            loadDeviceList();
+        }).catch(err => {
+            console.error("Failed to save device config:", err);
+            alert("Error saving device configuration.");
+        });
+    }).catch(err => {
+        console.error("Error fetching original device config:", err);
+        alert("Error loading original data for comparison.");
+    });
+}
+
+function openJsonImportModal(target) {
+    const dialog = document.getElementById("jsonImportModal");
+    dialog.dataset.target = target;
+    modalEditor.setValue("{\n  \"devices\": []\n}", -1);
+
+    if (!dialog.showModal) {
+        dialogPolyfill.registerDialog(dialog);
+    }
+    dialog.showModal();
+}
+
+function importJsonFromModal() {
+    try {
+        const jsonData = JSON.parse(modalEditor.getValue());
+        const target = document.getElementById("jsonImportModal").dataset.target;
+
+        if (target === "run") {
+            runConfigEditor.setValue(JSON.stringify(jsonData, null, 2), -1);
+        } else {
+            deviceEditor.setValue(JSON.stringify(jsonData, null, 2), -1);
+        }
+        document.getElementById("jsonImportModal").close();
+    } catch (err) {
+        alert("Invalid JSON input.");
+    }
+}
+
+function showJsonTable() {
+    import('/includes/jsontotable.js').then(({ jsonToHtmlTable }) => {
+        const rawJson = runConfigEditor.getValue();
+        const tableHTML = jsonToHtmlTable(rawJson);
+        document.getElementById("jsonTableOutput").innerHTML = tableHTML;
+    }).catch(error => {
+        console.error("Error loading jsontotable:", error);
+    });
+}
 
 function clearForm() {
     document.getElementById("configName").value = "";
     document.getElementById("version").value = "";
     document.getElementById("configDescription").value = "";
-    ace.edit("jsonEditor").setValue(JSON.stringify({ devices: [] }, null, 2), -1);
-    document.querySelectorAll(".mdl-checkbox__input").forEach(cb => cb.checked = false);
+    runConfigEditor.setValue("// Start a new run config", -1);
 }
 
-export function setupSearch() {
-    const searchBox = document.getElementById("searchBox");
-    searchBox.addEventListener("input", () => {
-        const term = searchBox.value;
-        editor.find(term, {
-            backwards: false,
-            wrap: true,
-            caseSensitive: false,
-            wholeWord: false,
-            regExp: false
-        });
+function GetConfigs() {
+    const query = "SELECT * FROM configurations ORDER BY time DESC LIMIT 10";
+    GetPSQLTable(query, "root", "daq", true).then(result => {
+        document.getElementById("deviceConfigOutput").innerHTML = result;
+    }).catch(error => {
+        console.error("Error fetching configurations:", error);
     });
-}
-
-let modalEditor;
-
-// Open the import modal
-export function openJsonImportModal() {
-    const dialog = document.getElementById("jsonImportModal");
-
-    if (!modalEditor) {
-        modalEditor = ace.edit("modalEditor");
-        modalEditor.setTheme("ace/theme/github");
-        modalEditor.session.setMode("ace/mode/json");
-        modalEditor.setValue("{\n  \"devices\": []\n}", -1);
-    }
-
-    if (!dialog.showModal) {
-        dialogPolyfill.registerDialog(dialog); // for browsers without native <dialog>
-    }
-
-    dialog.showModal();
-}
-
-function saveDeviceConfig() {
-    if (!currentViewedDevice || currentViewedVersion == null) {
-        alert("Please select a device first.");
-        return;
-    }
-
-    let updatedJson;
-    try {
-        updatedJson = JSON.stringify(JSON.parse(viewerEditor.getValue()));
-    } catch (e) {
-        alert("Invalid JSON. Please fix the errors before saving.");
-        return;
-    }
-
-    const query = `
-        UPDATE device_config
-        SET data = '${updatedJson}'::jsonb,
-            time = now()
-        WHERE device = '${currentViewedDevice}' AND version = ${currentViewedVersion};
-    `;
-
-    import('/includes/tooldaq.js').then(({ dbJson }) => {
-        dbJson(query).then(() => {
-            alert(`Device config for ${currentViewedDevice} v${currentViewedVersion} saved successfully.`);
-        }).catch(err => {
-            console.error("Error saving device config:", err);
-            alert("Failed to save device configuration.");
-        });
-    });
-}
-
-function updateDevicesInJsonEditor() {
-    try {
-        const current = JSON.parse(editor.getValue());
-        const selected = Array.from(document.querySelectorAll(".mdl-checkbox__input:checked"))
-            .map(input => input.getAttribute("data-device"));
-        current.devices = selected;
-        editor.setValue(JSON.stringify(current, null, 2), -1);
-    } catch (e) {
-        console.warn("Invalid JSON in editor; cannot update devices.");
-    }
-}
-
-function updateDeviceConfigInJsonEditor() {
-    try {
-        const editor = ace.edit("deviceJsonViewer");
-        const current = JSON.parse(editor.getValue());
-        // const selected = Array.from(document.querySelectorAll(".mdl-checkbox__input:checked"))
-        //     .map(input => input.getAttribute("data-device"));
-        // current.devices = selected;
-        editor.setValue(JSON.stringify(current, null, 2), -1);
-    } catch (e) {
-        console.warn("Invalid JSON in editor; cannot update devices.");
-    }
-}
-
-
-function showJsonTable() {
-    import('/includes/jsontotable.js').then(({ jsonToHtmlTable }) => {
-        const editor = ace.edit("deviceJsonViewer");
-        const rawJson = editor.getValue();
-        const tableHTML = jsonToHtmlTable(rawJson);
-        document.getElementById("jsonTableOutput").innerHTML = tableHTML;
-    }
-    ).catch((error) => {
-        console.error("Error loading jsontotable.js:", error);
-    });
-}
-
-const deviceOptionMap = new Map();
-// Populate search box with selected devices
-function updateDeviceSearchBox() {
-    const selectedDevices = Array.from(document.querySelectorAll(".mdl-checkbox__input:checked"))
-        .map(input => ({
-            device: input.getAttribute("data-device"),
-            version: input.getAttribute("data-version")
-        }));
-
-    const datalist = document.getElementById("deviceSuggestions");
-    datalist.innerHTML = "";
-    deviceOptionMap.clear();
-
-    selectedDevices.forEach(({ device, version }) => {
-        const displayText = `${device} (v${version})`;
-
-        const option = document.createElement("option");
-        option.value = displayText;
-        datalist.appendChild(option);
-
-        // Store mapping
-        deviceOptionMap.set(displayText, { device, version });
-    });
-}
-
-function setupDeviceSearchViewer() {
-    let viewerEditor = ace.edit("deviceJsonViewer");
-    // viewerEditor = ace.edit("deviceJsonViewer");
-    viewerEditor.setTheme("ace/theme/chrome");
-    viewerEditor.session.setMode("ace/mode/json");
-    viewerEditor.setReadOnly(true);
-    viewerEditor.setValue("// Select a device above to view its config", -1);
-
-    const searchBox = document.getElementById("deviceSearchBox");
-    searchBox.addEventListener("change", () => {
-        const selectedText = searchBox.value;
-        const match = deviceOptionMap.get(selectedText);
-
-        if (!match) {
-            viewerEditor.setValue("// No matching device selected", -1);
-            return;
-        }
-
-        const { device, version } = match;
-
-        const query = `SELECT data FROM device_config WHERE device='${device}' AND version=${version} LIMIT 1`;
-
-        dbJson(query).then(result => {
-            const configData = result?.[0]?.data;
-            if (configData) {
-                viewerEditor.setValue(JSON.stringify(configData, null, 2), -1);
-            } else {
-                viewerEditor.setValue("// No data found for selected device", -1);
-            }
-        }).catch(err => {
-            console.error("Device config fetch error:", err);
-            viewerEditor.setValue("// Error loading data", -1);
-        });
-    });
-
-    currentViewedDevice = device;
-    currentViewedVersion = version;
-}
-
-function addConfiguration() {
-    const name = document.getElementById("name").value;
-    const description = document.getElementById("description").value;
-    const author = document.getElementById("author").value;
-    const data = document.getElementById("data").value;
-
-    // Ensure data is in JSON format
-    try {
-        JSON.parse(data);
-    } catch (e) {
-        alert("Invalid JSON format in data field.");
-        return;
-    }
-
-    const queryInsert = `
-        INSERT INTO configurations (time, name, version, description, author, data)
-        VALUES ( now(), '${name}', (select COALESCE(MAX(version)+1,0) FROM configurations WHERE name='${name}'),
-                 '${description}', '${author}', '${data}'::jsonb)
-    `;
-
-    GetPSQLTable(queryInsert, "root", "daq", true).then(() => {
-        // Clear the form after successful submission
-        document.getElementById("configForm").reset();
-
-        // Refresh the table to display the new configuration
-        GetConfigurations();
-    }).catch(function (error) {
-        console.error("Error adding configuration:", error);
-    });
-
-
 }

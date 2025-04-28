@@ -55,7 +55,15 @@
 
                     <!-- Left Panel -->
                     <div class="left-panel">
-                        <h5>Configurations Table</h5>
+                        <h5>Setup Run Configuration</h5>
+
+                        <div class="mdl-textfield mdl-js-textfield">
+                            <input class="mdl-textfield__input" type="text" id="configSearchBox"
+                                list="configSuggestions">
+                            <label class="mdl-textfield__label" for="configSearchBox">Make New Config From
+                                Existing</label>
+                            <datalist id="configSuggestions"></datalist>
+                        </div>
 
                         <div class="mdl-textfield mdl-js-textfield">
                             <input class="mdl-textfield__input" type="text" id="runNo">
@@ -77,41 +85,22 @@
                                 id="configDescription"></textarea>
                             <label class="mdl-textfield__label" for="configDescription">Description</label>
                         </div>
+                        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                            <div class="json-editor" id="jsonEditor"> </div>
+                            <label class="mdl-textfield__label" for="configData">Data</label>
+                        </div>
 
                         <div class="mdl-cell mdl-cell--6-col">
                             <h5>Select Devices</h5>
                             <div class="device-list" id="deviceList"></div>
                         </div>
 
-                        <!-- <div class="spaced">
-                            <div class="mdl-textfield mdl-js-textfield">
-                                <input class="mdl-textfield__input" type="text" id="newType">
-                                <label class="mdl-textfield__label" for="newType">New Type</label>
-                            </div>
-
-                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                                <select class="mdl-textfield__input" id="runType">
-                                    <option value=""></option>
-                                    <option value="auto">Auto</option>
-                                    <option value="manual">Manual</option>
-                                </select>
-                                <label class="mdl-textfield__label" for="runType">Run Type</label>
-                            </div>
-                        </div> -->
-                        <div class="hidden">
-                            <div class="mdl-textfield mdl-js-textfield">
-                                <input class="mdl-textfield__input" type="text" id="searchBox">
-                                <label class="mdl-textfield__label" for="searchBox">Highlight Variable / Search</label>
-                            </div>
-
-                            <div class="json-editor" id="jsonEditor"> </div>
-                        </div>
-
-
                         <div class="spaced">
                             <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored"
-                                id="addConfigBtn">Save Config</button>
-                            <button class=" mdl-button mdl-js-button mdl-button--raised">Import</button>
+                                id="addConfigBtn">Save
+                                Config</button>
+                            <button class="mdl-button mdl-js-button mdl-button--raised" id="jsonImportBtn">Import
+                                JSON</button>
                         </div>
 
                     </div>
@@ -126,23 +115,21 @@
                             <label class="mdl-textfield__label" for="deviceSearchBox">Search Selected Devices</label>
                             <datalist id="deviceSuggestions"></datalist>
                         </div>
-                        <div id="jsonTableOutput" class="spaced"></div>
 
                         <div id="deviceJsonViewer" style="height: 300px; width: 100%; border: 1px solid #ccc;"></div>
+
                         <div class="spaced">
-                            <button
-                                class="hidden mdl-button mdl-js-button mdl-button--raised mdl-button--colored">Save</button>
                             <button id="saveDeviceConfigBtn"
                                 class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
                                 Save Device Config
                             </button>
-                            <button class="mdl-button mdl-js-button mdl-button--raised" id="showJsonTableBtn">View as
+                            <button id="showJsonTableBtn" class="mdl-button mdl-js-button mdl-button--raised">View as
                                 Editable Table</button>
-                            <button class="mdl-button mdl-js-button mdl-button--raised" id="jsonImportBtn">Import
+                            <button id="jsonImportBtn" class="mdl-button mdl-js-button mdl-button--raised">Import
                                 Json</button>
-
                         </div>
 
+                        <div id="jsonTableOutput" class="spaced"></div>
                     </div>
                 </div>
 
