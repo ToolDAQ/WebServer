@@ -710,41 +710,67 @@ export async function dataTable(query, targetId, rowsPerPage = 5) {
       return;
     }
 
-    // Build the table
-    let html = `<input type="text" id="${targetId}_search" placeholder="Search..." style="margin-bottom:10px;width:100%;">`;
-    html += `<table id="${targetId}_table" border="1" style="width:100%;border-collapse:collapse;">`;
+    let currentPage = 1;
+    const totalPages = Math.ceil(data.length / rowsPerPage);
 
-    // Headers
-    html += "<thead><tr>";
-    Object.keys(data[0]).forEach(key => {
-      html += `<th>${key}</th>`;
-    });
+    function renderPage(page) {
+      const start = (page - 1) * rowsPerPage;
+      const end = start + rowsPerPage;
+      const pageData = data.slice(start, end);
 
-    html += "</tr></thead>";
+      let html = `<table class="data-table"><thead><tr>`;
 
-    // Rows
-    html += "<tbody>";
-    data.forEach(row => {
-      html += "<tr>";
-      Object.values(row).forEach(value => {
-        let displayValue;
-        if (value === null) {
-          displayValue = "";
-        } else if (typeof value === "object") {
-          displayValue = `<pre style="white-space:pre-wrap;">${JSON.stringify(value, null, 2)}</pre>`;
-        } else {
-          displayValue = value;
-        }
-        html += `<td>${displayValue}</td>`;
+      // Table headers
+      Object.keys(pageData[0]).forEach(col => {
+        html += `<th>${col}</th>`;
       });
-      html += "</tr>";
-    });
+      html += `</tr></thead><tbody>`;
 
-    html += "</tbody>";
+      // Table body
+      pageData.forEach(row => {
+        html += `<tr>`;
+        Object.entries(row).forEach(([key, value]) => {
+          let displayValue = "";
+          if (value === null) {
+            displayValue = "";
+          } else if (typeof value === "object") {
+            displayValue = `<pre style="white-space:pre-wrap;">${JSON.stringify(value, null, 2)}</pre>`;
+          } else if (key.toLowerCase() === "time") {
+            // Format timestamp nicely
+            displayValue = new Date(value).toLocaleString();
+          } else {
+            displayValue = value;
+          }
+          html += `<td>${displayValue}</td>`;
+        });
+        html += `</tr>`;
+      });
 
-    html += "</table>";
+      html += `</tbody></table>`;
 
-    container.innerHTML = html;
+      // Pagination controls
+      html += `<div class="pagination-controls">`;
+      html += `<button ${page === 1 ? "disabled" : ""} onclick="changePage('${htmlId}', ${page - 1})">Previous</button>`;
+
+      for (let i = 1; i <= totalPages; i++) {
+        html += `<button ${page === i ? "class='active'" : ""} onclick="changePage('${htmlId}', ${i})">${i}</button>`;
+      }
+
+      html += `<button ${page === totalPages ? "disabled" : ""} onclick="changePage('${htmlId}', ${page + 1})">Next</button>`;
+      html += `</div>`;
+
+      document.getElementById(htmlId).innerHTML = html;
+    }
+
+    // Expose a function globally to allow page switching
+    window.changePage = function (id, page) {
+      if (id !== htmlId) return;
+      if (page < 1 || page > totalPages) return;
+      currentPage = page;
+      renderPage(currentPage);
+    }
+
+    renderPage(currentPage);
 
     // Add search functionality
     const searchInput = document.getElementById(`${targetId}_search`);
