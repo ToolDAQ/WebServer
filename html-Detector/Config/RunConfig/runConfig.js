@@ -2,7 +2,7 @@
 // Description: JavaScript for the run configuration page.
 
 import { GetPSQLTable } from '/includes/functions.js';
-import { dbJson } from '/includes/tooldaq.js';
+import { dbJson, dataTable } from '/includes/tooldaq.js';
 
 let deviceEditor;
 let runConfigEditor;
@@ -354,11 +354,15 @@ function clearForm() {
     runConfigEditor.setValue("// Start a new run config", -1);
 }
 
+// function GetConfigs() {
+//     const query = "SELECT * FROM configurations ORDER BY time DESC LIMIT 10";
+//     GetPSQLTable(query, "root", "daq", true).then(result => {
+//         document.getElementById("deviceConfigOutput").innerHTML = result;
+//     }).catch(error => {
+//         console.error("Error fetching configurations:", error);
+//     });
+// }
 function GetConfigs() {
     const query = "SELECT * FROM configurations ORDER BY time DESC LIMIT 10";
-    GetPSQLTable(query, "root", "daq", true).then(result => {
-        document.getElementById("deviceConfigOutput").innerHTML = result;
-    }).catch(error => {
-        console.error("Error fetching configurations:", error);
-    });
+    dataTable(query, "deviceConfigOutput");
 }
