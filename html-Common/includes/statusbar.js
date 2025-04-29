@@ -1,16 +1,17 @@
-let usertime=document.getElementById("usertime");
+let utctime=document.getElementById("utctime");
 let exptime=document.getElementById("exptime");
 let user=document.getElementById("user");
 
 function getTimeInTimezones() {
     // Get the current time in the user's timezone
-    usertime.innerText = new Date().toLocaleTimeString(undefined, {
-        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+    utctime.innerText = new Date().toLocaleTimeString(undefined, {
+        timeZone: 'UTC'
     });
 
     // Get the time in the defined timezone
     exptime.innerText = new Date().toLocaleTimeString(undefined, {
-        timeZone: "Europe/London"
+        // FIXME this should be set to local timezone of the experiment
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
     });
 
 }
