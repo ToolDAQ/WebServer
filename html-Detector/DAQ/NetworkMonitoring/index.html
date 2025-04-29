@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>ToolDAQ Webpage</title>
+  <link rel="stylesheet" href="/stylesheets/network.css">
+</head>
+
+<body>
+
+
+  <!--#include virtual="/includes/header.html" -->
+  <!--#include virtual="../subheader.html" -->
+  <!--#include virtual="/includes/drawer.html" -->
+
+  <div class="container">
+    <h2>Network Ping Tool</h2>
+    <div class="input-section">
+      <input type="text" id="ipAddress" placeholder="Enter IP address (e.g. 192.168.1.1)">
+      <button id="pingButton">Ping</button>
+      <button id="stopPingButton" class="stop" style="display: none;">Stop Ping</button>
+    </div>
+
+    <div class="ping-result" id="pingResult">
+      <h3>Ping Result:</h3>
+      <p id="pingOutput">Waiting for ping results...</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <h2>Network Devices</h2>
+    <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+      <thead>
+        <tr>
+          <th>IP Address</th>
+          <th>MAC Address</th>
+          <th class="mdl-data-table__cell--non-numeric">Device Name</th>
+          <th>OS</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="network-table-body">
+        <!-- Add rows dynamically -->
+      </tbody>
+    </table>
+  </div>
+
+  <!--#include virtual="/includes/footer.html" -->
+</body>
+<script type="module" src="./NetworkMonitoring.js" async></script>
+
+</html>
