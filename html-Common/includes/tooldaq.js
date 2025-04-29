@@ -29,25 +29,25 @@
 class RequestError extends Error {
   constructor(message, response, responseText) {
     super(message);
-    this.response     = response;
+    this.response = response;
     this.responseText = responseText;
   }
 };
 
-class DBError extends Error {};
+class DBError extends Error { };
 
-class CSVParseError extends Error {};
+class CSVParseError extends Error { };
 
 async function parseCSV(stream) {
   let result = [];
   if (stream == null) return result;
-  let row    = [];
-  let cell   = [];
+  let row = [];
+  let cell = [];
 
   let decoder = new TextDecoder();
 
-  let start   = true;
-  let quoted  = false;
+  let start = true;
+  let quoted = false;
   let escaped = false;
 
   function commit_cell(and_row) {
@@ -57,8 +57,8 @@ async function parseCSV(stream) {
       result.push(row);
       row = [];
     };
-    start   = true;
-    quoted  = false;
+    start = true;
+    quoted = false;
     escaped = false;
   };
 
@@ -67,7 +67,7 @@ async function parseCSV(stream) {
     if (result.length > 0)
       row = result[result.length - 1];
     if ((row.length == 0 || row.length == 1 && row[0] == '')
-        && result.length > 1)
+      && result.length > 1)
       row = result[result.length - 2];
     if (row.length > 1 || row.length == 1 && row[0] != '')
       message += '; last row was (unquoted) `' + row.join(',') + "'";
@@ -76,12 +76,12 @@ async function parseCSV(stream) {
 
   let reader = stream.getReader();
   while (true) {
-      let chunk = (await reader.read()).value;
-      if (chunk === undefined) break;
+    let chunk = (await reader.read()).value;
+    if (chunk === undefined) break;
     for (let byte of chunk) {
       if (byte == 0x22 /* " */) {
         if (start) {
-          start  = false;
+          start = false;
           quoted = true;
           continue;
         };
@@ -131,19 +131,19 @@ async function parseCSV(stream) {
 export function request(url, args, options) {
   const encode_url
     = url => url
-          +  (url.indexOf('?') >= 0 ? '&' : '?')
-          +  Object.entries(args).map(
-               ([ arg, value ]) => encodeURIComponent(arg)
-                                +  '='
-                                +  encodeURIComponent(value)
-             ).join('&');
+      + (url.indexOf('?') >= 0 ? '&' : '?')
+      + Object.entries(args).map(
+        ([arg, value]) => encodeURIComponent(arg)
+          + '='
+          + encodeURIComponent(value)
+      ).join('&');
 
   if (args != null) {
     if (typeof url == 'string')
       url = encode_url(url);
     else if (url instanceof URL) {
       url = new URL(url); // avoid changing the argument
-      for (let [ arg, value ] of Object.entries(args))
+      for (let [arg, value] of Object.entries(args))
         url.searchParams.append(arg, value);
     } else if (url instanceof Request) {
       url = new Request(encode_url(url.url), url);
@@ -152,8 +152,8 @@ export function request(url, args, options) {
   };
 
   if (options
-      && (typeof(options) == 'string'
-          || Object.getPrototypeOf(options) !== Object.prototype))
+    && (typeof (options) == 'string'
+      || Object.getPrototypeOf(options) !== Object.prototype))
     options = { method: 'POST', body: options };
 
   return fetch(url, options).then(
@@ -228,7 +228,7 @@ export function dbPlot(query, template) {
     function (table) {
       function column(index) {
         let result = new Array(table.length - 1);
-        for (let i = 0; i < result.length; ++i) result[i] = table[i+1][index];
+        for (let i = 0; i < result.length; ++i) result[i] = table[i + 1][index];
         return result;
       };
 
@@ -236,7 +236,7 @@ export function dbPlot(query, template) {
       let plots = new Array(table[0].length - 1);
       for (let i = 0; i < plots.length; ++i)
         plots[i] = Object.assign(
-          { name: table[0][i+1], x: x, y: column(i+1) },
+          { name: table[0][i + 1], x: x, y: column(i + 1) },
           template
         );
 
@@ -246,10 +246,10 @@ export function dbPlot(query, template) {
 };
 
 export function getMonitoringPlot(device, options) {
-  if (typeof(device) != 'string' || device == '')
+  if (typeof (device) != 'string' || device == '')
     throw Error('getMonitoringPlot: device must be a non-empty string');
 
-  let columns  = options?.columns;
+  let columns = options?.columns;
   let template = options?.template;
 
   function encodeDate(date) {
@@ -260,7 +260,7 @@ export function getMonitoringPlot(device, options) {
 
   if (options) {
     var from = encodeDate(options.from);
-    var to   = encodeDate(options.to);
+    var to = encodeDate(options.to);
   };
 
   let query = `select time, data from monitoring where device = '${device}'`;
@@ -271,7 +271,7 @@ export function getMonitoringPlot(device, options) {
   query += ' order by time';
 
   if (columns != null) {
-    if (!(columns instanceof Array)) columns = [ columns ];
+    if (!(columns instanceof Array)) columns = [columns];
     var fixed = [];
     var tests = [];
     for (let i = 0; i < columns.length; ++i) {
@@ -286,14 +286,14 @@ export function getMonitoringPlot(device, options) {
       else if (column instanceof RegExp)
         tests.push({
           index: i,
-          fn:    name == null
-                 ? c => column.test(c)
-                 : c => column.test(c) && c.replace(column, name)
+          fn: name == null
+            ? c => column.test(c)
+            : c => column.test(c) && c.replace(column, name)
         });
       else if (column instanceof Function)
         tests.push({
           index: i,
-          fn:    name == null ? column : c => column(c) && name
+          fn: name == null ? column : c => column(c) && name
         });
       else
         throw Error('Invalid column specification: ' + columns[i].toString());
@@ -309,8 +309,8 @@ export function getMonitoringPlot(device, options) {
           for (let column in row) {
             y[column] ??= {
               index: 0,
-              name:  column,
-              data:  new Array(table.length)
+              name: column,
+              data: new Array(table.length)
             };
             y[column].data[i] = row[column];
           };
@@ -319,8 +319,8 @@ export function getMonitoringPlot(device, options) {
         for (let column of fixed)
           y[column.key] = {
             index: column.index,
-            name:  column.name,
-            data:  new Array(table.length)
+            name: column.name,
+            data: new Array(table.length)
           };
         for (let i = 0; i < table.length; ++i) {
           let row = JSON.parse(table[i][1]);
@@ -333,8 +333,8 @@ export function getMonitoringPlot(device, options) {
                   exists = true;
                   y[column] = {
                     index: test.index,
-                    name:  name === true ? column : name,
-                    data:  new Array(table.length)
+                    name: name === true ? column : name,
+                    data: new Array(table.length)
                   };
                   break;
                 };
@@ -351,7 +351,7 @@ export function getMonitoringPlot(device, options) {
           let i = a.index - b.index;
           if (i) return i;
           if (a.name < b.name) return -1;
-          if (a.name > b.name) return  1;
+          if (a.name > b.name) return 1;
           return 0;
         }
       ).map(
@@ -375,12 +375,12 @@ export function makeMonitoringPlot(div, device, options, layout) {
 };
 
 export function getPlotlyPlot(name, version) {
-  if (typeof(name) != 'string' || name == '')
+  if (typeof (name) != 'string' || name == '')
     throw Error('dbPlotlyPlot: name must be a non-empty string');
 
   if (version == null)
     version = 'order by time desc limit 1';
-  else if (typeof(version) == 'number')
+  else if (typeof (version) == 'number')
     version = `and version = ${version}`
 
   return dbJson(
@@ -519,11 +519,11 @@ export function makeTable(table, data, header, filter = (row, index) => row) {
       if (!header.length) return table; // no columns
 
       // Check header specification. It may begin with true
-      let use_row     = false;
+      let use_row = false;
       let emit_header = true;
-      let hstart      = 0;
+      let hstart = 0;
       if (header[0] === true || header[0] === false) {
-        use_row     = true;
+        use_row = true;
         emit_header = header[0];
         ++hstart;
       };
@@ -546,11 +546,11 @@ export function makeTable(table, data, header, filter = (row, index) => row) {
         };
       };
       if (strings == numbers
-          // [ [ 3, 'A' ], 1 ] or [ [ 'a', 'A' ], 'b' ] are invalid unless use_row
-          || !use_row && renames && (strings || renames != header.length))
+        // [ [ 3, 'A' ], 1 ] or [ [ 'a', 'A' ], 'b' ] are invalid unless use_row
+        || !use_row && renames && (strings || renames != header.length))
         bad_header();
 
-      let titles  = [];
+      let titles = [];
       columns = [];
       if (use_row) {
         if (strings) {
@@ -605,10 +605,10 @@ export function makeTable(table, data, header, filter = (row, index) => row) {
       columns = Array.from(row.keys());
       if (header === true) {
         header = row;
-        row    = null;
+        row = null;
       } else if (header === false) {
         header = null;
-        row    = null;
+        row = null;
       } else if (header != null)
         bad_header();
     };
@@ -629,7 +629,7 @@ export function makeTable(table, data, header, filter = (row, index) => row) {
       // [ 'a', 'b', [ 'c', 'C' ] ]
       columns = [];
       let titles = [];
-      for (; i < header.length; ++i ) {
+      for (; i < header.length; ++i) {
         let h = header[i];
         if (h instanceof Array) {
           columns.push(h[0]);
@@ -679,6 +679,121 @@ export function makeTable(table, data, header, filter = (row, index) => row) {
   return table;
 };
 
+/**
+ * Fetches data using a SQL query and displays it in a sortable, searchable HTML table.
+ *
+ * @param {string} query - The SQL query to execute (must return tabular data).
+ * @param {string} targetId - The ID of the HTML element where the table should be inserted.
+ * @param {number} rowsPerPage - Optional number of rows per page (default 5).
+ *
+ * Features:
+ * - Automatically generates a table with headers and rows.
+ * - Adds a live search filter input.
+ * - Adds click-to-sort functionality for all columns.
+ * - Pretty-prints JSON or object values in cells using <pre>.
+ *
+ * Example:
+ *   dataTable("SELECT * FROM configurations ORDER BY time DESC", "myTableDiv");
+ */
+export async function dataTable(query, targetId, rowsPerPage = 5) {
+  try {
+    const data = await dbJson(query);
+    const container = document.getElementById(targetId);
+
+    if (!container) {
+      console.error(`Target element #${targetId} not found.`);
+      return;
+    }
+
+    if (!data || !data.length) {
+      container.innerHTML = "<p>No data available.</p>";
+      return;
+    }
+
+    // Build the table
+    let html = `<input type="text" id="${targetId}_search" placeholder="Search..." style="margin-bottom:10px;width:100%;">`;
+    html += `<table id="${targetId}_table" border="1" style="width:100%;border-collapse:collapse;">`;
+
+    // Headers
+    html += "<thead><tr>";
+    Object.keys(data[0]).forEach(key => {
+      html += `<th>${key}</th>`;
+    });
+
+    html += "</tr></thead>";
+
+    // Rows
+    html += "<tbody>";
+    data.forEach(row => {
+      html += "<tr>";
+      Object.values(row).forEach(value => {
+        let displayValue;
+        if (value === null) {
+          displayValue = "";
+        } else if (typeof value === "object") {
+          displayValue = `<pre style="white-space:pre-wrap;">${JSON.stringify(value, null, 2)}</pre>`;
+        } else {
+          displayValue = value;
+        }
+        html += `<td>${displayValue}</td>`;
+      });
+      html += "</tr>";
+    });
+
+    html += "</tbody>";
+
+    html += "</table>";
+
+    container.innerHTML = html;
+
+    // Add search functionality
+    const searchInput = document.getElementById(`${targetId}_search`);
+    searchInput.addEventListener("input", function () {
+      const filter = this.value.toLowerCase();
+      const rows = document.querySelectorAll(`#${targetId}_table tbody tr`);
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(filter) ? "" : "none";
+      });
+    });
+
+    // Basic sorting functionality
+    addSorting(targetId);
+
+  } catch (error) {
+    console.error("Failed to create dataTable:", error);
+  }
+}
+
+function addSorting(targetId) {
+  const table = document.getElementById(`${targetId}_table`);
+  const headers = table.querySelectorAll("th");
+  let sortDirection = 1;
+
+  headers.forEach((header, index) => {
+    header.style.cursor = "pointer";
+    header.addEventListener("click", () => {
+      sortTableByColumn(table, index, sortDirection);
+      sortDirection *= -1; // toggle
+    });
+  });
+}
+
+function sortTableByColumn(table, column, direction) {
+  const tbody = table.tBodies[0];
+  const rows = Array.from(tbody.querySelectorAll("tr"));
+
+  rows.sort((a, b) => {
+    const aText = a.children[column].innerText.trim();
+    const bText = b.children[column].innerText.trim();
+    return aText.localeCompare(bText, undefined, { numeric: true }) * direction;
+  });
+
+  tbody.innerHTML = "";
+  rows.forEach(row => tbody.appendChild(row));
+}
+
+
 
 export function getServices(filter) {
   if (filter == null)
@@ -697,7 +812,7 @@ export function getServices(filter) {
 
   return requestCSV('/services.txt').then(
     function (table) {
-      let keys = [ 'id', 'ip', 'port', 'name', 'status' ];
+      let keys = ['id', 'ip', 'port', 'name', 'status'];
       let out = 0;
       for (let i = 0; i < table.length; ++i) {
         let row = table[i];
@@ -728,8 +843,8 @@ export function sendCommand(service, command, ...args) {
   if (service == null) throw Error('sendCommand: service is null');
 
   if (!(service instanceof Object)
-      || service instanceof Function
-      || service instanceof RegExp)
+    || service instanceof Function
+    || service instanceof RegExp)
     return getService(service).then(
       function (s) {
         if (s == null)
@@ -803,17 +918,17 @@ export function makeControls(div, service) {
           button.addEventListener(
             'click',
             command.value
-            ? () => void send_command(command.name, command.value)
-            : () => void send_command(command.name)
+              ? () => void send_command(command.name, command.value)
+              : () => void send_command(command.name)
           );
           row.append(button);
-          controls[command.name] = cmd => void(command.value = cmd.value);
+          controls[command.name] = cmd => void (command.value = cmd.value);
         } else if (command.type == 'OPTIONS') {
           row.append(make_name(command.name));
 
           let update = make('button', 'control-update');
           update.textContent = 'Update';
-          update.disabled    = true;
+          update.disabled = true;
           update.addEventListener(
             'click',
             function () {
@@ -830,16 +945,16 @@ export function makeControls(div, service) {
           let inputs = {};
           for (let option of command.options) {
             let input = make('input', 'control');
-            input.type     = 'radio';
-            input.id       = command.name + '-' + option;
-            input.name     = command.name;
-            input.value    = option;
-            input.checked  = command.value == option;
-            input.onchange = () => void(update.disabled = input.value == command.value);
+            input.type = 'radio';
+            input.id = command.name + '-' + option;
+            input.name = command.name;
+            input.value = option;
+            input.checked = command.value == option;
+            input.onchange = () => void (update.disabled = input.value == command.value);
             row.append(input);
 
             let label = document.createElement('label');
-            label.htmlFor     = input.id;
+            label.htmlFor = input.id;
             label.textContent = option;
             row.append(label);
             inputs[option] = input;
@@ -862,10 +977,10 @@ export function makeControls(div, service) {
           slider.type = 'range';
           let number = make('input', 'control');
           number.type = 'number';
-          for (let input of [ slider, number ]) {
-            input.min   = command.min;
-            input.max   = command.max;
-            input.step  = command.step;
+          for (let input of [slider, number]) {
+            input.min = command.min;
+            input.max = command.max;
+            input.step = command.step;
             input.value = command.value;
             row.append(input);
           };
@@ -873,7 +988,7 @@ export function makeControls(div, service) {
           let update = make('button', 'control-update');
 
           function oninput(one, another) {
-            another.value   = one.value;
+            another.value = one.value;
             update.disabled = one.value == command.value;
           };
 
@@ -886,7 +1001,7 @@ export function makeControls(div, service) {
             'click',
             function () {
               send_command(command.name, number.value);
-              command.value   = number.value;
+              command.value = number.value;
               update.disabled = true;
             }
           );
