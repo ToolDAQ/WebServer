@@ -549,3 +549,21 @@ a img{
     display: none;
   }
 }
+
+.custom-fixed-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 1000;
+  background-color: #f5f5f5;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.26);
+  padding: 16px;
+}
+
+/* Prevent content from hiding behind footer */
+.mdl-layout__content {
+  padding-bottom: 160px;
+  /* Adjust based on footer height */
+}
