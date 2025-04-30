@@ -1,4 +1,4 @@
-function jsonToHtmlTable(jsonString) {
+export function jsonToHtmlTable(jsonString) {
   let jsonData;
   try {
     jsonData = JSON.parse(jsonString);
