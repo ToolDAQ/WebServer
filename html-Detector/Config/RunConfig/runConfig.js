@@ -197,7 +197,6 @@ function updateDeviceSuggestions(selectedInputs) {
     });
 }
 
-
 function updateDevicesInRunConfig() {
     let current = {};
     try {
