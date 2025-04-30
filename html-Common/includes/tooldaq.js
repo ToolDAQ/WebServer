@@ -711,22 +711,46 @@ export async function dataTable(query, targetId, rowsPerPage = 5) {
     }
 
     let currentPage = 1;
-    const totalPages = Math.ceil(data.length / rowsPerPage);
+    let currentSortColumn = null;
+    let currentSortDirection = 1;
 
-    function renderPage(page) {
+    function renderPage(page, filterText = "") {
+      let filteredData = data;
+
+      if (filterText) {
+        filteredData = data.filter(row =>
+          Object.values(row).some(val =>
+            JSON.stringify(val).toLowerCase().includes(filterText.toLowerCase())
+          )
+        );
+      }
+
+      if (currentSortColumn !== null) {
+        filteredData.sort((a, b) => {
+          const aVal = a[currentSortColumn];
+          const bVal = b[currentSortColumn];
+          const aStr = typeof aVal === "object" ? JSON.stringify(aVal) : String(aVal ?? "");
+          const bStr = typeof bVal === "object" ? JSON.stringify(bVal) : String(bVal ?? "");
+          return aStr.localeCompare(bStr, undefined, { numeric: true }) * currentSortDirection;
+        });
+      }
+
+      const totalPages = Math.ceil(filteredData.length / rowsPerPage);
       const start = (page - 1) * rowsPerPage;
       const end = start + rowsPerPage;
-      const pageData = data.slice(start, end);
+      const pageData = filteredData.slice(start, end);
 
-      let html = `<table class="data-table"><thead><tr>`;
+      let html = `
+        <input type="text" id="${targetId}_search" placeholder="Search..." style="margin: 10px; padding: 5px; width: 50%;">
+        <table id="${targetId}_table" class="data-table">
+          <thead><tr>`;
 
-      // Table headers
       Object.keys(pageData[0]).forEach(col => {
-        html += `<th>${col}</th>`;
+        html += `<th data-col="${col}" style="cursor:pointer;">${col}</th>`;
       });
+
       html += `</tr></thead><tbody>`;
 
-      // Table body
       pageData.forEach(row => {
         html += `<tr>`;
         Object.entries(row).forEach(([key, value]) => {
@@ -736,7 +760,6 @@ export async function dataTable(query, targetId, rowsPerPage = 5) {
           } else if (typeof value === "object") {
             displayValue = `<pre style="white-space:pre-wrap;">${JSON.stringify(value, null, 2)}</pre>`;
           } else if (key.toLowerCase() === "time") {
-            // Format timestamp nicely
             displayValue = new Date(value).toLocaleString();
           } else {
             displayValue = value;
@@ -748,78 +771,52 @@ export async function dataTable(query, targetId, rowsPerPage = 5) {
 
       html += `</tbody></table>`;
 
-      // Pagination controls
       html += `<div class="pagination-controls">`;
-      html += `<button ${page === 1 ? "disabled" : ""} onclick="changePage('${htmlId}', ${page - 1})">Previous</button>`;
+      html += `<button ${page === 1 ? "disabled" : ""} onclick="changePage('${targetId}', ${page - 1})">Previous</button>`;
 
       for (let i = 1; i <= totalPages; i++) {
-        html += `<button ${page === i ? "class='active'" : ""} onclick="changePage('${htmlId}', ${i})">${i}</button>`;
+        html += `<button ${page === i ? "class='active'" : ""} onclick="changePage('${targetId}', ${i})">${i}</button>`;
       }
 
-      html += `<button ${page === totalPages ? "disabled" : ""} onclick="changePage('${htmlId}', ${page + 1})">Next</button>`;
+      html += `<button ${page === totalPages ? "disabled" : ""} onclick="changePage('${targetId}', ${page + 1})">Next</button>`;
       html += `</div>`;
 
-      document.getElementById(htmlId).innerHTML = html;
+      container.innerHTML = html;
+
+      // Hook up search again after rendering
+      document.getElementById(`${targetId}_search`).addEventListener("input", e => {
+        currentPage = 1;
+        renderPage(currentPage, e.target.value);
+      });
+
+      // Add sorting
+      const headers = container.querySelectorAll("th");
+      headers.forEach(header => {
+        header.addEventListener("click", () => {
+          const col = header.getAttribute("data-col");
+          if (currentSortColumn === col) {
+            currentSortDirection *= -1; // Toggle direction
+          } else {
+            currentSortColumn = col;
+            currentSortDirection = 1;
+          }
+          renderPage(currentPage, document.getElementById(`${targetId}_search`).value);
+        });
+      });
     }
 
-    // Expose a function globally to allow page switching
     window.changePage = function (id, page) {
-      if (id !== htmlId) return;
-      if (page < 1 || page > totalPages) return;
+      if (id !== targetId) return;
       currentPage = page;
-      renderPage(currentPage);
-    }
+      renderPage(currentPage, document.getElementById(`${targetId}_search`)?.value || "");
+    };
 
     renderPage(currentPage);
-
-    // Add search functionality
-    const searchInput = document.getElementById(`${targetId}_search`);
-    searchInput.addEventListener("input", function () {
-      const filter = this.value.toLowerCase();
-      const rows = document.querySelectorAll(`#${targetId}_table tbody tr`);
-      rows.forEach(row => {
-        const text = row.innerText.toLowerCase();
-        row.style.display = text.includes(filter) ? "" : "none";
-      });
-    });
-
-    // Basic sorting functionality
-    addSorting(targetId);
 
   } catch (error) {
     console.error("Failed to create dataTable:", error);
   }
 }
-
-function addSorting(targetId) {
-  const table = document.getElementById(`${targetId}_table`);
-  const headers = table.querySelectorAll("th");
-  let sortDirection = 1;
-
-  headers.forEach((header, index) => {
-    header.style.cursor = "pointer";
-    header.addEventListener("click", () => {
-      sortTableByColumn(table, index, sortDirection);
-      sortDirection *= -1; // toggle
-    });
-  });
-}
-
-function sortTableByColumn(table, column, direction) {
-  const tbody = table.tBodies[0];
-  const rows = Array.from(tbody.querySelectorAll("tr"));
-
-  rows.sort((a, b) => {
-    const aText = a.children[column].innerText.trim();
-    const bText = b.children[column].innerText.trim();
-    return aText.localeCompare(bText, undefined, { numeric: true }) * direction;
-  });
-
-  tbody.innerHTML = "";
-  rows.forEach(row => tbody.appendChild(row));
-}
-
-
 
 export function getServices(filter) {
   if (filter == null)
