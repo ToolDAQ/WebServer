@@ -39,36 +39,6 @@
         .spaced {
             margin-top: 10px;
         }
-
-        /* DataTable Styles */
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            font-family: sans-serif;
-        }
-
-        th,
-        td {
-            text-align: left;
-            padding: 8px;
-            border-bottom: 1px solid #ddd;
-        }
-
-        tr:hover {
-            background-color: #f5f5f5;
-        }
-
-        th {
-            background-color: #f2f2f2;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        input[type="text"] {
-            padding: 8px;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
     </style>
 </head>
 
@@ -76,107 +46,102 @@
     <!--#include virtual="/includes/header.html" -->
     <!--#include virtual="../subheader.html" -->
     <!--#include virtual="/includes/drawer.html" -->
-    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
-        <main class="mdl-layout__content">
-            <div class="page-content">
-                <div class="container">
+    <main class="mdl-layout__content">
+        <div class="page-content">
+            <div class="container">
 
-                    <!-- Left Panel -->
-                    <div class="left-panel">
-                        <h5>Setup Run Configuration</h5>
+                <!-- Left Panel -->
+                <div class="left-panel">
+                    <h5>Setup Run Configuration</h5>
 
-                        <div class="mdl-textfield mdl-js-textfield">
-                            <input class="mdl-textfield__input" type="text" id="configSearchBox"
-                                list="configSuggestions">
-                            <label class="mdl-textfield__label" for="configSearchBox">Make New Config From
-                                Existing</label>
-                            <datalist id="configSuggestions"></datalist>
-                        </div>
-
-                        <div class="mdl-textfield mdl-js-textfield">
-                            <input class="mdl-textfield__input" type="text" id="runNo">
-                            <label class="mdl-textfield__label" for="runNo">Run No.</label>
-                        </div>
-
-                        <div class="mdl-textfield mdl-js-textfield">
-                            <input class="mdl-textfield__input" type="number" id="version">
-                            <label class="mdl-textfield__label" for="version">Version</label>
-                        </div>
-
-                        <div class="mdl-textfield mdl-js-textfield">
-                            <input class="mdl-textfield__input" type="text" id="configName" required>
-                            <label class="mdl-textfield__label" for="configName">Name</label>
-                        </div>
-
-                        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                            <textarea class="mdl-textfield__input" type="text" rows="5"
-                                id="configDescription"></textarea>
-                            <label class="mdl-textfield__label" for="configDescription">Description</label>
-                        </div>
-                        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                            <div class="json-editor" id="jsonEditor"> </div>
-                            <label class="mdl-textfield__label" for="configData">Data</label>
-                        </div>
-
-                        <div class="mdl-cell mdl-cell--6-col">
-                            <h5>Select Devices</h5>
-                            <div class="device-list" id="deviceList"></div>
-                        </div>
-
-                        <div class="spaced">
-                            <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored"
-                                id="addConfigBtn">Save
-                                Config</button>
-                            <button class="mdl-button mdl-js-button mdl-button--raised" id="jsonImportBtn">Import
-                                JSON</button>
-                        </div>
-
+                    <div class="mdl-textfield mdl-js-textfield">
+                        <input class="mdl-textfield__input" type="text" id="configSearchBox" list="configSuggestions">
+                        <label class="mdl-textfield__label" for="configSearchBox">Make New Config From
+                            Existing</label>
+                        <datalist id="configSuggestions"></datalist>
                     </div>
 
-                    <!-- Right Panel -->
-                    <div class="right-panel">
-                        <h5>Inspect Selected Device Config</h5>
-
-                        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                            <input class="mdl-textfield__input" type="text" id="deviceSearchBox"
-                                list="deviceSuggestions">
-                            <label class="mdl-textfield__label" for="deviceSearchBox">Search Selected Devices</label>
-                            <datalist id="deviceSuggestions"></datalist>
-                        </div>
-
-                        <div id="deviceJsonViewer" style="height: 300px; width: 100%; border: 1px solid #ccc;"></div>
-
-                        <div class="spaced">
-                            <button id="saveDeviceConfigBtn"
-                                class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
-                                Save Device Config
-                            </button>
-                            <button id="showJsonTableBtn" class="mdl-button mdl-js-button mdl-button--raised">View as
-                                Editable Table</button>
-                            <button id="jsonImportBtn" class="mdl-button mdl-js-button mdl-button--raised">Import
-                                Json</button>
-                        </div>
-
-                        <div id="jsonTableOutput" class="spaced"></div>
+                    <div class="mdl-textfield mdl-js-textfield">
+                        <input class="mdl-textfield__input" type="text" id="runNo">
+                        <label class="mdl-textfield__label" for="runNo">Run No.</label>
                     </div>
+
+                    <div class="mdl-textfield mdl-js-textfield">
+                        <input class="mdl-textfield__input" type="number" id="version">
+                        <label class="mdl-textfield__label" for="version">Version</label>
+                    </div>
+
+                    <div class="mdl-textfield mdl-js-textfield">
+                        <input class="mdl-textfield__input" type="text" id="configName" required>
+                        <label class="mdl-textfield__label" for="configName">Name</label>
+                    </div>
+
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                        <textarea class="mdl-textfield__input" type="text" rows="5" id="configDescription"></textarea>
+                        <label class="mdl-textfield__label" for="configDescription">Description</label>
+                    </div>
+
+                    <div class="mdl-cell mdl-cell--6-col">
+                        <h5>Select Devices</h5>
+                        <div class="device-list" id="deviceList"></div>
+                    </div>
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                        <div class="json-editor" id="jsonEditor"> </div>
+                        <label class="mdl-textfield__label" for="configData">Data</label>
+                    </div>
+
+                    <div class="spaced">
+                        <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored"
+                            id="addConfigBtn">Save
+                            Config</button>
+                        <button class="mdl-button mdl-js-button mdl-button--raised" id="jsonImportBtn">Import
+                            JSON</button>
+                    </div>
+
                 </div>
 
-                <h2 align="center">Existing Configurations</h2>
-                <div id="deviceConfigOutput"></div>
+                <!-- Right Panel -->
+                <div class="right-panel">
+                    <h5>Inspect Selected Device Config</h5>
+
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                        <input class="mdl-textfield__input" type="text" id="deviceSearchBox" list="deviceSuggestions">
+                        <label class="mdl-textfield__label" for="deviceSearchBox">Search Selected Devices</label>
+                        <datalist id="deviceSuggestions"></datalist>
+                    </div>
+
+                    <div id="deviceJsonViewer" style="height: 300px; width: 100%; border: 1px solid #ccc;"></div>
+
+                    <div class="spaced">
+                        <button id="saveDeviceConfigBtn"
+                            class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+                            Save Device Config
+                        </button>
+                        <button id="showJsonTableBtn" class="mdl-button mdl-js-button mdl-button--raised">View as
+                            Editable Table</button>
+                        <button id="jsonImportBtn" class="mdl-button mdl-js-button mdl-button--raised">Import
+                            Json</button>
+                    </div>
+
+                    <div id="jsonTableOutput" class="spaced"></div>
+                </div>
             </div>
-            <dialog class="mdl-dialog" id="jsonImportModal">
-                <h4 class="mdl-dialog__title">Paste JSON Configuration</h4>
-                <div class="mdl-dialog__content">
-                    <div id="modalEditor" style="height: 300px; width: 100%; border: 1px solid #ccc;"></div>
-                </div>
-                <div class="mdl-dialog__actions">
-                    <button type="button" class="mdl-button" id="importPasteBtn">Import</button>
-                    <button type="button" class="mdl-button close">Cancel</button>
-                </div>
-            </dialog>
 
-        </main>
-    </div>
+            <h2 align="center">Existing Configurations</h2>
+            <div id="deviceConfigOutput"></div>
+        </div>
+        <dialog class="mdl-dialog" id="jsonImportModal">
+            <h4 class="mdl-dialog__title">Paste JSON Configuration</h4>
+            <div class="mdl-dialog__content">
+                <div id="modalEditor" style="height: 300px; width: 100%; border: 1px solid #ccc;"></div>
+            </div>
+            <div class="mdl-dialog__actions">
+                <button type="button" class="mdl-button" id="importPasteBtn">Import</button>
+                <button type="button" class="mdl-button close">Cancel</button>
+            </div>
+        </dialog>
+
+    </main>
     <script type="module" src="/includes/functions.js?v=1" async></script>
     <script type="module" src="./runConfig.js?v=1" async></script>
     <script>
@@ -188,9 +153,6 @@
                 return null;
             }
         }
-        document.querySelectorAll(".mdl-checkbox__input").forEach(cb => {
-            cb.addEventListener("change", updateDeviceSearchBox);
-        });
     </script>
 </body>
 <!--#include virtual="/includes/footer.html" -->

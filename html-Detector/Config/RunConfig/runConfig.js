@@ -36,7 +36,7 @@ function setupEditors() {
     runConfigEditor = ace.edit("jsonEditor");
     runConfigEditor.setTheme("ace/theme/chrome");
     runConfigEditor.session.setMode("ace/mode/json");
-    runConfigEditor.setValue("// Start a new run config", -1);
+    runConfigEditor.setValue(JSON.stringify({ devices: [] }, null, 2), -1);
 
     modalEditor = ace.edit("modalEditor");
     modalEditor.setTheme("ace/theme/github");
@@ -199,15 +199,22 @@ function updateDeviceSuggestions(selectedInputs) {
 
 
 function updateDevicesInRunConfig() {
+    let current = {};
     try {
-        const current = JSON.parse(runConfigEditor.getValue());
-        const selected = Array.from(document.querySelectorAll(".mdl-checkbox__input:checked"))
-            .map(input => input.getAttribute("data-device"));
-        current.devices = selected;
-        runConfigEditor.setValue(JSON.stringify(current, null, 2), -1);
-    } catch (e) {
-        console.warn("Invalid JSON in editor; cannot update devices.");
+        current = JSON.parse(runConfigEditor.getValue());
+    } catch {
+        current = {};
     }
+
+    const selected = Array.from(document.querySelectorAll(".mdl-checkbox__input:checked")).map(input => {
+        return {
+            device: input.getAttribute("data-device"),
+            version: parseInt(input.getAttribute("data-version"), 10)
+        };
+    });
+
+    current.devices = selected;
+    runConfigEditor.setValue(JSON.stringify(current, null, 2), -1);
 }
 
 function saveRunConfig() {
@@ -351,17 +358,8 @@ function clearForm() {
     document.getElementById("configName").value = "";
     document.getElementById("version").value = "";
     document.getElementById("configDescription").value = "";
-    runConfigEditor.setValue("// Start a new run config", -1);
+    runConfigEditor.setValue(JSON.stringify({ devices: [] }, null, 2), -1);
 }
-
-// function GetConfigs() {
-//     const query = "SELECT * FROM configurations ORDER BY time DESC LIMIT 10";
-//     GetPSQLTable(query, "root", "daq", true).then(result => {
-//         document.getElementById("deviceConfigOutput").innerHTML = result;
-//     }).catch(error => {
-//         console.error("Error fetching configurations:", error);
-//     });
-// }
 function GetConfigs() {
     const query = "SELECT * FROM configurations ORDER BY time DESC LIMIT 10";
     dataTable(query, "deviceConfigOutput");
