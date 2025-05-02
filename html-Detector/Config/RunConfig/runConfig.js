@@ -236,10 +236,12 @@ function saveRunConfig() {
 
     // If existing config loaded, compare to see if changes occurred
     if (selectedConfig) {
+        const isSameName = name === selectedConfig.name;
         const query = `SELECT data FROM configurations WHERE name='${selectedConfig.name}' AND version=${selectedConfig.version} LIMIT 1`;
         dbJson(query).then(result => {
             const existingData = result?.[0]?.data;
-            if (JSON.stringify(existingData, null, 2).trim() === JSON.stringify(JSON.parse(newJsonData), null, 2).trim()) {
+            const isSameJson = JSON.stringify(existingData, null, 2).trim() === JSON.stringify(JSON.parse(newJsonData), null, 2).trim();
+            if (isSameName && isSameJson) {
                 alert("No changes detected. Nothing was saved.");
                 return;
             }
