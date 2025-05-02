@@ -696,126 +696,129 @@ export function makeTable(table, data, header, filter = (row, index) => row) {
  *   dataTable("SELECT * FROM configurations ORDER BY time DESC", "myTableDiv");
  */
 export async function dataTable(query, targetId, rowsPerPage = 5) {
-  try {
-    const data = await dbJson(query);
-    const container = document.getElementById(targetId);
+  let currentPage = 1;
+  let searchText = "";
+  let sortColumn = null;
+  let sortDirection = "ASC";
 
-    if (!container) {
-      console.error(`Target element #${targetId} not found.`);
-      return;
+  const container = document.getElementById(targetId);
+  if (!container) {
+    console.error(`Target element #${targetId} not found.`);
+    return;
+  }
+
+  async function buildQuery(limit, offset, forCount = false) {
+    let whereClause = "";
+    let orderClause = "";
+
+    if (searchText.trim()) {
+      const loweredSearch = searchText.trim().toLowerCase();
+      whereClause = `WHERE CAST(row AS TEXT) ILIKE '%${loweredSearch.replace(/'/g, "''")}%'`;
     }
 
-    if (!data || !data.length) {
+    if (!forCount && sortColumn) {
+      orderClause = `ORDER BY "${sortColumn}" ${sortDirection}`;
+    }
+
+    const core = `SELECT * FROM (${query}) AS row ${whereClause} ${orderClause}`.trim();
+
+    if (forCount) {
+      return `SELECT COUNT(*) AS count FROM (${core}) AS sub`;
+    }
+
+    return `${core} LIMIT ${limit} OFFSET ${offset}`;
+  }
+
+  async function fetchData(page) {
+    const offset = (page - 1) * rowsPerPage;
+    const query = await buildQuery(rowsPerPage, offset);
+    return await dbJson(query);
+  }
+
+  async function fetchCount() {
+    const query = await buildQuery(0, 0, true);
+    const result = await dbJson(query);
+    return result?.[0]?.count || 0;
+  }
+
+  async function renderPage(page) {
+    const data = await fetchData(page);
+    const totalRows = await fetchCount();
+    const totalPages = Math.ceil(totalRows / rowsPerPage);
+
+    if (!data || data.length === 0) {
       container.innerHTML = "<p>No data available.</p>";
       return;
     }
 
-    let currentPage = 1;
-    let currentSortColumn = null;
-    let currentSortDirection = 1;
+    let html = `<input type="text" id="${targetId}_search" placeholder="Search..." style="margin: 10px; padding: 5px; width: 50%;" value="${searchText}">`;
 
-    function renderPage(page, filterText = "") {
-      let filteredData = data;
+    html += `<table class="data-table"><thead><tr>`;
+    Object.keys(data[0]).forEach(col => {
+      html += `<th data-col="${col}" style="cursor:pointer;">${col} ${sortColumn === col ? (sortDirection === "ASC" ? "▲" : "▼") : ""
+        }</th>`;
+    });
+    html += `</tr></thead><tbody>`;
 
-      if (filterText) {
-        filteredData = data.filter(row =>
-          Object.values(row).some(val =>
-            JSON.stringify(val).toLowerCase().includes(filterText.toLowerCase())
-          )
-        );
-      }
-
-      if (currentSortColumn !== null) {
-        filteredData.sort((a, b) => {
-          const aVal = a[currentSortColumn];
-          const bVal = b[currentSortColumn];
-          const aStr = typeof aVal === "object" ? JSON.stringify(aVal) : String(aVal ?? "");
-          const bStr = typeof bVal === "object" ? JSON.stringify(bVal) : String(bVal ?? "");
-          return aStr.localeCompare(bStr, undefined, { numeric: true }) * currentSortDirection;
-        });
-      }
-
-      const totalPages = Math.ceil(filteredData.length / rowsPerPage);
-      const start = (page - 1) * rowsPerPage;
-      const end = start + rowsPerPage;
-      const pageData = filteredData.slice(start, end);
-
-      let html = `
-        <input type="text" id="${targetId}_search" placeholder="Search..." style="margin: 10px; padding: 5px; width: 50%;">
-        <table id="${targetId}_table" class="data-table">
-          <thead><tr>`;
-
-      Object.keys(pageData[0]).forEach(col => {
-        html += `<th data-col="${col}" style="cursor:pointer;">${col}</th>`;
+    data.forEach(row => {
+      html += `<tr>`;
+      Object.entries(row).forEach(([key, value]) => {
+        let displayValue = "";
+        if (value === null) {
+          displayValue = "";
+        } else if (typeof value === "object") {
+          displayValue = `<pre style="white-space:pre-wrap;">${JSON.stringify(value, null, 2)}</pre>`;
+        } else if (key.toLowerCase() === "time") {
+          displayValue = new Date(value).toLocaleString();
+        } else {
+          displayValue = value;
+        }
+        html += `<td>${displayValue}</td>`;
       });
+      html += `</tr>`;
+    });
 
-      html += `</tr></thead><tbody>`;
+    html += `</tbody></table>`;
 
-      pageData.forEach(row => {
-        html += `<tr>`;
-        Object.entries(row).forEach(([key, value]) => {
-          let displayValue = "";
-          if (value === null) {
-            displayValue = "";
-          } else if (typeof value === "object") {
-            displayValue = `<pre style="white-space:pre-wrap;">${JSON.stringify(value, null, 2)}</pre>`;
-          } else if (key.toLowerCase() === "time") {
-            displayValue = new Date(value).toLocaleString();
-          } else {
-            displayValue = value;
-          }
-          html += `<td>${displayValue}</td>`;
-        });
-        html += `</tr>`;
-      });
-
-      html += `</tbody></table>`;
-
-      html += `<div class="pagination-controls">`;
-      html += `<button ${page === 1 ? "disabled" : ""} onclick="changePage('${targetId}', ${page - 1})">Previous</button>`;
-
-      for (let i = 1; i <= totalPages; i++) {
-        html += `<button ${page === i ? "class='active'" : ""} onclick="changePage('${targetId}', ${i})">${i}</button>`;
-      }
-
-      html += `<button ${page === totalPages ? "disabled" : ""} onclick="changePage('${targetId}', ${page + 1})">Next</button>`;
-      html += `</div>`;
-
-      container.innerHTML = html;
-
-      // Hook up search again after rendering
-      document.getElementById(`${targetId}_search`).addEventListener("input", e => {
-        currentPage = 1;
-        renderPage(currentPage, e.target.value);
-      });
-
-      // Add sorting
-      const headers = container.querySelectorAll("th");
-      headers.forEach(header => {
-        header.addEventListener("click", () => {
-          const col = header.getAttribute("data-col");
-          if (currentSortColumn === col) {
-            currentSortDirection *= -1; // Toggle direction
-          } else {
-            currentSortColumn = col;
-            currentSortDirection = 1;
-          }
-          renderPage(currentPage, document.getElementById(`${targetId}_search`).value);
-        });
-      });
+    html += `<div class="pagination-controls">`;
+    html += `<button ${page === 1 ? "disabled" : ""} onclick="changePage('${targetId}', ${page - 1})">Previous</button>`;
+    for (let i = 1; i <= totalPages; i++) {
+      html += `<button ${page === i ? "class='active'" : ""} onclick="changePage('${targetId}', ${i})">${i}</button>`;
     }
+    html += `<button ${page === totalPages ? "disabled" : ""} onclick="changePage('${targetId}', ${page + 1})">Next</button>`;
+    html += `</div>`;
 
-    window.changePage = function (id, page) {
-      if (id !== targetId) return;
-      currentPage = page;
-      renderPage(currentPage, document.getElementById(`${targetId}_search`)?.value || "");
-    };
+    container.innerHTML = html;
 
-    renderPage(currentPage);
+    // Hook up search
+    document.getElementById(`${targetId}_search`).addEventListener("input", e => {
+      searchText = e.target.value;
+      currentPage = 1;
+      renderPage(currentPage);
+    });
 
-  } catch (error) {
-    console.error("Failed to create dataTable:", error);
+    // Hook up sorting
+    container.querySelectorAll("th").forEach(header => {
+      header.addEventListener("click", () => {
+        const col = header.getAttribute("data-col");
+        if (sortColumn === col) {
+          sortDirection = sortDirection === "ASC" ? "DESC" : "ASC";
+        } else {
+          sortColumn = col;
+          sortDirection = "ASC";
+        }
+        renderPage(currentPage);
+      });
+    });
   }
+
+  window.changePage = function (id, page) {
+    if (id !== targetId) return;
+    currentPage = page;
+    renderPage(currentPage);
+  };
+
+  renderPage(currentPage);
 }
 
 export function getServices(filter) {
