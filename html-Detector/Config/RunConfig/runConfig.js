@@ -347,7 +347,7 @@ function importJsonFromModal() {
 
 function showJsonTable() {
     import('/includes/jsontotable.js').then(({ jsonToHtmlTable }) => {
-        const rawJson = runConfigEditor.getValue();
+        const rawJson = deviceEditor.getValue();
         const tableHTML = jsonToHtmlTable(rawJson);
         document.getElementById("jsonTableOutput").innerHTML = tableHTML;
     }).catch(error => {
