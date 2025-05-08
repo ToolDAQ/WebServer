@@ -206,10 +206,9 @@ function updateDevicesInRunConfig() {
     }
 
     const selected = Array.from(document.querySelectorAll(".mdl-checkbox__input:checked")).map(input => {
-        return {
-            device: input.getAttribute("data-device"),
-            version: parseInt(input.getAttribute("data-version"), 10)
-        };
+        const device = input.getAttribute("data-device");
+        const version = parseInt(input.getAttribute("data-version"), 10);
+        return { [device]: version };
     });
 
     current.devices = selected;
