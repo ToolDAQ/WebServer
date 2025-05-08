@@ -707,6 +707,12 @@ export async function dataTable(query, targetId, rowsPerPage = 5) {
     return;
   }
 
+  // Remove any user-provided LIMIT, OFFSET, or ORDER BY
+  const cleanedquery = query
+    .replace(/\s+limit\s+\d+/gi, "")
+    .replace(/\s+offset\s+\d+/gi, "")
+    .replace(/\s+order\s+by\s+[^\s]+(\s+(ASC|DESC))?/gi, "");
+
   async function buildQuery(limit, offset, forCount = false) {
     let whereClause = "";
     let orderClause = "";
@@ -720,7 +726,7 @@ export async function dataTable(query, targetId, rowsPerPage = 5) {
       orderClause = `ORDER BY "${sortColumn}" ${sortDirection}`;
     }
 
-    const core = `SELECT * FROM (${query}) AS row ${whereClause} ${orderClause}`.trim();
+    const core = `SELECT * FROM (${cleanedquery}) AS row ${whereClause} ${orderClause}`.trim();
 
     if (forCount) {
       return `SELECT COUNT(*) AS count FROM (${core}) AS sub`;
