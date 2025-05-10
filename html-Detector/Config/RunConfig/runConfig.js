@@ -205,11 +205,12 @@ function updateDevicesInRunConfig() {
         current = {};
     }
 
-    const selected = Array.from(document.querySelectorAll(".mdl-checkbox__input:checked")).map(input => {
+    const selected = Array.from(document.querySelectorAll(".mdl-checkbox__input:checked")).reduce((acc, input) => {
         const device = input.getAttribute("data-device");
         const version = parseInt(input.getAttribute("data-version"), 10);
-        return { [device]: version };
-    });
+        acc[device] = version;
+        return acc;
+    }, {});
 
     current.devices = selected;
     runConfigEditor.setValue(JSON.stringify(current, null, 2), -1);
@@ -218,7 +219,7 @@ function updateDevicesInRunConfig() {
 function saveRunConfig() {
     const name = document.getElementById("configName").value.trim();
     const description = document.getElementById("configDescription").value.trim();
-    const author = "anonymous"; // Replace with actual session user
+    const author = document.getElementById("user")?.innerText || "anonymous";
 
     if (!name) {
         alert("Config Name is required.");
