@@ -1,4 +1,4 @@
-function jsonToHtmlTable(jsonString) {
+export function jsonToHtmlTable(jsonString) {
   let jsonData;
   try {
     jsonData = JSON.parse(jsonString);
@@ -61,7 +61,7 @@ function createRow(value) {
   }
 }
 
-function rebuildJsonFromTable() {
+export function rebuildJsonFromTable() {
   const parseTable = (table, parentKeys = new Set()) => {
     const rows = table.querySelectorAll('tr');
     const result = {}; // Object for key-value pairs
