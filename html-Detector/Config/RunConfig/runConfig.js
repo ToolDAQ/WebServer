@@ -205,7 +205,7 @@ function updateDevicesInRunConfig() {
         current = {};
     }
 
-    const selected = Array.from(document.querySelectorAll(".mdl-checkbox__input:checked")).reduce((acc, input) => {
+    let selected = Array.from(document.querySelectorAll(".mdl-checkbox__input:checked")).reduce((acc, input) => {
         const device = input.getAttribute("data-device");
         const version = parseInt(input.getAttribute("data-version"), 10);
         acc[device] = version;
@@ -213,7 +213,7 @@ function updateDevicesInRunConfig() {
     }, {});
 
     current.devices = selected;
-    runConfigEditor.setValue(JSON.stringify(current, null, 2), -1);
+    runConfigEditor.setValue(JSON.stringify(selected, null, 2), -1);
 }
 
 function saveRunConfig() {
