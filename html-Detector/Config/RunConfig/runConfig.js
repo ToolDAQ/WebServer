@@ -56,44 +56,72 @@ function setupEventListeners() {
 }
 
 function loadDeviceList() {
-    const query = "SELECT device, version FROM device_config ORDER BY time DESC LIMIT 100";
+    const query = "SELECT device, version FROM device_config ORDER BY time DESC";
     dbJson(query).then(result => {
         const deviceListContainer = document.getElementById("deviceList");
         const deviceSuggestions = document.getElementById("deviceSuggestions");
 
         deviceListContainer.innerHTML = "";
-        // deviceSuggestions.innerHTML = "";
+        deviceSuggestions.innerHTML = "";
         deviceOptionMap.clear();
 
-        result.forEach((row, index) => {
-            const deviceId = `device_${index}`;
+        const groupedDevices = {};
+
+        result.forEach(row => {
+            if (!groupedDevices[row.device]) {
+                groupedDevices[row.device] = [];
+            }
+            if (!groupedDevices[row.device].includes(row.version)) {
+                groupedDevices[row.device].push(row.version);
+            }
+        });
+
+        Object.entries(groupedDevices).forEach(([device, versions], index) => {
+            const checkboxId = `device_cb_${index}`;
+            const selectId = `device_select_${index}`;
 
             const label = document.createElement("label");
             label.className = "mdl-checkbox mdl-js-checkbox";
-            label.setAttribute("for", deviceId);
+            label.setAttribute("for", checkboxId);
 
-            const input = document.createElement("input");
-            input.type = "checkbox";
-            input.id = deviceId;
-            input.className = "mdl-checkbox__input";
-            input.setAttribute("data-device", row.device);
-            input.setAttribute("data-version", row.version);
-            input.addEventListener("change", updateDevicesInRunConfig);
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.id = checkboxId;
+            checkbox.className = "mdl-checkbox__input";
+            checkbox.setAttribute("data-device", device);
+            checkbox.addEventListener("change", updateDevicesInRunConfig);
 
             const span = document.createElement("span");
             span.className = "mdl-checkbox__label";
-            span.innerText = `${row.device} (v${row.version})`;
+            span.innerText = device + " ";
 
-            label.appendChild(input);
+            const select = document.createElement("select");
+            select.id = selectId;
+            select.setAttribute("data-device", device);
+            select.className = "mdl-select__input";
+            select.addEventListener("change", updateDevicesInRunConfig);
+
+            versions.sort((a, b) => b - a).forEach(version => {
+                const option = document.createElement("option");
+                option.value = version;
+                option.text = `v${version}`;
+                select.appendChild(option);
+            });
+
+            label.appendChild(checkbox);
             label.appendChild(span);
+            label.appendChild(select);
+
             deviceListContainer.appendChild(label);
             deviceListContainer.appendChild(document.createElement("br"));
 
-            const option = document.createElement("option");
-            option.value = `${row.device} (v${row.version})`;
-            deviceSuggestions.appendChild(option);
-
-            deviceOptionMap.set(option.value, { device: row.device, version: row.version });
+            // For search box autocomplete
+            versions.forEach(version => {
+                const option = document.createElement("option");
+                option.value = `${device} (v${version})`;
+                deviceSuggestions.appendChild(option);
+                deviceOptionMap.set(option.value, { device, version });
+            });
         });
 
         if (window.componentHandler) {
@@ -101,6 +129,7 @@ function loadDeviceList() {
         }
     });
 }
+
 
 function loadConfigOptions() {
     const query = "SELECT config_id, name, version, description, author FROM configurations ORDER BY time DESC";
@@ -205,15 +234,16 @@ function updateDevicesInRunConfig() {
         current = {};
     }
 
-    let selected = Array.from(document.querySelectorAll(".mdl-checkbox__input:checked")).reduce((acc, input) => {
-        const device = input.getAttribute("data-device");
-        const version = parseInt(input.getAttribute("data-version"), 10);
+    let selectedDevices = Array.from(document.querySelectorAll(".mdl-checkbox__input:checked")).reduce((acc, checkbox) => {
+        const device = checkbox.getAttribute("data-device");
+        const select = checkbox.parentElement.querySelector("select");
+        const version = parseInt(select.value, 10);
         acc[device] = version;
         return acc;
     }, {});
 
-    current.devices = selected;
-    runConfigEditor.setValue(JSON.stringify(selected, null, 2), -1);
+    current.devices = selectedDevices;
+    runConfigEditor.setValue(JSON.stringify(selectedDevices, null, 2), -1);
 }
 
 function saveRunConfig() {
