@@ -11,6 +11,7 @@ let modalEditor;
 let deviceOptionMap = new Map();
 let configOptionMap = new Map();
 let selectedConfig = null;
+let allDeviceData = [];
 
 if (document.readyState !== 'loading') {
     Init();
@@ -36,7 +37,7 @@ function setupEditors() {
     runConfigEditor = ace.edit("jsonEditor");
     runConfigEditor.setTheme("ace/theme/chrome");
     runConfigEditor.session.setMode("ace/mode/json");
-    runConfigEditor.setValue(JSON.stringify({ devices: [] }, null, 2), -1);
+    runConfigEditor.setValue(JSON.stringify({}, null, 2), -1);
 
     modalEditor = ace.edit("modalEditor");
     modalEditor.setTheme("ace/theme/github");
@@ -58,78 +59,89 @@ function setupEventListeners() {
 function loadDeviceList() {
     const query = "SELECT device, version FROM device_config ORDER BY time DESC";
     dbJson(query).then(result => {
-        const deviceListContainer = document.getElementById("deviceList");
-        const deviceSuggestions = document.getElementById("deviceSuggestions");
+        allDeviceData = result;
+        renderDeviceList("");
+    });
 
-        deviceListContainer.innerHTML = "";
-        deviceSuggestions.innerHTML = "";
-        deviceOptionMap.clear();
-
-        const groupedDevices = {};
-
-        result.forEach(row => {
-            if (!groupedDevices[row.device]) {
-                groupedDevices[row.device] = [];
-            }
-            if (!groupedDevices[row.device].includes(row.version)) {
-                groupedDevices[row.device].push(row.version);
-            }
-        });
-
-        Object.entries(groupedDevices).forEach(([device, versions], index) => {
-            const checkboxId = `device_cb_${index}`;
-            const selectId = `device_select_${index}`;
-
-            const label = document.createElement("label");
-            label.className = "mdl-checkbox mdl-js-checkbox";
-            label.setAttribute("for", checkboxId);
-
-            const checkbox = document.createElement("input");
-            checkbox.type = "checkbox";
-            checkbox.id = checkboxId;
-            checkbox.className = "mdl-checkbox__input";
-            checkbox.setAttribute("data-device", device);
-            checkbox.addEventListener("change", updateDevicesInRunConfig);
-
-            const span = document.createElement("span");
-            span.className = "mdl-checkbox__label";
-            span.innerText = device + " ";
-
-            const select = document.createElement("select");
-            select.id = selectId;
-            select.setAttribute("data-device", device);
-            select.className = "mdl-select__input";
-            select.addEventListener("change", updateDevicesInRunConfig);
-
-            versions.sort((a, b) => b - a).forEach(version => {
-                const option = document.createElement("option");
-                option.value = version;
-                option.text = `v${version}`;
-                select.appendChild(option);
-            });
-
-            label.appendChild(checkbox);
-            label.appendChild(span);
-            label.appendChild(select);
-
-            deviceListContainer.appendChild(label);
-            deviceListContainer.appendChild(document.createElement("br"));
-
-            // For search box autocomplete
-            versions.forEach(version => {
-                const option = document.createElement("option");
-                option.value = `${device} (v${version})`;
-                deviceSuggestions.appendChild(option);
-                deviceOptionMap.set(option.value, { device, version });
-            });
-        });
-
-        if (window.componentHandler) {
-            componentHandler.upgradeDom();
-        }
+    document.getElementById("deviceFilterInput").addEventListener("input", (e) => {
+        renderDeviceList(e.target.value.trim().toLowerCase());
     });
 }
 
+function renderDeviceList(filterText) {
+    const deviceListContainer = document.getElementById("deviceList");
+    const deviceSuggestions = document.getElementById("deviceSuggestions");
+
+    deviceListContainer.innerHTML = "";
+    deviceSuggestions.innerHTML = "";
+    deviceOptionMap.clear();
+
+    const groupedDevices = {};
+
+    allDeviceData.forEach(row => {
+        const deviceName = row.device;
+        if (filterText && !deviceName.toLowerCase().includes(filterText)) return;
+
+        if (!groupedDevices[deviceName]) {
+            groupedDevices[deviceName] = [];
+        }
+        if (!groupedDevices[deviceName].includes(row.version)) {
+            groupedDevices[deviceName].push(row.version);
+        }
+    });
+
+    Object.entries(groupedDevices).forEach(([device, versions], index) => {
+        const checkboxId = `device_cb_${index}`;
+        const selectId = `device_select_${index}`;
+
+        const label = document.createElement("label");
+        label.className = "mdl-checkbox mdl-js-checkbox";
+        label.setAttribute("for", checkboxId);
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.id = checkboxId;
+        checkbox.className = "mdl-checkbox__input";
+        checkbox.setAttribute("data-device", device);
+        checkbox.addEventListener("change", updateDevicesInRunConfig);
+
+        const span = document.createElement("span");
+        span.className = "mdl-checkbox__label";
+        span.innerText = device + " ";
+
+        const select = document.createElement("select");
+        select.id = selectId;
+        select.setAttribute("data-device", device);
+        select.className = "mdl-select__input";
+        select.addEventListener("change", updateDevicesInRunConfig);
+
+        versions.sort((a, b) => b - a).forEach(version => {
+            const option = document.createElement("option");
+            option.value = version;
+            option.text = `v${version}`;
+            select.appendChild(option);
+        });
+
+        label.appendChild(checkbox);
+        label.appendChild(span);
+        label.appendChild(select);
+
+        deviceListContainer.appendChild(label);
+        deviceListContainer.appendChild(document.createElement("br"));
+
+        // For search/autocomplete box
+        versions.forEach(version => {
+            const option = document.createElement("option");
+            option.value = `${device} (v${version})`;
+            deviceSuggestions.appendChild(option);
+            deviceOptionMap.set(option.value, { device, version });
+        });
+    });
+
+    if (window.componentHandler) {
+        componentHandler.upgradeDom();
+    }
+}
 
 function loadConfigOptions() {
     const query = "SELECT config_id, name, version, description, author FROM configurations ORDER BY time DESC";
@@ -227,23 +239,31 @@ function updateDeviceSuggestions(selectedInputs) {
 }
 
 function updateDevicesInRunConfig() {
-    let current = {};
+    let currentConfig = {};
     try {
-        current = JSON.parse(runConfigEditor.getValue());
+        currentConfig = JSON.parse(runConfigEditor.getValue());
     } catch {
-        current = {};
+        currentConfig = {};
     }
 
-    let selectedDevices = Array.from(document.querySelectorAll(".mdl-checkbox__input:checked")).reduce((acc, checkbox) => {
+    const checkboxes = document.querySelectorAll(".mdl-checkbox__input");
+    const updatedConfig = { ...currentConfig };
+
+    checkboxes.forEach(checkbox => {
         const device = checkbox.getAttribute("data-device");
         const select = checkbox.parentElement.querySelector("select");
-        const version = parseInt(select.value, 10);
-        acc[device] = version;
-        return acc;
-    }, {});
 
-    current.devices = selectedDevices;
-    runConfigEditor.setValue(JSON.stringify(selectedDevices, null, 2), -1);
+        if (checkbox.checked) {
+            const version = parseInt(select.value, 10);
+            updatedConfig[device] = version;
+        } else {
+            if (updatedConfig.hasOwnProperty(device)) {
+                delete updatedConfig[device];
+            }
+        }
+    });
+
+    runConfigEditor.setValue(JSON.stringify(updatedConfig, null, 2), -1);
 }
 
 function saveRunConfig() {
@@ -389,7 +409,7 @@ function clearForm() {
     document.getElementById("configName").value = "";
     document.getElementById("version").value = "";
     document.getElementById("configDescription").value = "";
-    runConfigEditor.setValue(JSON.stringify({ devices: [] }, null, 2), -1);
+    runConfigEditor.setValue(JSON.stringify({}, null, 2), -1);
 }
 function GetConfigs() {
     const query = "SELECT * FROM configurations ORDER BY time DESC LIMIT 10";
