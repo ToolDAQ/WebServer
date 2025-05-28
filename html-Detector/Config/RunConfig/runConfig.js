@@ -137,6 +137,7 @@ function renderDeviceList(filterText) {
             deviceOptionMap.set(option.value, { device, version });
         });
     });
+    updateDeviceCheckboxesFromJsonEditor();
 
     if (window.componentHandler) {
         componentHandler.upgradeDom();
