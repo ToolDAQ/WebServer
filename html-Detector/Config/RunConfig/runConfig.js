@@ -174,6 +174,7 @@ function handleConfigSearchSelection() {
         const configData = result?.[0]?.data;
         if (configData) {
             runConfigEditor.setValue(JSON.stringify(configData, null, 2), -1);
+            updateDeviceCheckboxesFromJsonEditor();
             document.getElementById("runNo").value = match.config_id;
             document.getElementById("configName").value = match.name;
             document.getElementById("version").value = match.version;
@@ -264,6 +265,39 @@ function updateDevicesInRunConfig() {
     });
 
     runConfigEditor.setValue(JSON.stringify(updatedConfig, null, 2), -1);
+}
+
+function updateDeviceCheckboxesFromJsonEditor() {
+    let configData = {};
+    try {
+        configData = JSON.parse(runConfigEditor.getValue());
+    } catch (e) {
+        console.warn("Invalid JSON, cannot sync device checkboxes.");
+        return;
+    }
+
+    document.querySelectorAll(".mdl-checkbox__input").forEach(checkbox => {
+        const device = checkbox.getAttribute("data-device");
+        const select = checkbox.parentElement.querySelector("select");
+        const label = checkbox.closest("label");
+
+        if (configData.hasOwnProperty(device)) {
+            checkbox.checked = true;
+            if (label) label.classList.add("is-checked");
+
+            const version = configData[device];
+            if ([...select.options].some(opt => parseInt(opt.value) === version)) {
+                select.value = version;
+            }
+        } else {
+            checkbox.checked = false;
+            if (label) label.classList.remove("is-checked");
+        }
+    });
+
+    if (window.componentHandler) {
+        componentHandler.upgradeDom();
+    }
 }
 
 function saveRunConfig() {
