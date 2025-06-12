@@ -1,4 +1,7 @@
-<footer class="mdl-mega-footer">
+</div>
+
+
+<footer class="mdl-mega-footer fixed-footer" id="page-footer">
   <div class="mdl-mega-footer--top-section">
     <div class="mdl-mega-footer--left-section">
       <button id="test_alarm"> test alarm</button>
@@ -25,9 +28,108 @@
 </main>
 </div>
 
+<div id="overlay">
+  <div id="overlay-message">Connection lost. Reconnecting...</div>
+</div>
+
 
 <script src="/includes/statusbar.js?v=1" async></script>
 <script type="module" src="/includes/functions.js?v=1" async></script>
 <script type="module" src="/includes/alarm_footer.js?v=1" async></script>
 
+  <script>
+  const overlay = document.getElementById('overlay');
+
+  function showOverlay() {
+    overlay.style.display = 'block';
+  }
+
+  function hideOverlay() {
+    overlay.style.display = 'none';
+  }
+
+//  let eventSource = new EventSource('http://localhost:9000/events');
+
+     let eventSource = new EventSource('/cgi-bin/connection.cgi');
+  eventSource.onopen = () => {
+    console.log("Connected to SSE server");
+    hideOverlay();
+  };
+
+  eventSource.onmessage = (event) => {
+    console.log("SSE:", event.data);
+  };
+
+  eventSource.onerror = () => {
+    console.warn("SSE connection lost");
+    showOverlay();
+  };
+
+  </script>
+ <!--
+<script>
+  function adjustContentPadding() {
+    const footer = document.getElementById('page-footer');
+    const content = document.getElementById('content');
+
+    if (footer && content) {
+      const footerHeight = footer.offsetHeight;
+      content.style.paddingBottom = footerHeight + 'px';
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', adjustContentPadding);
+  window.addEventListener('resize', adjustContentPadding);
+</script>
+ -->
+
 </body>
+<!--
+<style>
+
+.fixed-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000; /* Ensures it's above other content */
+  }
+
+   body{ padding-bottom: 1000px; /* adjust to match the height of your footer */}
+</style>
+
+<style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .content {
+      padding: 2rem;
+    }
+
+    #overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(128, 128, 128, 0.6);
+      z-index: 999;
+      display: none;
+    }
+
+    #overlay-message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      font-size: 1.5rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+  </style>
+-->
