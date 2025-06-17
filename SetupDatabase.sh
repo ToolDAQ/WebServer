@@ -56,9 +56,6 @@ sudo -u postgres createuser -s root
 echo "creating 'daq' database"
 sudo -u postgres psql -c "create database daq with owner=root;"
 
-echo "creating pgcrypto extension"
-psql -ddaq -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
-
 # set timezone to UTC
 psql -ddaq -c "ALTER DATABASE daq SET TIME ZONE 'UTC';"
 
