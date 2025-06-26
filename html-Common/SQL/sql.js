@@ -61,18 +61,51 @@ function updatedropdown(){ //function to get SQL tables and populate dropdown
 // actions to take when submit button pressed
 function submit_query() {
     submit.disabled=true;
-    GetPSQLTable(command.value, "root","daq",true).then(
-      function(result){
-	sqloutput.innerHTML=result;
+
+    if( command.value.localeCompare("help", "en", { sensitivity: "base" })==0) {
+	psqlhelp();
 	submit.disabled=false;
-      },
-      function (error) {
-        sqloutput.textContent = error.message;
-        submit.disabled = false;
-      }
+	return;
+    }
+    
+    GetPSQLTable(command.value, "root","daq",true).then(
+	function(result){
+	    sqloutput.innerHTML=result;
+	    submit.disabled=false;
+	},
+	function(error) {
+            sqloutput.innerHTML = error+"<br><br>Type 'HELP' for some useful SQL database information and command examples.";
+            submit.disabled = false;
+	}
     );
 }
 
+
+// function to give some helpful hints about how to interact with the psql database
+function psqlhelp() {
+    let helpMessage = "<strong>Welcome, it appears you would like some help.</strong><br><br>"
+    
+    helpMessage = helpMessage.concat("The following database tables are available:<ul>")
+    for( var i=0; i < tableselect.length; i++) {
+	helpMessage = helpMessage.concat("<li><code>"+tableselect[i].text+"</code></li>");
+    }
+
+    helpMessage = helpMessage.concat("</ul>To see a description of a table structure, try a command of the form:<br>")
+    helpMessage = helpMessage.concat("<code>\\d table_name;</code>")
+    helpMessage = helpMessage.concat("<br>For example:<br>")
+    helpMessage = helpMessage.concat("<code>\\d "+tableselect[0].text+";</code><br>")
+    
+    helpMessage = helpMessage.concat("<br>To see the latest entries from to a given table, try a command of the form:<br>")
+    helpMessage = helpMessage.concat("<code>SELECT * FROM table_name;</code>")
+    helpMessage = helpMessage.concat("<br>For example:<br>")
+    helpMessage = helpMessage.concat("<code>SELECT * FROM "+tableselect[0].text+";</code><br>")
+
+    helpMessage = helpMessage.concat("<br>To select data from only a specific device, try:<br>")
+    helpMessage = helpMessage.concat("<code>SELECT * FROM table_name WHERE condition;</code>")
+
+    sqloutput.innerHTML = helpMessage;
+    output.innerHTML = "";
+}
 
 
 select.addEventListener('change', function() {  //actions to take on change of select box
