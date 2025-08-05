@@ -14,9 +14,13 @@
  * limitations under the License.
  */
 
-body {
-  margin: 0;
-}
+ body
+ {
+   margin: 0;
+   position: fixed; 
+   overflow-y: auto;
+   width: 100%;
+ } 
 
 /* Disable ugly boxes around images in IE10 */
 a img{

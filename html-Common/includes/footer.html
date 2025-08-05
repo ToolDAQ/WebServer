@@ -28,7 +28,7 @@
 </main>
 </div>
 
-<div id="overlay">
+<div id="overlay" style="visibility:hidden display:none;">
   <div id="overlay-message">Connection lost. Reconnecting...</div>
 </div>
 
@@ -41,10 +41,12 @@
   const overlay = document.getElementById('overlay');
 
   function showOverlay() {
+    overlay.style.visibility = 'visible';
     overlay.style.display = 'block';
   }
 
   function hideOverlay() {
+    overlay.style.visibility = 'hidden';
     overlay.style.display = 'none';
   }
 
