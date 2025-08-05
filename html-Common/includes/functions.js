@@ -66,7 +66,7 @@ export function HTTPRequest(method, url, async=false, data=null, user=null, pass
 					// else reject
 					//console.log("HTTPRequest FAILURE:");
 					//console.log(xhr);
-					reject("Request failed with status code "+xhr.status+": "+xhr.statusText);
+				        reject("Request failed with status code "+xhr.status+": "+xhr.statusText+"<br />"+xhr.responseText);
 				}
 			}
 			return;
