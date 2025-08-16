@@ -1,0 +1,85 @@
+name: Lint Code
+
+on: [push, pull_request]
+
+jobs:
+  lint_js:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install ESLint globally
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y eslint  # Install ESLint globally
+
+    - name: Lint JavaScript
+      run: npx eslint .
+
+  lint_html:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install HTMLHint globally
+      run: |
+        sudo npm install -g htmlhint
+
+    - name: Lint HTML
+      run: npx htmlhint .
+
+  fix_html:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install HTML Tidy globally
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y tidy
+
+    - name: Lint and Fix HTML files
+      run: |
+        tidy -qe **/*.html
+
+  lint_css:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install Stylelint globally
+      run: |
+        sudo npm install -g stylelint
+
+    - name: Lint CSS
+      run: npx stylelint "**/*.css"
+
+  lint_shell:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install ShellCheck globally
+      run: |
+        sudo apt-get install -y shellcheck
+
+    - name: Lint Shell scripts
+      run: shellcheck **/*.sh
+
+  lint_cpp:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install Clang-Tidy globally
+      run: |
+        sudo apt-get install -y clang-tidy
+
+    - name: Lint C++ code
+      run: clang-tidy **/*.cpp
