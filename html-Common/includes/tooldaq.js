@@ -15,6 +15,7 @@
 // makePlotlyPlot(div, name, version) -> div - calls getPlotlyPlot and fills the div
 //
 // makeTable(table, data, header, filter) -> table - builds and HTML table from data
+// dataTable(query, "myTableDiv"); -> creates a searchable, sortable, paginated table in the div with id myTableDiv
 //
 // getServices(filter) -> [ { id, ip, port, name, status } ]
 // getService(name)    ->   { id, ip, port, name, status }
