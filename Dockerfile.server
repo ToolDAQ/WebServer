@@ -5,12 +5,11 @@ RUN yum install -y       \
     httpd                \
     postgresql-server    \
     postgresql-devel     \
-    libpq                \
+    libpq-devel          \
     sudo                 \
     procps-ng            \
     psmisc               \
     emacs                \
-    libpcap-devel        \
     iputils              \
     iproute              \
     && yum clean all     \
@@ -23,6 +22,7 @@ RUN cd /opt \
     && cd libpqxx-6.4.5 \
     && mkdir install \
     && CXXFLAGS=-std=c++11 ./configure --disable-documentation --enable-shared --prefix=/opt/libpqxx-6.4.5/install \
+    && if [ ! -f /usr/bin/python ]; then ln -s /usr/bin/python3 /usr/bin/python; fi \
     && make -j`nproc --all` \
     && make install
 
@@ -51,18 +51,18 @@ RUN cd /opt \
 RUN sed -e 's/#LoadModule mpm_prefork_module/LoadModule mpm_prefork_module/' -i /etc/httpd/conf.modules.d/00-mpm.conf \
     && sed -e '/LoadModule mpm_event_module/ s/^#*/#/' -i /etc/httpd/conf.modules.d/00-mpm.conf
 
-RUN echo 'CP=$(type -t cp)' >> /etc/rc.local ;\
+RUN echo 'cd /opt/ToolFrameworkCore && git pull && make clean && make -j$(nproc)' >> /etc/rc.local ;\
+    echo 'cd /opt/ToolDAQFramework && git pull && make clean && make -j$(nproc)' >> /etc/rc.local ;\
+    echo 'cd /opt/middleman && git pull && . Setup.sh && make clean && make -j$(nproc)' >> /etc/rc.local ;\
+    echo 'CP=$(type -t cp)' >> /etc/rc.local ;\
     echo 'if [ ! -z "$${CP}" ] && [ "$${CP}" != "file" ]; then unalias cp; fi' >>  /etc/rc.local ;\
     echo "cp -f /web/httpd.conf /etc/httpd/conf/" >>  /etc/rc.local ;\
     echo "alias cp='cp -i'" >>  /etc/rc.local ;\
     echo "chmod a+x /web/SetupDatabase.sh" >>  /etc/rc.local ;\
-    echo "cd /opt/ToolFrameworkCore && git pull && make clean && make" >> /etc/rc.local ;\
-    echo "cd /opt/ToolDAQFramework && git pull && make clean && make" >> /etc/rc.local ;\
     echo 'export LD_LIBRARY_PATH=/lib/:/opt/ToolFrameworkCore/lib:/opt/ToolDAQFramework/lib:/opt/boost_1_66_0/install/lib:/opt/zeromq-4.0.7/lib:/opt/libpqxx-6.4.5/install/lib:$LD_LIBRARY_PATH' >> /etc/rc.local ;\
     echo "cd /web && make clean && make" >>  /etc/rc.local ;\
     echo "cd /web/cgi-bin && make clean && make" >>  /etc/rc.local ;\
     echo "/web/SetupDatabase.sh" >> /etc/rc.local ;\
-    echo "cd /opt/middleman && git pull && . Setup.sh && make clean && make" >> /etc/rc.local ;\
     echo "chmod a+x /opt/middleman/run_middleman.sh" >>  /etc/rc.local ;\
     echo "/opt/middleman/run_middleman.sh &> /dev/null &" >> /etc/rc.local ;\
     echo 'disown $!' >> /etc/rc.local ;\
