@@ -17,7 +17,6 @@ if [ -f /.DBSetupDone ]; then
 		if ! systemctl is-active --quiet postgresql; then
 			sudo systemctl start postgresql
 		fi
-		exit 0;
 	else
 		# pg_ctl version for containers
 		STATUS=$(sudo -u postgres pg_ctl -D /var/lib/pgsql/data status &> /dev/null; echo $?)
@@ -29,11 +28,12 @@ if [ -f /.DBSetupDone ]; then
 			echo "running pg_ctl start"
 			sudo -u postgres /usr/bin/pg_ctl start -D /var/lib/pgsql/data -s -o "-p 5432" -w -t 300
 		fi
-		exit 0;
 	fi
+ 	exit 0;
 fi
 export LC_ALL=C
 echo "Initialising postgresql cluster"
+chown -R postgres:postgres /var/lib/pgsql
 cd /var/lib/pgsql/
 # --waldir=/todo/replication
 sudo -u postgres /usr/bin/initdb --data-checksums /var/lib/pgsql/data/
@@ -60,7 +60,7 @@ sudo -u postgres psql -c "create database daq with owner=root;"
 psql -ddaq -c "ALTER DATABASE daq SET TIME ZONE 'UTC';"
 
 echo "creating monitoring table"
-psql -ddaq -c "create table monitoring (time timestamp with time zone NOT NULL, device text NOT NULL, data JSONB NOT NULL);"
+psql -ddaq -c "create table monitoring (time timestamp with time zone NOT NULL, device text NOT NULL, subject text NOT NULL, data JSONB NOT NULL);"
 
 echo "creating logging table"
 psql -ddaq -c "create table logging (time timestamp with time zone NOT NULL, device text NOT NULL, severity integer NOT NULL, message text NOT NULL);"
