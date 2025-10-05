@@ -193,6 +193,7 @@ function makeplot(){
 					//mode: 'lines',        // 'mode' aka 'type'
 					mode: 'markers',
 					//mode:'lines+markers', //  aka 'scatter'
+					type: "scattergl",
 					x: value,
 					y: ydata.get(key)
 				});
