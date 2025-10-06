@@ -27,8 +27,10 @@
   - [`makeControls`](#makeControls)
 - [Miscellaneous](#s-misc)
   - [`makeTable`](#makeTable)
+  - [`dataTable`](#dataTable)
 
 <a name='s-introduction'></a>
+
 ## Introduction
 
 This is a description of functions provided in
@@ -42,6 +44,7 @@ connected to ToolDAQ.
 
 Almost all of the functions provided in `tooldaq.js` communicate asynchronously
 with the backend and return objects of type [`Promise`][Promise].
+
 <details>
   <summary>A brief introduction to promises</summary>
 
@@ -59,6 +62,7 @@ function provided to the constructor should perform the actual computation. Once
 it is ready to return the result, it should do so by calling the `resolve`
 function. In case the computation could not be finished, i.e., an exception
 occurred, it should call `reject` with the exception object. An example:
+
 ```javascript
 let promise = new Promise(
   function (resolve, reject) {
@@ -73,6 +77,7 @@ let promise = new Promise(
   }
 );
 ```
+
 The code in the function provided to `Promise()` is executed asynchronously,
 after the function that had created the promise has returned, or whenever its
 execution is suspended, for example while waiting for a request to an external
@@ -80,19 +85,22 @@ resource or for some other event. `Promise()` constructor function returns
 immediately.
 
 A promise can be in one of the following states:
-* _pending_: initial state, neither fulfilled nor resolved;
-* _fulfilled_: its `resolve` function has been called;
-* _rejected_: its `reject` function has been called.
-A promise in either _fulfilled_ or _rejected_ state is also referred to as
-_settled_ or _resolved_.
+
+- _pending_: initial state, neither fulfilled nor resolved;
+- _fulfilled_: its `resolve` function has been called;
+- _rejected_: its `reject` function has been called.
+  A promise in either _fulfilled_ or _rejected_ state is also referred to as
+  _settled_ or _resolved_.
 
 To process the result of a promise, you can attach a function to it by calling its
 [`then()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/then)
 method:
+
 ```javascript
 let promise = ...;
 promise.then(result => void console.log(result))
 ```
+
 The function supplied as the first argument to `then()` will be executed as soon
 as the result is available. `then()` returns a new `Promise`, allowing for
 creation of a chain of functions with the result of one function providing the
@@ -118,10 +126,13 @@ A more convenient way to work with promises is to use
 and
 [`await`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await)
 keywords. `async` attached to a function makes it to return a `Promise`:
+
 ```javascript
 async function f() { ... }
 ```
+
 is approximately equivalent to
+
 ```javascript
 function f() {
   return new Promise(
@@ -136,29 +147,29 @@ function f() {
   );
 }
 ```
+
 One important difference is that inside `async` functions the `await` operator
 can be used. When `await` is called on a promise that is pending, the function
 execution is suspended until the promise is settled. If the promise is
 fulfilled, `await` returns its result. If it is rejected, `await` throws an
 exception:
+
 ```javascript
 async function test(fail) {
-  if (fail)
-    throw Error('fail');
-  else
-    return 'success';
-};
+  if (fail) throw Error("fail");
+  else return "success";
+}
 
 async function run_test(arg) {
   try {
-    console.log('result:', await test(arg));
+    console.log("result:", await test(arg));
   } catch (error) {
-    console.log('error:', error);
-  };
-};
+    console.log("error:", error);
+  }
+}
 
 run_test(false); // result: success
-run_test(true);  // error: Error: fail
+run_test(true); // error: Error: fail
 ```
 
 Suppose that you have obtained a number of promises and you now need to wait
@@ -166,6 +177,7 @@ until all of them are settled. This can be done with the static method
 [`Promise.all`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all)
 which takes an array of promises and returns an promise to return an array of
 their results:
+
 ```javascript
 let promise0 = ...;
 let promise1 = ...;
@@ -176,38 +188,42 @@ let results = await Promise.all([promise0, promise1, promise2]);
 
 See the documentation of the [`Promise`][Promise] object for details and other
 functions to work with promises.
+
 </details>
 
 <a name='s-requests'></a>
+
 ## Generic HTTP request functions
 
 <a name='request'></a>
+
 ### request
 
 ```javascript
 request(url, args, options) -> Promise -> Response
 ```
+
 Sends an HTTP request to `url` and returns a [`Promise`][Promise] to return a
 [`Response`][Response] object. This is a low-level function, see below for
 functions that make a request and process the [`Response`][Response].
 
-* `url` can be either
+- `url` can be either
   - a string with the URL to make a request to. The URL may be relative to the
     base URL, [`baseURI`][baseURI].
   - a [`URL`][URL] object.
   - a [`Request`][Request] object.
-* `args` is an object specifying URL search parameters. Each key-value pair from
+- `args` is an object specifying URL search parameters. Each key-value pair from
   its enumerable properties is [%-encoded][%-encoding] and appended as
   `?key1=value1&key2=value2` to `url` &mdash; literally if `url` is a string or
   a [`Request`][Request], or through [`URLSearchParams`][URLSearchParams] if
   `url` is a [`URL`][URL]. Existing `url` search parameters, if any, are
   preserved in all cases.
-* `options` can be either:
+- `options` can be either:
   - `null` or `undefined`. In this case the request type is GET.
   - whatever is appropriate as a
     [`body`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch#setting_a_body)
-    in a [`RequestInit`][RequestInit] object.  In this case the request type is
-    POST and `options` provide the POST body.  An empty string can be used to
+    in a [`RequestInit`][RequestInit] object. In this case the request type is
+    POST and `options` provide the POST body. An empty string can be used to
     make a POST request with no data.
   - any other object is passed to the underlying [`fetch`][fetch] function
     unmodified. It should suit the [`RequestInit`][RequestInit] description.
@@ -248,42 +264,52 @@ let results = await Promise.all([ r0, r1, r2 ]);
 ```
 
 <a name='requestText'></a>
+
 ### requestText
 
 ```javascript
 requestText(url, args, options) -> Promise -> string
 ```
+
 Sends an HTTP request to `url` and returns a [`Promise`][Promise] to return a
 string with the response text.
 
 This is a convenience wrapper of
+
 ```javascript
-request(url, args, options).then(response => response.text())
+request(url, args, options).then((response) => response.text());
 ```
+
 See [`request`](#request) for the description of the function parameters.
 
 <a name='requestJson'></a>
+
 ### requestJson
 
 ```javascript
 requestJson(url, args, options) -> Promise -> Object
 ```
+
 Sends an HTTP request to `url`. The server is expected to return a string with a
 serialized JSON object. The function returns a [`Promise`][Promise] to return an
 `Object` deserialized from the server response.
 
 This is a convenience wrapper of
+
 ```javascript
-request(url, args, options).then(response => response.json())
+request(url, args, options).then((response) => response.json());
 ```
+
 See [`request`](#request) for the description of the function parameters.
 
 <a name='requestCSV'></a>
+
 ### requestCSV
 
 ```javascript
 requestCSV(url, args, options) -> Promise -> [ [ ... ] ... ]
 ```
+
 Sends an HTTP request to `url`. The server is expected to return a
 [comma-separated values file](https://en.wikipedia.org/wiki/Comma-separated_values).
 The file format should follow [RFC 4180](https://datatracker.ietf.org/doc/html/rfc4180),
@@ -296,12 +322,14 @@ In the case when an invalid CSV data is returned, the function throws a
 `CSVParseError` which is a derivative of [`Error`][Error].
 
 <a name='requestHTML'></a>
+
 ### requestHTML
 
 ```javascript
 requestHTML(url, mimeType)                -> Promise -> HTMLDocument
 requestHTML(url, args, options, mimeType) -> Promise -> HTMLDocument
 ```
+
 Sends an HTTP request to `url`. The server is expected to return an HTML or an
 XML document which is then parsed to a DOM tree. `mimeType` is an optional
 argument that should be a string describing the type of the content, see
@@ -311,14 +339,17 @@ type is extracted from Content-type of the server response header.
 See [`request`](#request) for the description of `args` and `options`.
 
 <a name='s-database'></a>
+
 ## Database querying
 
 <a name='dbJson'></a>
+
 ### dbJson
 
 ```javascript
 dbJson(query) -> Promise -> [ { column: value, ... } ... ]
 ```
+
 Sends `query` to the database and returns an array of objects, each object
 representing a row in the reply. Object keys are column names as provided in the
 query. If the query results in multiple columns with the same name, all columns
@@ -331,11 +362,13 @@ In case of a database error, the function throws a `DBError` which is a
 derivative of [`Error`][Error].
 
 <a name='dbTable'></a>
+
 ### dbTable
 
 ```javascript
 dbTable(query, header) -> Promise -> [ [ ... ] ... ]
 ```
+
 Sends `query` to the database and returns an array of array, each inner array
 representing a row in the reply. If `header` is [truthy][truthy], the first row
 will contain column names as provided in the query.
@@ -347,11 +380,13 @@ In case of a database error, the function throws a `DBError` which is a
 derivative of [`Error`][Error].
 
 <a name='dbPlot'></a>
+
 ### dbPlot
 
 ```javascript
 dbPlot(query, template) -> Promise -> [ { name, x, y }, { name, x, y2 }, ... ]
 ```
+
 Sends `query` to the database and returns an array of objects suitable as the
 `data` argument to [Plotly][].[newPlot][Plotly.newPlot] function
 ([traces][Plotly reference] in Plotly's lingua). The query is expected to result
@@ -375,6 +410,7 @@ In case of a database error, the function throws a `DBError` which is a
 derivative of [`Error`][Error].
 
 Example:
+
 ```javascript
 // Retrieve traces for a couple of columns from the monitoring table; see however getMonitoringPlot function below
 let plot = dbPlot(
@@ -386,25 +422,29 @@ Plotly.newPlot('test-div', plot);
 ```
 
 <a name='s-plotting'></a>
+
 ## Plotting functions
 
 See also [dbPlot](#dbPlot).
 
 <a name='getMonitoringPlot'></a>
+
 ### getMonitoringPlot
 
 ```javascript
 getMonitoringPlot(device, options) -> Promise -> [ { name, x, y } ... ]
 ```
+
 Retrieves monitoring data for `device` as an array of objects suitable as the
 `data` argument to [Plotly][].[newPlot][Plotly.newPlot] function
 ([traces][Plotly reference]). Here `device` is a string with the name of the
 device. `options` can be null in which case all monitoring data is returned
 (which can be very large!), or an object with the following properties:
-- `columns`:  which columns to plot (see below).
+
+- `columns`: which columns to plot (see below).
 - `template`: default values for the traces.
-- `from`:     plot data newer than that.
-- `to`:       plot data older than that.
+- `from`: plot data newer than that.
+- `to`: plot data older than that.
 
 `options.columns` can be
 
@@ -437,51 +477,48 @@ encoding a timestamp in whatever format is appropriate for PostgreSQL
 [timestamp with time zone][Postgresql.timestamp] data type.
 
 Examples:
+
 ```javascript
 // Get traces for all monitoring data for device 'Example'.
 // Returns traces 'current_1', 'current_2', 'current_3', 'power_on', 'temp_1',
-'temp_2', 'temp_3', 'voltage_1', 'voltage_2', 'voltage_3'
-await getMonitoringPlot('Example');
+"temp_2", "temp_3", "voltage_1", "voltage_2", "voltage_3";
+await getMonitoringPlot("Example");
 
 // Only 'power_on'
-await getMonitoringPlot('Example', { columns: 'power_on' });
+await getMonitoringPlot("Example", { columns: "power_on" });
 
 // All voltages from 01 November 2024
-await getMonitoringPlot('Example', { columns: /voltage/, from: 'Nov 1, 2024' });
+await getMonitoringPlot("Example", { columns: /voltage/, from: "Nov 1, 2024" });
 
 // Get all temperatures for the last 30 minutes and give the traces a less cryptic name
-await getMonitoringPlot(
-  'Example',
-  {
-    columns: [ [ /temp_(\d+)/, 'temperature $1' ] ],
-    from: new Date(Date.now() - 30 * 60 * 60 * 1000)
-  }
-);
+await getMonitoringPlot("Example", {
+  columns: [[/temp_(\d+)/, "temperature $1"]],
+  from: new Date(Date.now() - 30 * 60 * 60 * 1000),
+});
 
 // A contrived example showing how to use functions; same can be achieved with
 // regular expressions.
 // Get currents and power on status for the specified time interval. Plot as
 // lines (makeMonitoringPlot uses this template by default).
-await getMonitoringPlot(
-  'Example',
-  {
-    columns: [
-      column => /current/.test(column) && column.replace(/_/, ' '),
-      [ column => /power/.test(column), 'power' ]
-    ],
-    from: '2024-11-12 19:01',
-    to:   '2024-11-12 19:05',
-    template: { mode: 'lines' }
-  }
-);
+await getMonitoringPlot("Example", {
+  columns: [
+    (column) => /current/.test(column) && column.replace(/_/, " "),
+    [(column) => /power/.test(column), "power"],
+  ],
+  from: "2024-11-12 19:01",
+  to: "2024-11-12 19:05",
+  template: { mode: "lines" },
+});
 ```
 
 <a name='makeMonitoringPlot'></a>
+
 ### makeMonitoringPlot
 
 ```javascript
 makeMonitoringPlot(div, device, option, layout) -> Promise -> div
 ```
+
 Plots monitoring data for `device`. Calls
 [`getMonitoringPlot`](#getMonitoringPlot) passing it `device` and `option`
 arguments and then uses its result to call [Plotly][].[newPlot][Plotly.newPlot]
@@ -505,25 +542,29 @@ Example:
 ```javascript
 // Assuming a <div id='test-div'></div> exists on the page
 makeMonitoringPlot(
-  'test-div',
-  'Example',
+  "test-div",
+  "Example",
   { columns: /voltage/ },
-  { title: 'Voltages' }
+  { title: "Voltages" }
 );
 ```
 
 <a name='getPlotlyPlot'></a>
+
 ### getPlotlyPlot
 
 ```javascript
 getPlotlyPlot(name, version) -> Promise -> { name, time, version, traces, layout }
 ```
+
 Retrieves a [Plotly][] plot stored in the database.
+
 - `name`: plot name
 - `version`: plot version (a number). If `null` or `undefined`, the latest in
   time plot is returned.
 
 Returns an object with the following properties:
+
 - `name`: plot name.
 - `time`: the time when the plot was created.
 - `version`: plot version.
@@ -532,6 +573,7 @@ Returns an object with the following properties:
   [`Plotly.newPlot`][Plotly.newPlot] function.
 
 <a name='makePlotlyPlot'></a>
+
 ### makePlotlyPlot
 
 ```javascript
@@ -544,6 +586,7 @@ result to call [`Plotly.newPlot`][Plotly.newPlot] function to build a plot on
 top of `div`.
 
 `div` can be:
+
 - `null` or `undefined` in which case a new &lt;div&gt; is constructed but not
   inserted in the `document`.
 - `string` with an `id` of a &lt;div&gt; element already present on the page.
@@ -552,9 +595,11 @@ top of `div`.
 Returns `div` unless it is null, or a new &lt;div&gt; otherwise.
 
 <a name='s-services'></a>
+
 ## Services functions
 
 <a name='getServices'></a>
+
 ### getServices
 
 ```javascript
@@ -562,6 +607,7 @@ getServices(filter) -> Promise -> [ { id, ip, port, name, status }, ... ]
 ```
 
 Returns an array of services matching the filter. The latter can be
+
 - `null` or `undefined` &mdash; all services are returned.
 - a string &mdash; services with this name are returned (presumably only one).
 - a regular expression &mdash; services with the name matching the expression
@@ -571,21 +617,25 @@ Returns an array of services matching the filter. The latter can be
   [truthy][] are returned.
 
 <a name='getService'></a>
+
 ### getService
 
 ```javascript
 getService(name) -> Promise -> { id, ip, port, name, status }
 ```
+
 Returns a service matching `name` which can be whatever
 [`getServices`](#getServices) can take as an argument. An error is thrown if
 more than one service matches `name`.
 
 <a name='sendCommand'></a>
+
 ### sendCommand
 
 ```javascript
 sendCommand(service, command, ...args) -> Promise -> string
 ```
+
 Sends a command to a service and returns the service reply.
 
 - `service`: an object returned by `getService` or `getServices`, or anything
@@ -597,25 +647,30 @@ Sends a command to a service and returns the service reply.
 Returns whatever the service has replied with.
 
 Example:
+
 ```javascript
-await sendCommand('middleman_1', 'Status');
+await sendCommand("middleman_1", "Status");
 ```
 
 <a name='getControls'></a>
+
 ### getControls
 
 ```javascript
 getControls(service) -> Promise -> [ { name, type, value, ... }, ... ]
 ```
+
 Queries a service for slow controls that it supports. `service` is whatever
 [`sendCommand`](#sendCommand) accepts as a service. Returns a description of
 controls:
-- `name`:  control name
+
+- `name`: control name
 - `value`: current control value
-- `type`:  control type
+- `type`: control type
 
 Following are control types that currently have been implemented and extra
 properties that will appear in the control object:
+
 - `INFO`
   - no extra properties
 - `BUTTON`
@@ -628,14 +683,17 @@ properties that will appear in the control object:
   - `step`: an amount that this control can be varied with
 
 <a name='makeControls'></a>
+
 ### makeControls
 
 ```javascript
 makeControls(div, service) -> Promise -> div
 ```
+
 Fills a &lt;div&gt; with slow controls for a service.
 
 `div` can be:
+
 - `null` or `undefined` in which case a new &lt;div&gt; is constructed but not
   inserted in the `document`.
 - `string` with an `id` of a &lt;div&gt; element already present on the page.
@@ -652,14 +710,17 @@ avoid memory leak and useless CPU burn, remember to call
 `div` is not needed anymore.
 
 <a name='s-misc'></a>
+
 ## Miscellaneous
 
 <a name='makeTable'></a>
+
 ### makeTable
 
 ```javascript
 makeTable(table, data, header, filter) -> table
 ```
+
 Fills an HTML table with data.
 
 - `table` can be:
@@ -671,7 +732,7 @@ Fills an HTML table with data.
 - `data` can be:
   - `null` or `undefined` representing an empty table.
   - an array of objects: `[ { column: value, ... }, ... ]`
-  - an array of arrays:  `[ [ value0, value1, ... ], ... ]`
+  - an array of arrays: `[ [ value0, value1, ... ], ... ]`
 - `header` is used provide the header to the table and also to select what
   columns to take from `data` and in what order, see below.
 - `filter` is an optional function that takes a row and the row index and
@@ -683,6 +744,7 @@ a (mostly) common set of (enumerated) properties, and these properties are
 treated as columns. The set of columns is extracted from the first object, but
 it can be overridden with some settings of `header`. Following `header` values
 are supported:
+
 - `null` or `undefined`: no table header is provided. The set of columns is
   extracted from the first row. If some object in the rest of the table has a
   different set of properties, mismatched properties won't be present in the
@@ -695,7 +757,7 @@ are supported:
   the array, e.g., `[ false, 'a', 'b', 'c' ]`. Instead of a string with the
   column name, you can also use an array of two elements: the property name and
   the column name to appear in the header, e.g., `[ 'a', [ 'b', 'Fancy name for
-  b' ], 'c' ]`.
+b' ], 'c' ]`.
 - a function. This function is called with `Object.keys(data[0])` as the only
   argument, and it should return one of the values above, i.e., `null`,
   `undefined`, `true`, or an array. The value is processed accordingly.
@@ -704,6 +766,7 @@ If `data` is an array of arrays, the number of columns is defined by the first
 row. Depending on the value of `header`, the first row may be treated as
 containing column names &mdash; this is a common approach for CSV files. Following
 `header` values are supported:
+
 - `null` or `undefined`: no table header is provided. The number of columns is
   determined by the first row.
 - `true`: the first row contains column names which are used for the header.
@@ -715,7 +778,7 @@ containing column names &mdash; this is a common approach for CSV files. Followi
 - array of `true` followed by numbers, e.g., `[ true, 3, 2 ]`: use `data[0]` as
   the header, use specified columns only.
 - array of arrays with numbers as first elements, e.g., `[ [ 3, 'A' ], [ 2, 'B'
-  ] ]`: numbers specify column indices, strings specify column names.
+] ]`: numbers specify column indices, strings specify column names.
 - array of `true` followed by strings, e.g., `[ true, 'a', 'b', 'c' ]`:
   `data[0]` contains column names, strings specify which columns are used and in
   what order.
@@ -742,8 +805,14 @@ Examples:
 //     <tr><td>a1</td><td>b1</td></tr>
 //   </tbody>
 // </table>
-makeTable(null, [ { a: 'a0', b: 'b0' }, { a: 'a1', b: 'b1' } ]);
-makeTable(null, [ [ 'a0', 'b0' ], [ 'a1', 'b1' ] ]);
+makeTable(null, [
+  { a: "a0", b: "b0" },
+  { a: "a1", b: "b1" },
+]);
+makeTable(null, [
+  ["a0", "b0"],
+  ["a1", "b1"],
+]);
 
 // Returns
 // <table>
@@ -755,8 +824,23 @@ makeTable(null, [ [ 'a0', 'b0' ], [ 'a1', 'b1' ] ]);
 //     <tr><td>a1</td><td>b1</td></tr>
 //   </tbody>
 // </table>
-makeTable(null, [ { a: 'a0', b: 'b0' }, { a: 'a1', b: 'b1' } ], true);
-makeTable(null, [ [ 'a', 'b' ], [ 'a0', 'b0' ], [ 'a1', 'b1' ] ], true);
+makeTable(
+  null,
+  [
+    { a: "a0", b: "b0" },
+    { a: "a1", b: "b1" },
+  ],
+  true
+);
+makeTable(
+  null,
+  [
+    ["a", "b"],
+    ["a0", "b0"],
+    ["a1", "b1"],
+  ],
+  true
+);
 
 // Returns
 // <table>
@@ -770,39 +854,72 @@ makeTable(null, [ [ 'a', 'b' ], [ 'a0', 'b0' ], [ 'a1', 'b1' ] ], true);
 // </table>
 makeTable(
   null,
-  [ { a: 'a0', b: 'b0' }, { a: 'a1', b: 'b1' } ],
-  [ [ 'b', 'B' ], 'a' ]
+  [
+    { a: "a0", b: "b0" },
+    { a: "a1", b: "b1" },
+  ],
+  [["b", "B"], "a"]
 );
 makeTable(
   null,
-  [ [ 'a0', 'b0' ], [ 'a1', 'b1' ] ],
-  [ [ 1, 'B' ], 0 ]
+  [
+    ["a0", "b0"],
+    ["a1", "b1"],
+  ],
+  [[1, "B"], 0]
 );
 makeTable(
   null,
-  [ [ 'a', 'b' ], [ 'a0', 'b0' ], [ 'a1', 'b1' ] ],
-  [ true, [ 'b', 'B' ], 'a' ]
+  [
+    ["a", "b"],
+    ["a0", "b0"],
+    ["a1", "b1"],
+  ],
+  [true, ["b", "B"], "a"]
 );
 ```
 
-[truthy]:           https://developer.mozilla.org/en-US/docs/Glossary/Truthy
-[Array]:            https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array
-[baseURI]:          https://developer.mozilla.org/en-US/docs/Web/API/Node/baseURI
-[%-encoding]:       https://en.wikipedia.org/wiki/Percent-encoding
-[Error]:            https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error
-[fetch]:            https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch
-[Promise]:          https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
-[Request]:          https://developer.mozilla.org/en-US/docs/Web/API/Request
-[RequestInit]:      https://developer.mozilla.org/en-US/docs/Web/API/RequestInit
-[Response]:         https://developer.mozilla.org/en-US/docs/Web/API/Response
-[URL]:              https://developer.mozilla.org/en-US/docs/Web/API/URL
-[URLSearchParams]:  https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams
-[Plotly]:           https://plotly.com/javascript/
-[Plotly.newPlot]:   https://plotly.com/javascript/plotlyjs-function-reference/#plotlynewplot
+[truthy]: https://developer.mozilla.org/en-US/docs/Glossary/Truthy
+[Array]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array
+[baseURI]: https://developer.mozilla.org/en-US/docs/Web/API/Node/baseURI
+[%-encoding]: https://en.wikipedia.org/wiki/Percent-encoding
+[Error]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error
+[fetch]: https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch
+[Promise]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[Request]: https://developer.mozilla.org/en-US/docs/Web/API/Request
+[RequestInit]: https://developer.mozilla.org/en-US/docs/Web/API/RequestInit
+[Response]: https://developer.mozilla.org/en-US/docs/Web/API/Response
+[URL]: https://developer.mozilla.org/en-US/docs/Web/API/URL
+[URLSearchParams]: https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams
+[Plotly]: https://plotly.com/javascript/
+[Plotly.newPlot]: https://plotly.com/javascript/plotlyjs-function-reference/#plotlynewplot
 [DOMParser.parseFromString]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String
 [Plotly reference]: https://plotly.com/javascript/reference/
-[String.replace]:   https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace
-[Date]:             https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date
+[String.replace]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace
+[Date]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date
 [Postgresql.timestamp]: https://www.postgresql.org/docs/current/datatype-datetime.html
-[HTMLDivElement]:   https://developer.mozilla.org/en-US/docs/Web/API/HTMLDivElement
+[HTMLDivElement]: https://developer.mozilla.org/en-US/docs/Web/API/HTMLDivElement
 [HTMLTableElement]: https://developer.mozilla.org/en-US/docs/Web/API/HTMLTableElement
+
+### dataTable
+
+Fetches data using a SQL query and displays it in a sortable, searchable HTML table.
+
+#### Parameters
+
+- `query` (string): The SQL query or data source to retrieve data for the table.
+- `targetId` (string): The ID of the DOM element where the table will be rendered.
+- `rowsPerPage` (number, optional): Number of rows to display per page. Defaults to 5.
+
+#### Examples
+
+```javascript
+let query = "SELECT * FROM configurations ORDER BY time DESC";
+dataTable(query, "myTableDiv");
+```
+
+```javascript
+// Display 10 rows per page
+let query = "SELECT * FROM logs WHERE level = 'error'";
+dataTable(query, "errorLogsTable", 10);
+```
