@@ -1,40 +1,47 @@
 // html/DeviceConfig/deviceConfig.js
 // Description: JavaScript for the device configuration page.
 
-import { GetPSQLTable, GetPSQL } from '/includes/functions.js';
+import { GetPSQLTable } from '/includes/functions.js';
+import { dataTable } from '/includes/tooldaq.js';
+import '/includes/ace.js'
 
-if (document.readyState !== 'loading'){
-        //console.log("already loaded, initing");
-        Init();
+let editor;
+
+if (document.readyState !== 'loading') {
+    //console.log("already loaded, initing");
+    Init();
 } else {
-        //console.log("page still loading, waiting to finish...");
-        document.addEventListener("DOMContentLoaded", function () {
-                //console.log("page loaded, initing");
-                Init();
-        });
+    //console.log("page still loading, waiting to finish...");
+    document.addEventListener("DOMContentLoaded", function () {
+        //console.log("page loaded, initing");
+        Init();
+    });
 }
 
-function Init(){
-        //console.log("Initialising page");
-        GetDeviceConfigs();
-        document.getElementById("addDeviceConfigBtn").addEventListener("click", addDeviceConfig);
+function Init() {
+    //console.log("Initialising page");
+    setupEditor();
+    GetDeviceConfigs();
+    document.getElementById("addDeviceConfigBtn").addEventListener("click", addDeviceConfig);
+}
+
+function setupEditor() {
+    editor = ace.edit("jsonEditor");
+    editor.setTheme("ace/theme/chrome");
+    editor.session.setMode("ace/mode/json");
+    editor.setValue("{\n  \"devices\": []\n}", -1);
 }
 
 function GetDeviceConfigs() {
-    const query = "SELECT * FROM device_config ORDER BY time DESC LIMIT 10";
-    GetPSQLTable(query, "root", "daq", true).then(function (result) {
-        const deviceConfigOutput = document.getElementById("deviceConfigOutput");
-        deviceConfigOutput.innerHTML = result;
-    }).catch(function (error) {
-        console.error("Error fetching device configurations:", error);
-    });
+    const query = "SELECT * FROM device_config ORDER BY time DESC LIMIT 20";
+    dataTable(query, "deviceConfigOutput");
 }
 
 function addDeviceConfig() {
     const device = document.getElementById("device").value;
     const author = document.getElementById("author").value;
     const description = document.getElementById("description").value;
-    const data = document.getElementById("data").value;
+    const data = editor.getValue();
 
     // Ensure data is in JSON format
     try {
@@ -51,9 +58,17 @@ function addDeviceConfig() {
     `;
 
     GetPSQLTable(query, "root", "daq", true).then(() => {
-        // Refresh the table after adding a new config
+        alert("Device configuration saved successfully.");
+        clearDeviceConfigInputs();
         GetDeviceConfigs();
     }).catch(function (error) {
         console.error("Error adding device configuration:", error);
     });
+}
+
+function clearDeviceConfigInputs() {
+    document.getElementById("device").value = "";
+    document.getElementById("author").value = "";
+    document.getElementById("description").value = "";
+    editor.setValue("{\n  \"devices\": []\n}", -1);
 }
