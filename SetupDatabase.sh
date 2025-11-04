@@ -63,17 +63,17 @@ echo "creating monitoring table"
 psql -ddaq -c "create table monitoring (time timestamp with time zone NOT NULL, device text NOT NULL, subject text NOT NULL, data JSONB NOT NULL);"
 
 echo "creating indices on device name and subject"
-psql -c "CREATE INDEX ON monitoring (device) WITH (deduplicate_items = on);"
+psql -ddaq -c "CREATE INDEX ON monitoring (device) WITH (deduplicate_items = on);"
 # this may be more efficient as we're unlikely to search by subject alone...
-psql -c "CREATE INDEX ON monitoring (device, subject) WITH (deduplicate_items = on);"
+psql -ddaq -c "CREATE INDEX ON monitoring (device, subject) WITH (deduplicate_items = on);"
 
 echo "creating logging table"
 psql -ddaq -c "create table logging (time timestamp with time zone NOT NULL, device text NOT NULL, severity integer NOT NULL, message text NOT NULL);"
 
 echo "creating indices on device name and message severity"
-psql -c "CREATE INDEX ON logging (device) WITH (deduplicate_items = on);"
+psql -ddaq -c "CREATE INDEX ON logging (device) WITH (deduplicate_items = on);"
 # as above. is anyone really going to want 'high priority logs from any device'? i doubt it
-psql -c "CREATE INDEX ON logging (device,severity) WITH (deduplicate_items = on);"
+psql -ddaq -c "CREATE INDEX ON logging (device,severity) WITH (deduplicate_items = on);"
 
 echo "creating alarms table"
 psql -ddaq -c "create table alarms (time timestamp with time zone NOT NULL, device text NOT NULL, level integer NOT NULL, alarm text NOT NULL, silenced integer DEFAULT 0 );"
@@ -114,7 +114,7 @@ echo "Inserting a default user"
 psql -ddaq -c "INSERT INTO users (username, password_hash) VALUES ('dev_user', 'c20cc404fe15337ce6d8a5b782576d9a21de03f8707065c8ccf7abb1cc939801');"
 
 echo "Inserting example monitoring data"
-psql -ddaq -c "INSERT INTO monitoring (time, device, data) SELECT now() - (i * INTERVAL '1 minute') AS time, 'test_device' AS device, jsonb_build_object( 'temperature', round((random() * 50 + 10)::numeric, 2), 'humidity', round((random() * 100)::numeric, 2)) AS data FROM generate_series(1, 100) i;"
+psql -ddaq -c "INSERT INTO monitoring (time, device, subject, data) SELECT now() - (i * INTERVAL '1 minute') AS time, 'test_device' AS device, 'general' AS subject, jsonb_build_object( 'temperature', round((random() * 50 + 10)::numeric, 2), 'humidity', round((random() * 100)::numeric, 2)) AS data FROM generate_series(1, 100) i;"
 
 echo "Inserting example plotyplot data"
 psql -ddaq -c "INSERT INTO plotlyplots (name, time, version, traces, layout) VALUES ('plotly1', 'now()', 1, '[{\"x\": [1, 2, 3, 4, 5], \"y\": [10, 20, 15, 30, 25], \"type\": \"scatter\"}]', '{\"title\": \"plotly1\"}');"
