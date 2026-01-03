@@ -114,15 +114,17 @@ psql -ddaq -c "CREATE INDEX ON monitoring (device, subject) WITH (deduplicate_it
 echo "creating alarms table"
 psql -ddaq -c "create table alarms (time timestamp with time zone NOT NULL DEFAULT now(), device text NOT NULL, level integer NOT NULL, alarm text NOT NULL, silenced integer DEFAULT 0 );"
 
+# FIXME is 5 a suitable lifetime default?
 echo "creating rootplots table"
-psql -ddaq -c "create table rootplots (time timestamp with time zone NOT NULL DEFAULT now(), name text NOT NULL, version int NOT NULL, data jsonb NOT NULL, draw_options text NOT NULL DEFAULT '', UNIQUE (name, version));"
+psql -ddaq -c "create table rootplots (time timestamp with time zone NOT NULL DEFAULT now(), name text NOT NULL, version int NOT NULL, data jsonb NOT NULL, draw_options text NOT NULL DEFAULT '', lifetime int NOT NULL DEFAULT 5, UNIQUE (name, version));"
 
 echo "creating autoincrement function for rootplots version"
 psql -ddaq -c 'create or replace function "fn_rootplot_ver"() returns "pg_catalog"."trigger" as $BODY$ begin new.version = (select COALESCE(MAX(version)+1,0) from rootplots where name=new.name); return NEW; end; $BODY$ LANGUAGE plpgsql VOLATILE COST 100;'
 psql -ddaq -c 'CREATE TRIGGER trig_rootplot_ver BEFORE insert ON rootplots FOR EACH ROW EXECUTE PROCEDURE fn_rootplot_ver();'
 
+# FIXME is 5 a suitable lifetime default?
 echo "creating plotlyplots table"
-psql -ddaq -c "create table plotlyplots (time timestamp with time zone NOT NULL DEFAULT now(), name text NOT NULL, version int NOT NULL, data jsonb NOT NULL, layout jsonb NOT NULL DEFAULT '{}', UNIQUE (name, version));"
+psql -ddaq -c "create table plotlyplots (time timestamp with time zone NOT NULL DEFAULT now(), name text NOT NULL, version int NOT NULL, data jsonb NOT NULL, layout jsonb NOT NULL DEFAULT '{}', lifetime int NOT NULL DEFAULT 5, UNIQUE (name, version));"
 
 echo "creating autoincrement function for plotlyplots version"
 psql -ddaq -c 'create or replace function "fn_plotlyplot_ver"() returns "pg_catalog"."trigger" as $BODY$ begin new.version = (select COALESCE(MAX(version)+1,0) from plotlyplots where name=new.name); return NEW; end; $BODY$ LANGUAGE plpgsql VOLATILE COST 100;'
