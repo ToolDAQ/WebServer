@@ -16,12 +16,12 @@ RUN yum install -y       \
     && rm -rf /var/cache/yum
 
 RUN cd /opt \
-    && wget https://github.com/ToolDAQ/libpqxx/raw/master/libpqxx-6.4.5_fixed.tar.gz \
-    && tar zxvf libpqxx-6.4.5_fixed.tar.gz \
-    && rm libpqxx-6.4.5_fixed.tar.gz \
-    && cd libpqxx-6.4.5 \
+    && wget https://github.com/jtv/libpqxx/archive/refs/tags/7.10.4.tar.gz \
+    && tar zxvf 7.10.4.tar.gz \
+    && rm 7.10.4.tar.gz \
+    && cd libpqxx-7.10.4 \
     && mkdir install \
-    && CXXFLAGS=-std=c++11 ./configure --disable-documentation --enable-shared --prefix=/opt/libpqxx-6.4.5/install \
+    && ./configure --disable-documentation --enable-shared --prefix=/opt/libpqxx-7.10.4/install CXXFLAGS=-O3 \
     && if [ ! -f /usr/bin/python ]; then ln -s /usr/bin/python3 /usr/bin/python; fi \
     && make -j`nproc --all` \
     && make install
