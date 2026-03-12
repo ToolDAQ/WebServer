@@ -200,10 +200,10 @@ psql -ddaq -c "CREATE INDEX ON monitoring USING BRIN(time);"
 
 
 echo "creating alarms table"
-psql -ddaq -c "CREATE TABLE alarms (time timestamp with time zone NOT NULL DEFAULT now(), device text NOT NULL, critical BOOLEAN NOT NULL, alarm text NOT NULL, silenced integer DEFAULT 0 );"
+psql -ddaq -c "create table alarms ( uid SERIAL PRIMARY KEY, status INTEGER DEFAULT 0, critical BOOLEAN NOT NULL, first_time TIMESTAMP WITH TIME ZONE NOT NULL, last_time TIMESTAMP WITH TIME ZONE NOT NULL, device TEXT NOT NULL, description TEXT NOT NULL, silence_user TEXT, resolve_user TEXT, expert_user TEXT, resolve_time TIMESTAMP WITH TIME ZONE, resolution_description TEXT, event_counter INTEGER default 1 );"
 
 psql -ddaq -c "CREATE INDEX ON alarms (device) WITH (deduplicate_items = on);"
-psql -ddaq -c "CREATE INDEX ON alarms USING BRIN(time);"
+psql -ddaq -c "CREATE INDEX ON alarms USING BRIN(last_time);"
 
 echo "creating rootplots table"
 psql -ddaq -c "CREATE TABLE rootplots (time timestamp with time zone NOT NULL DEFAULT now(), name text NOT NULL, version int NOT NULL, data json NOT NULL, draw_options text NOT NULL DEFAULT '', lifetime int NOT NULL DEFAULT 5);"
@@ -239,6 +239,9 @@ psql -ddaq -c "CREATE TABLE pmt (id int PRIMARY KEY, x real NOT NULL, y real NOT
 # Insert a default user for testing
 echo "Inserting a default user"
 psql -ddaq -c "INSERT INTO users (username, password_hash) VALUES ('dev_user', 'c20cc404fe15337ce6d8a5b782576d9a21de03f8707065c8ccf7abb1cc939801');"
+
+echo "Inserting example device"
+psql -ddaq -c "INSERT INTO devices (name) VALUES ('test_device');"
 
 echo "Inserting example monitoring data"
 psql -ddaq -c "INSERT INTO monitoring (time, device, subject, data) SELECT now() - (i * INTERVAL '1 minute') AS time, 'test_device' AS device, 'general' AS subject, json_build_object( 'temperature', round((random() * 50 + 10)::numeric, 2), 'humidity', round((random() * 100)::numeric, 2)) AS data FROM generate_series(1, 100) i;"
