@@ -111,7 +111,7 @@ echo "creating users table"
 psql -ddaq -c "CREATE TABLE users (user_id serial PRIMARY KEY, username text NOT NULL, password_hash text NOT NULL, permissions jsonb);"
 
 echo "creating index on users table"
-psql -ddaq -c "CREATE UNIQUE INDEX user_name_idx ON users(LOWER(username) text_pattern_ops);"
+psql -ddaq -c "CREATE UNIQUE INDEX user_name_idx ON users(LOWER(username));"
 
 echo "creating base_config table"
 psql -ddaq -c "CREATE TABLE base_config (config_id serial PRIMARY KEY, time timestamp with time zone NOT NULL DEFAULT now(), name text NOT NULL, version int NOT NULL, description text NOT NULL, author text NOT NULL, data json NOT NULL);"
@@ -143,7 +143,7 @@ psql -ddaq -c "CREATE TABLE devices (name text NOT NULL, retired boolean NOT NUL
 
 # functional index to ensure no duplicates even ignoring case
 echo "creating index on devices table"
-psql -ddaq -c "CREATE UNIQUE INDEX dev_name_idx ON devices(LOWER(name) text_pattern_ops);"
+psql -ddaq -c "CREATE UNIQUE INDEX dev_name_idx ON devices(LOWER(name));"
 
 echo "creating device_config table"
 # XXX IMPORTANT: VERSION 0 OF ALL DEVICE CONFIGURATIONS SHOULD BE DEVICE OFF
@@ -191,6 +191,7 @@ psql -ddaq -c "CREATE INDEX ON monitoring USING BRIN(time);"
 # we could use 'CHECK lower(device)=device' on device table to ensure names are lowercase, but not sure it helps..
 #
 # also, we may need to specify 'text_pattern_ops' after the field name for text pattern matching to use an index!
+# e.g. "CREATE UNIQUE INDEX dev_name_idx ON devices(LOWER(name) text_pattern_ops);"
 # https://www.www-old.bartlettpublishing.com/site/bartpub/blog/3/entry/329
 # only if the locale is not 'C' - probbly not default. use `show lc_collate;` to find out.
 # use '--no-locale' to initdb to set
