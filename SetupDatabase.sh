@@ -240,6 +240,18 @@ psql -ddaq -c "CREATE TABLE pmt (id int PRIMARY KEY, x real NOT NULL, y real NOT
 echo "Inserting a default user"
 psql -ddaq -c "INSERT INTO users (username, password_hash) VALUES ('dev_user', 'c20cc404fe15337ce6d8a5b782576d9a21de03f8707065c8ccf7abb1cc939801');"
 
+# add a database role for the webserver
+echo "adding webserver database role"
+psql -ddaq -c "CREATE ROLE webserver LOGIN"
+psql -ddaq -c "GRANT SELECT, INSERT ON ALL TABLES IN SCHEMA public TO webserver;"
+psql -ddaq -c "GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO webserver;"
+psql -ddaq -c "GRANT EXECUTE ON ALL ROUTINES IN SCHEMA public TO webserver;"
+psql -ddaq -c "GRANT CONNECT, TEMPORARY ON DATABASE daq TO webserver;"
+psql -ddaq -c "REVOKE DELETE, TRUNCATE, REFERENCES, TRIGGER ON ALL TABLES IN SCHEMA public FROM webserver;"
+psql -ddaq -c "REVOKE CREATE ON SCHEMA public FROM webserver;"
+psql -ddaq -c "REVOKE CREATE ON DATABASE daq FROM webserver;"
+psql -ddaq -c "REVOKE SELECT ON TABLE users FROM webserver;"
+
 echo "Inserting example device"
 psql -ddaq -c "INSERT INTO devices (name) VALUES ('test_device');"
 
