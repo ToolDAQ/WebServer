@@ -104,6 +104,16 @@ sudo -u postgres psql -c "CREATE DATABASE daq WITH owner=root;"
 # set timezone to UTC
 psql -ddaq -c "ALTER DATABASE daq SET TIME ZONE 'UTC';"
 
+# setup pg_partman
+psql -ddaq -c "CREATE SCHEMA partman;"
+psql -ddaq -c "CREATE EXTENSION pg_partman SCHEMA partman;"
+psql -ddaq -c "CREATE ROLE partman_user WITH LOGIN;"
+psql -ddaq -c "GRANT ALL ON SCHEMA partman TO partman_user;"
+psql -ddaq -c "GRANT ALL ON ALL TABLES IN SCHEMA partman TO partman_user;"
+psql -ddaq -c "GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA partman TO partman_user;"
+psql -ddaq -c "GRANT EXECUTE ON ALL PROCEDURES IN SCHEMA partman TO partman_user;"
+psql -ddaq -c "GRANT TEMPORARY ON DATABASE daq to partman_user;"
+
 # TODO FIXME To optimize storage and minimize wasted space due to alignment padding,
 # it's advisable to arrange columns in the table definition from largest to smallest data type.
 
@@ -139,9 +149,10 @@ echo "creating run_info table"
 psql -ddaq -c "CREATE TABLE run_info (run serial PRIMARY KEY, start_time timestamp with time zone NOT NULL, stop_time timestamp with time zone, base_config_id int NOT NULL references base_config(config_id), runmode_config_id int NOT NULL references runmode_config(config_id), testing boolean NOT NULL, comments text NOT NULL);"
 
 echo "creating devices table"
-psql -ddaq -c "CREATE TABLE devices (name text NOT NULL, retired boolean NOT NULL DEFAULT FALSE);"
+psql -ddaq -c "CREATE TABLE devices (name text NOT NULL, retired boolean NOT NULL DEFAULT FALSE, unique(name));"
 
 # functional index to ensure no duplicates even ignoring case
+# unfortunately to use it as a foreign key we need a redundant unique constraint on the value itself as well
 echo "creating index on devices table"
 psql -ddaq -c "CREATE UNIQUE INDEX dev_name_idx ON devices(LOWER(name));"
 
@@ -157,7 +168,7 @@ psql -ddaq -c 'CREATE OR REPLACE FUNCTION "fn_devconfig_ver"() returns "pg_catal
 psql -ddaq -c 'CREATE TRIGGER trig_devconfig_ver BEFORE insert ON device_config FOR EACH ROW EXECUTE PROCEDURE fn_devconfig_ver();'
 
 echo "creating calibration table"
-psql -ddaq -c "CREATE TABLE calibration (time timestamp with time zone NOT NULL DEFAULT now(), name text NOT NULL, version int NOT NULL, description text NOT NULL, data json NOT NULL;"
+psql -ddaq -c "CREATE TABLE calibration (time timestamp with time zone NOT NULL DEFAULT now(), name text NOT NULL, version int NOT NULL, description text NOT NULL, data json NOT NULL);"
 
 echo "creating index on calibration table"
 psql -ddaq -c "CREATE UNIQUE INDEX ON calibration (name, version DESC NULLS LAST)"
@@ -167,7 +178,13 @@ psql -ddaq -c 'CREATE OR REPLACE FUNCTION "fn_calibration_ver"() returns "pg_cat
 psql -ddaq -c 'CREATE TRIGGER trig_calibration_ver BEFORE insert ON calibration FOR EACH ROW EXECUTE PROCEDURE fn_calibration_ver();'
 
 echo "creating logging table"
-psql -ddaq -c "CREATE TABLE logging (time timestamp with time zone NOT NULL DEFAULT now(), device text NOT NULL, severity integer NOT NULL, message text NOT NULL, repeats integer NOT NULL DEFAULT 1);"
+psql -ddaq -c "CREATE TABLE logging (time timestamp with time zone NOT NULL DEFAULT now(), device text NOT NULL, severity integer NOT NULL, message text NOT NULL, repeats integer NOT NULL DEFAULT 1) PARTITION BY RANGE (time);"
+
+echo "creating logging template table"
+psql -ddaq -c "CREATE TABLE logging_template(LIKE logging);"
+
+echo "creating logging partition parent and child tables"
+psql -ddaq -c "SELECT partman.create_parent( p_parent_table:= 'public.logging', p_control := 'time', p_interval := '1 day', p_template_table:='public.logging_template');"
 
 echo "creating indices on logging device name and message severity"
 #psql -ddaq -c "CREATE INDEX ON logging (device) WITH (deduplicate_items = on);" # is this redundant with below?
@@ -177,12 +194,18 @@ psql -ddaq -c "CREATE INDEX ON logging USING BRIN(time);"
 #'ALTER TABLE logging ALTER COLUMN device SET STATISTICS 1000;' Default is 100, maximum is 10000.
 
 echo "creating monitoring table"
-psql -ddaq -c "CREATE TABLE monitoring (time timestamp with time zone NOT NULL DEFAULT now(), device text NOT NULL, subject text NOT NULL, data json NOT NULL);"
+psql -ddaq -c "CREATE TABLE monitoring (time timestamp with time zone NOT NULL DEFAULT now(), device text NOT NULL, subject text NOT NULL, data json NOT NULL) PARTITION BY RANGE (time);"
+
+echo "creating monitoring template table"
+psql -ddaq -c "CREATE TABLE monitoring_template(LIKE monitoring);"
 
 echo "creating indices on monitoring device name and subject"
 #psql -ddaq -c "CREATE INDEX ON monitoring (device) WITH (deduplicate_items = on);"   # redundant?
 psql -ddaq -c "CREATE INDEX ON monitoring (device, subject) WITH (deduplicate_items = on);"
 psql -ddaq -c "CREATE INDEX ON monitoring USING BRIN(time);"
+
+echo "creating monitoring partition parent and child tables"
+psql -ddaq -c "SELECT partman.create_parent( p_parent_table:= 'public.monitoring', p_control := 'time', p_interval := '1 day', p_template_table:='public.monitoring_template');"
 
 # note on device name index usage: postgres never uses indexes for case insensitive searches!
 # we can create a functional index with 'lower(device)', but this only gets used if queries
