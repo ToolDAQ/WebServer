@@ -27,9 +27,8 @@ RUN cd /opt \
     && make install
 
 RUN cd /opt \
-    && git clone https://github.com/ToolDAQ/middleman.git \
+    && git clone https://github.com/ToolDAQ/middleman_v2.git middleman \
     && cd middleman/ \
-    && git checkout v3.0 \
     && . ./Setup.sh \
     && make
 
@@ -59,7 +58,7 @@ RUN echo 'cd /opt/ToolFrameworkCore && git pull && make clean && make -j$(nproc)
     echo "cp -f /web/httpd.conf /etc/httpd/conf/" >>  /etc/rc.local ;\
     echo "alias cp='cp -i'" >>  /etc/rc.local ;\
     echo "chmod a+x /web/SetupDatabase.sh" >>  /etc/rc.local ;\
-    echo 'export LD_LIBRARY_PATH=/lib/:/opt/ToolFrameworkCore/lib:/opt/ToolDAQFramework/lib:/opt/boost_1_66_0/install/lib:/opt/zeromq-4.0.7/lib:/opt/libpqxx-6.4.5/install/lib:$LD_LIBRARY_PATH' >> /etc/rc.local ;\
+    echo 'export LD_LIBRARY_PATH=/lib/:/opt/ToolFrameworkCore/lib:/opt/ToolDAQFramework/lib:/opt/boost_1_66_0/install/lib:/opt/zeromq-4.0.7/lib:/opt/libpqxx-7.10.4/install/lib:$LD_LIBRARY_PATH' >> /etc/rc.local ;\
     echo "cd /web && make clean && make" >>  /etc/rc.local ;\
     echo "cd /web/cgi-bin && make clean && make" >>  /etc/rc.local ;\
     echo "/web/SetupDatabase.sh" >> /etc/rc.local ;\
