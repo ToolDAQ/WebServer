@@ -32,8 +32,8 @@ int main(){
 
   while(true){
     
-    utils.UpdateConnections("", &sub_sock, sub_connections, "78787");
-    utils.UpdateConnections("", &pub_sock, pub_connections, "78788");
+    utils.UpdateConnections("", &sub_sock, sub_connections, "", "alerts");
+    utils.UpdateConnections("", &pub_sock, pub_connections, "", "alertr");
    
     sleep(5);
     
