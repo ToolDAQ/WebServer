@@ -5,6 +5,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ToolDAQ | Device Configurations</title>
+    <style>
+        .container {
+            margin: auto;
+            padding: 20px;
+        }
+
+        #jsonEditor {
+            height: 300px;
+            width: 100%;
+            border: 1px solid #ccc;
+            margin-top: 10px;
+        }
+
+        .mdl-textfield {
+            width: 100%;
+        }
+
+        .mdl-card {
+            margin-bottom: 20px;
+        }
+
+        #deviceConfigOutput {
+            margin-top: 30px;
+        }
+    </style>
 </head>
 
 <body>
@@ -14,45 +39,48 @@
     <!--#include virtual="../subheader.html" -->
     <!--#include virtual="/includes/drawer.html" -->
 
+    <div class="container">
+        <h3>New Device Configuration</h3>
 
-    <h1 align="center">New Device Configurations</h1>
+        <div class="mdl-card mdl-shadow--2dp mdl-card--border">
+            <div class="mdl-card__supporting-text">
+                <form id="deviceConfigForm">
 
-    <!-- Form to add a new device configuration -->
-    <form id="deviceConfigForm">
-        <label for="device">Device:</label>
-        <input type="text" id="device" name="device" size="40" style="margin: 10px;" required><br><br>
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                        <input class="mdl-textfield__input" type="text" id="device" required>
+                        <label class="mdl-textfield__label" for="device">Device Name</label>
+                    </div>
 
-        <label for="author">Author:</label>
-        <input type="text" id="author" name="author" size="40" style="margin: 10px;" required><br><br>
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                        <input class="mdl-textfield__input" type="text" id="author" required>
+                        <label class="mdl-textfield__label" for="author">Author</label>
+                    </div>
 
-        <label for="description">Description:</label><br>
-        <textarea id="description" name="description" style="resize:both; width:80%; margin:10px;" required></textarea><br><br>
+                    <div class="mdl-textfield mdl-js-textfield">
+                        <textarea class="mdl-textfield__input" rows="3" id="description"></textarea>
+                        <label class="mdl-textfield__label" for="description">Description</label>
+                    </div>
 
-        <label for="data">Data (JSON format):</label><br>
-        <textarea id="data" name="data" style="resize:both; width:80%; margin:10px;" required></textarea><br><br>
-        
-        <script type="text/javascript">
-            const datainput = document.querySelector("#data");
-            datainput.addEventListener('input', autoResize, false);
-            
-            const descriptinput = document.querySelector("#description");
-            descriptinput.addEventListener('input', autoResize, false);
-            
-            function autoResize() {
-                this.style.height = 'auto';
-                this.style.height = this.scrollHeight + 'px';
-            }
-        </script>
+                    <label for="jsonEditor"><strong>Data (JSON format):</strong></label>
+                    <div id="jsonEditor">// Write your device config here...</div>
 
-        <button type="button" id="addDeviceConfigBtn" >Add Device Configuration</button>
-    </form>
+                    <br>
+                    <button type="button" id="addDeviceConfigBtn"
+                        class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+                        Add Device Configuration
+                    </button>
+                </form>
+            </div>
+        </div>
 
-    <h2 align="center">Existing Device Configurations</h2>
-    <div id="deviceConfigOutput"></div>
-
+        <h2 align="center">Existing Device Configurations</h2>
+        <div id="deviceConfigOutput"></div>
+    </div>
     <!-- Include common footer -->
     <!--#include virtual="/includes/footer.html" -->
 
     <script type="module" src="/includes/functions.js?v=1" async></script>
     <script type="module" src="./deviceConfig.js?v=1" async></script>
+    <script type="module" src="/includes/ace.js?v=1" async></script>
+
 </body>
